@@ -1,0 +1,212 @@
+/* hero.css */
+
+/* The hero container: full screen, black background */
+#hero {
+  padding: 0rem 0rem;
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background: #000; /* black hero background */
+  overflow: hidden;
+}
+
+/* The radial "cyber-mask" expanding outward + a pulse effect */
+.cyber-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+    circle at center,
+    transparent 0%,
+    rgba(0, 0, 0, 0.95) 30%,
+    black 100%
+  );
+  z-index: 2;
+  animation: breach 2s ease-out forwards, pulse 3s ease-in-out infinite;
+  /* Delay the second animation so it starts after breach completes */
+  animation-delay: 0s, 2s;
+}
+
+/* Subtle static/noise overlay */
+.static-noise {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-radial-gradient(
+      circle at 50% 50%,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0.3) 50%
+    ),
+    repeating-linear-gradient(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1));
+  background-blend-mode: overlay;
+  opacity: 0.3;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Centered hero text container - moved up */
+.hero-content {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 3;
+  color: #fff;
+  width: 100%;
+}
+
+/* "BIT HEAD" glitch effect. No subtitle. */
+.hero-title.glitch {
+  display: block;
+  font-size: 5rem;
+  letter-spacing: 3px;
+  position: relative;
+  animation: glitchIn 2s ease forwards, glitch 2s infinite linear 1.5s;
+  margin-bottom: 2rem;
+}
+
+/* Keyframe for the initial glitch "entrance" */
+@keyframes glitchIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) skew(5deg);
+  }
+  20% {
+    text-shadow: 3px 0 red, -3px 0 cyan;
+    transform: scale(1.05) skew(-5deg);
+    opacity: 0.6;
+  }
+  40% {
+    text-shadow: none;
+    transform: scale(1) skew(0);
+    opacity: 1;
+  }
+  100% {
+    text-shadow: none;
+    transform: scale(1) skew(0);
+    opacity: 1;
+  }
+}
+
+/* The infinite flicker glitch from your original code */
+@keyframes glitch {
+  2% {
+    text-shadow: 3px 0 0 red, -3px 0 0 cyan;
+    transform: skew(5deg);
+  }
+  4% {
+    text-shadow: none;
+    transform: none;
+  }
+  98% {
+    text-shadow: none;
+    transform: none;
+  }
+}
+
+/* "breach" for radial mask */
+@keyframes breach {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(3);
+    opacity: 0;
+  }
+}
+
+/* "pulse" repeated blur effect on the mask */
+@keyframes pulse {
+  0%,
+  100% {
+    filter: blur(5px) contrast(120%);
+  }
+  50% {
+    filter: blur(10px) contrast(150%);
+  }
+}
+
+/* Optional responsive scaling on mobile */
+@media (max-width: 768px) {
+  .hero-title.glitch {
+    font-size: 3rem;
+  }
+}
+
+.hero-content h1 {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+  text-shadow: 0 0 20px rgba(66, 150, 210, 0.5);
+}
+
+.scroll-indicator {
+  position: absolute;
+  bottom: 7rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  color: #fff;
+  opacity: 0.8;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.scroll-indicator::before {
+  content: "";
+  width: 2px;
+  height: 30px;
+  background: linear-gradient(to bottom, 
+    rgba(66, 150, 210, 0.8) 0%,
+    rgba(66, 150, 210, 0.4) 50%,
+    rgba(66, 150, 210, 0) 100%
+  );
+  position: relative;
+  animation: scan 2s infinite;
+}
+
+.scroll-indicator::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border: 2px solid rgba(66, 150, 210, 0.8);
+  border-radius: 50%;
+  position: relative;
+  animation: pulse 2s infinite;
+}
+
+@keyframes scan {
+  0% {
+    height: 0;
+    opacity: 0;
+  }
+  50% {
+    height: 30px;
+    opacity: 1;
+  }
+  100% {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+    box-shadow: 0 0 10px rgba(66, 150, 210, 0.5);
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+    box-shadow: 0 0 15px rgba(66, 150, 210, 0.8);
+  }
+}

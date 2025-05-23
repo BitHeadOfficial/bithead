@@ -1,0 +1,194 @@
+.the-american-dream-page {
+  background: #000;
+  color: #fff;
+  font-family: "Montserrat", sans-serif;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+/* HEADER & INTRO */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.container h1,
+.container h2 {
+  font-size: 2.5rem;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.container .intro {
+  color: #ccc;
+  font-size: 1.2rem;
+  line-height: 1.6;
+}
+
+/* ARTWORK + CAPTION LAYOUT */
+.art-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  gap: 4rem;
+  transform: translateY(-12vh); /* bring it closer to text */
+  padding: 0 12vw;
+}
+
+.art-container svg#theAmericanDream {
+  width: 65vmin;
+  height: auto;
+  border-radius: 0.75rem;
+  box-shadow: 0 0 40px rgba(255, 255, 255, 0.08);
+  display: block;
+}
+
+/* CAPTIONS FIXED AND CENTERED RIGHT OF IMAGE */
+.caption-container {
+  position: absolute;
+  top: 50%;
+  left: calc(50% + 35vmin + 2rem); /* Right of image + spacing */
+  transform: translateY(-50%);
+  width: 20rem;
+  text-align: left;
+  pointer-events: none;
+}
+
+.caption {
+  position: absolute;
+  font-size: 1.2rem;
+  opacity: 0;
+  visibility: hidden;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  transition: opacity 0.4s ease;
+  line-height: 1.5;
+}
+
+.caption:first-child {
+  opacity: 1;
+  visibility: visible;
+}
+
+.back-link {
+  display: inline-block;
+  margin-top: 2rem;
+  text-decoration: none;
+  color: #0af;
+  font-weight: bold;
+}
+
+.back-link:hover {
+  color: #09f;
+}
+
+.caption-headline {
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.caption-subtext {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: #ccc;
+}
+
+@media (max-width: 768px) {
+  .art-container {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 70px); /* offset navbar height */
+    transform: none;
+    padding: 2rem 1rem 4rem 1rem;
+    gap: 2rem;
+  }
+
+  .caption-container {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    width: 100%;
+    text-align: center; /* ← this is key */
+    margin-top: 1rem;
+  }
+
+  .caption {
+    position: absolute;
+    font-size: 1rem;
+    line-height: 1.4;
+    left: 50%;
+    transform: translateX(-50%); /* ← this centers the caption text itself */
+    width: 90%; /* Optional: keeps it from going edge to edge */
+    text-align: center;
+  }
+
+  .art-container svg#theAmericanDream {
+    width: 85vw;
+    height: auto;
+  }
+}
+
+.outro-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.outro-section h2 {
+  font-size: 2.5rem;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.outro-section p {
+  font-size: 1.2rem;
+  color: #ccc;
+  margin-bottom: 2.5rem;
+  line-height: 1.6;
+}
+
+.outro-section .back-link {
+  display: inline-block;
+  margin-top: 3rem;
+  text-decoration: none;
+  color: #0af;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.outro-section .back-link:hover {
+  color: #09f;
+}
+
+@media (max-width: 768px) {
+  .outro-section {
+    padding: 2rem 1rem;
+  }
+  .outro-section h2 {
+    font-size: 2rem;
+  }
+  .outro-section p {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+  .outro-section .back-link {
+    font-size: 1rem;
+    margin-top: 2rem;
+  }
+}
+@media (max-width: 480px) {
+  .outro-section h2 {
+    font-size: 1.3rem;
+  }
+  .outro-section {
+    padding: 1.2rem 0.5rem;
+  }
+}

@@ -1,0 +1,71 @@
+<section id="snake-section">
+  <div class="snake-header">
+    <h2>Snake</h2>
+    <p>
+      Bet on which snake will win the duel. Build your winning streak and show
+      off your skills!
+    </p>
+  </div>
+  <div class="snake-content">
+    <div class="snake-left">
+      <div class="snake-info">
+        <table id="scoreboard-table">
+          <thead>
+            <tr>
+              <th>Snake</th>
+              <th>Wins</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>A</td>
+              <td id="score-A">0</td>
+            </tr>
+            <tr>
+              <td>B</td>
+              <td id="score-B">0</td>
+            </tr>
+          </tbody>
+        </table>
+        <div id="round-timer">Last Round Time: 0s</div>
+      </div>
+      <div class="betting-controls">
+        <button id="bet-A">Bet on Snake A</button>
+        <button id="bet-B">Bet on Snake B</button>
+        <div id="streak-display">Your current streak: 0</div>
+        <button id="tweet-button" style="display: none">Post on Twitter</button>
+      </div>
+    </div>
+    <div class="snake-center">
+      <canvas id="snakeCanvas"></canvas>
+    </div>
+    <div class="snake-right">
+      <h3>Leaderboard</h3>
+      <ul id="leaderboard">
+        <!-- Sample test data will be added dynamically -->
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- Modal for collecting user info -->
+<div id="userInfoModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <h3>Great Streak!</h3>
+    <p>Enter your information to join the leaderboard:</p>
+    <form id="userInfoForm">
+      <div class="form-group">
+        <label for="displayName">Display Name:</label>
+        <input type="text" id="displayName" name="displayName" required maxlength="20" placeholder="Your display name">
+      </div>
+      <div class="form-group">
+        <label for="twitterHandle">Twitter Handle:</label>
+        <input type="text" id="twitterHandle" name="twitterHandle" required placeholder="@username">
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="submit-btn">Submit</button>
+        <button type="button" class="cancel-btn">Skip</button>
+      </div>
+    </form>
+  </div>
+</div>

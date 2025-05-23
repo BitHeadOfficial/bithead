@@ -1,0 +1,222 @@
+/* =======================
+   PORTFOLIO SECTION BASICS
+======================= */
+
+#portfolio {
+  padding: 6rem 2rem;
+  background: #000;
+  text-align: center;
+}
+
+.portfolio-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  margin-bottom: 6rem; /* Extra margin to separate from following sections */
+}
+
+#portfolio h2 {
+  font-size: 3rem;
+  margin-bottom: 3rem;
+  font-family: "Montserrat", sans-serif;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.portfolio-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  justify-content: center;
+}
+
+/* =======================
+   CARD WRAPPER & HOVER
+======================= */
+.portfolio-card {
+  position: relative;
+  background: transparent;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  perspective: 1000px; /* for 3D flip */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  aspect-ratio: 1; /* keep card square */
+}
+
+/* Hover: shift upward and add a bigger shadow on desktop */
+.portfolio-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8);
+}
+
+/* Container for front/back sides */
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.8s ease;
+  transform-style: preserve-3d;
+  background: #111; /* ensures a consistent background during flip */
+  border-radius: inherit;
+}
+
+/* Flip class toggled by script.js on click */
+.portfolio-card.flipped .card-inner {
+  transform: rotateY(180deg);
+}
+
+/* =======================
+   CARD FRONT
+======================= */
+.card-front,
+.card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden; /* hide backside when facing front */
+  border-radius: inherit;
+  top: 0;
+  left: 0;
+}
+
+/* The front side: just the image */
+.card-front img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  transition: transform 0.3s ease;
+}
+
+/* Slight zoom on hover for the front image (desktop only) */
+.portfolio-card:hover .card-front img {
+  transform: scale(1.05);
+}
+
+/* =======================
+   CARD BACK
+======================= */
+.card-back {
+  transform: rotateY(180deg);
+  overflow: hidden;
+}
+
+/* 
+   The background image on the card back:
+   It's the same or a different image, with a dark overlay.
+*/
+.card-back-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+/* Dark overlay above the background image */
+.card-back-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 2;
+}
+
+/* The actual content on the back side (text, button) */
+.card-back-content {
+  position: relative;
+  z-index: 3; /* above overlay */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 1rem;
+  text-align: center;
+  color: #fff;
+  margin-top: 2rem;
+}
+
+.card-back-content h3 {
+  font-family: "Montserrat", sans-serif;
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.card-back-content p {
+  font-family: "Inter", sans-serif;
+  font-size: 1rem;
+  color: #ccc;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+/* =======================
+   LEARN MORE BUTTON
+======================= */
+.learn-more-button {
+  display: inline-block;
+  padding: 0.7rem 1.5rem;
+  background: #4296d2;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background 0.3s ease;
+  margin-top: 1rem;
+}
+
+.learn-more-button:hover {
+  background: #2f6d99;
+  color: #fff;
+}
+
+/* =======================
+   RESPONSIVE ADJUSTMENTS
+======================= */
+@media (max-width: 768px) {
+  /* Single column grid on smaller screens */
+  .portfolio-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    justify-items: center;
+  }
+
+  #portfolio h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .portfolio-card {
+    min-height: 280px;
+    margin: 0 auto;
+  }
+
+  /* Remove the hover scale & shadow on mobile */
+  .portfolio-card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  .portfolio-card:hover .card-front img {
+    transform: none;
+  }
+
+  /* Adjust text sizes on the card back */
+  .card-back-content h3 {
+    font-size: 1.4rem;
+  }
+
+  .card-back-content p {
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .learn-more-button {
+    padding: 0.5rem 1rem;
+    margin-bottom: 3rem;
+  }
+}

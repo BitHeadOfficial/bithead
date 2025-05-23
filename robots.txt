@@ -1,0 +1,25 @@
+User-agent: *
+Disallow: /db/
+Disallow: /logs/
+Disallow: /config/
+Disallow: /middleware/
+Disallow: /models/
+Disallow: /utils/
+Disallow: /validation/
+Disallow: /data/
+Disallow: /error.log
+Disallow: /database.sqlite
+Disallow: /database.sqlite.backup
+Disallow: /combined.log
+Disallow: /.env
+Disallow: /.DS_Store
+
+# Allow public assets
+Allow: /public/
+Allow: /public/assets/
+Allow: /public/components/
+Allow: /public/scripts/
+Allow: /public/styles/
+
+# Sitemap (uncomment and update if you have one)
+# Sitemap: https://yourdomain.com/sitemap.xml 

@@ -1,0 +1,108 @@
+/* NFT Minting Section */
+#nft-mint {
+  padding: 6rem 2rem;
+  background: #000; /* Solid background instead of gradient */
+  color: #fff;
+}
+
+.mint-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  gap: 3rem;
+}
+
+/* Left column: NFT preview image */
+.mint-preview {
+  flex: 1;
+  text-align: center;
+}
+
+.mint-preview img {
+  width: 500px;
+  max-width: 100%;
+  border: 3px solid #fff; /* Solid white border */
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(255, 255, 255, 0.2);
+  transition: transform 0.3s ease;
+  cursor: pointer;
+}
+
+.mint-preview img:hover {
+  transform: scale(1.05);
+}
+
+/* Right column: Minting controls */
+.mint-controls {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.mint-controls h2 {
+  font-size: 2.8rem;
+  margin-bottom: 1rem;
+  font-family: "Montserrat", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.mint-controls p {
+  font-size: 1.2rem;
+  color: #ccc;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.mint-controls button,
+.mint-button {
+  display: inline-block;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  margin: 0.5rem 0;
+  background: transparent;
+  color: #fff;
+  border: 2px solid #fff;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+}
+
+.mint-controls button:hover,
+.mint-button:hover {
+  background: #fff;
+  color: #000;
+  transform: translateY(-2px);
+}
+
+#walletAddress,
+#mintStatus {
+  margin-top: 1rem;
+  font-size: 1rem;
+  font-family: "Inter", sans-serif;
+}
+
+#mintNFTBtn {
+  opacity: 1;
+  cursor: pointer;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .mint-container {
+    flex-direction: column;
+    gap: 2rem;
+  }
+  .mint-controls {
+    text-align: center;
+  }
+  .mint-preview img {
+    width: 80%;
+  }
+}

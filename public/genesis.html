@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Genesis – 0</title>
+
+    <!-- GLOBAL STYLES -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/styles/base.css">
+    <link rel="stylesheet" href="/styles/header.css" />
+    <link rel="stylesheet" href="/styles/footer.css" />
+    <link rel="stylesheet" href="/styles/genesis.css">
+    <link rel="stylesheet" href="/styles/hero.css">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+
+    <!-- Core Dependencies -->
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <script src="https://unpkg.com/@solana/wallet-adapter-phantom@latest/lib/index.iife.min.js"></script>
+
+    <!-- GSAP -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+
+    <script>
+      // Initialize Solana connection to devnet
+      const initSolana = () => {
+        try {
+          window.solanaConnection = new solanaWeb3.Connection('https://fragrant-icy-general.solana-mainnet.quiknode.pro/71ce468fd28dbbcf7e3a1b2e404bfacac9f60a55/');
+          window.Transaction = solanaWeb3.Transaction;
+          window.SystemProgram = solanaWeb3.SystemProgram;
+          window.PublicKey = solanaWeb3.PublicKey;
+          window.LAMPORTS_PER_SOL = solanaWeb3.LAMPORTS_PER_SOL;
+          console.log('Solana initialized successfully');
+        } catch (error) {
+          console.error('Failed to initialize Solana:', error);
+        }
+      };
+      
+      // Wait for libraries to load
+      window.addEventListener('load', function() {
+        initSolana();
+        if (window.solana) {
+          console.log('Phantom wallet detected');
+          window.solana.on('connect', () => {
+            console.log('Connected to wallet');
+          });
+          window.solana.on('disconnect', () => {
+            console.log('Wallet disconnected');
+          });
+        } else {
+          console.error('Phantom wallet not detected');
+        }
+      });
+    </script>
+
+    <style>
+      .donation-agree-label input[type="checkbox"] {
+        width: 1em;
+        height: 1em;
+        min-width: 1em;
+        min-height: 1em;
+        accent-color: #4296d2; /* Optional: matches your brand color */
+        transform: scale(0.85);
+      }
+
+      #donationWarningContainer {
+        flex-direction: column;
+        align-items: center !important;
+        justify-content: center;
+        margin: 0 auto;
+        text-align: center;
+        gap: 0.5rem;
+      }
+
+      /* Styling for the new vault icons */
+      .vault-icon {
+          font-size: 3rem;
+          color: #4296d2; /* Match the theme color */
+          margin-bottom: 1rem;
+          text-align: center;
+          width: 100%; /* Ensure the icon container takes full width */
+      }
+
+      .vault-item {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center; /* Also center horizontally */
+      }
+
+      .vault-item h3 {
+          text-align: center;
+      }
+
+       .vault-item p {
+          text-align: center;
+      }
+
+    </style>
+  </head>
+
+  <body>
+    <!-- HEADER START -->
+    <header>
+      <div class="nav-logo">
+        <a href="index.html#hero">BITHEAD</a>
+      </div>
+      <div class="nav-container">
+        <nav>
+          <ul class="nav-links">
+            <li><a href="index.html#about">About</a></li>
+            <li><a href="index.html#portfolio">Portfolio</a></li>
+            <li><a href="index.html#snake-section">Snake</a></li>
+            <li><a href="index.html#nft-mint">NFT</a></li>
+            <li><a href="index.html#shop">Shops</a></li>
+            <li><a href="index.html#exclusive">Drops</a></li>
+            <li><a href="index.html#cta">Contact</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="hamburger">☰</div>
+    </header>
+    <!-- HEADER END -->
+
+    <!-- MAIN -->
+    <main class="genesis-main">
+      <div class="genesis-container">
+        <!-- 1) TEASER -->
+        <section class="genesis-teaser">
+          <div class="access-drama">
+            <h1 class="drama-headline">The Gate of Digital Ascension</h1>
+            <div class="drama-text">
+              <ul class="drama-list">
+                <li>Beyond this point lies the culmination of 1,237 failed attempts,</li>
+                <li>83 all‑night coding sessions, and 14 existential crises.</li>
+                <li>This vault contains:</li>
+                <li>Early access to our AI Branding Forge.</li>
+                <li>An invitation to join the inner circle.</li>
+                <li>A chance to earn a spot on the whitelist.</li>
+                <li>Access requires either:</li>
+                <li>The passphrase seared into my cortex at ETHDenver '24</li>
+                <li>Or, a blood pact signed in SOL.</li>
+                <li>98.7% turn back here. Will you?</li>
+              </ul>
+            </div>
+          </div>
+          <div class="unlock-panel">
+            <input
+              type="password"
+              id="secretPassword"
+              placeholder="Enter the secret word"
+            />
+            <button id="unlockBtn">Burn the Code</button>
+            <div class="or-divider">
+              <span>or</span>
+            </div>
+            <button id="solanaPayBtn" class="solana-button">
+              Sacrifice 0.01 SOL
+            </button>
+            <div id="unlockStatus" class="status error" style="display:none;">Every transaction is considered a donation to the cause and is irreversable!<br>Only spend what you can afford to lose & always use a burner wallet!</div>
+            <div id="donationWarningContainer" style="display:none; flex-direction:column; align-items:center; gap:0.5rem; margin-top:0.5rem;">
+              <label for="donationAgreeCheckbox" class="donation-agree-label">
+                <input type="checkbox" id="donationAgreeCheckbox" style="margin-right:0.7em;" />
+                I understand this is a donation and expect nothing in return.
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- EVERYTHING BELOW IS LOCKED UNTIL YOU UNLOCK -->
+        <section id="secretSection" class="secret hidden protected-content">
+          <!-- A) Welcome Section -->
+          <section class="welcome-section">
+            <h2 class="section-title">Welcome to the Digital Sanctum</h2>
+            <div class="welcome-content">
+              <p class="section-text">
+                Hidden deep in the wireframe of our network lies the Digital Sanctum. It has no sign or label — a challenge meant for the curious. Only those who decipher its clues will claim the master key: guaranteed whitelist access for all future drops. The Vault reveals itself only to the persistent. Clues will flicker in our channels and website corners for those who listen. Seek the Vault, unlock the code, and you secure your place at the forge. It's our way of rewarding determination: the finder of the Vault holds the master key to all our future releases.
+              </p>
+              <div class="vault-grid">
+                <article class="vault-item">
+                  <div class="vault-icon"><i class="fas fa-palette"></i></div>
+                  <h3>Empower Creativity</h3>
+                  <p>Every Genesis NFT unlocks an AI Branding Forge. With this tool, the machine will shape your unique persona – from social avatars and banners to logos, business cards, and a website – all drawn from the very traits of your NFT. Your art is transformed into real tools for your brand.</p>
+                </article>
+                <article class="vault-item">
+                  <div class="vault-icon"><i class="fas fa-key"></i></div>
+                  <h3>The Circle</h3>
+                  <p>Your initiation is rewarded with unwavering trust. Every seeker who deciphers this sanctum is automatically granted a spot on future whitelists. No lotteries, no resets — just guaranteed early access to upcoming drops, collaborations, and hidden releases. Welcome to the inner circle!</p>
+                </article>
+                <article class="vault-item">
+                  <div class="vault-icon"><i class="fas fa-coins"></i></div>
+                  <h3>Fair Share</h3>
+                  <p>A new currency is forming on the horizon. BitHead's future token will redistribute 50% of all profits back to holders of the Genesis NFT. It's more than a promise – it's a code etched in our roadmap. You hold the early glimpse of this plan now, giving you direct stake in every success we engineer.</p>
+                </article>
+              </div>
+            </div>
+          </section>
+
+          <div class="section-divider"></div>
+
+          <!-- B) Pillars Intro -->
+          <section class="pillars-intro">
+            <h2 class="pillars-intro-title">Our Digital Commandments</h2>
+            <p class="pillars-intro-text">
+              At the summit of every great movement are the guiding truths that hold communities
+              together. Below you'll find the twelve immutable pillars by which every BitHead
+              stands!
+            </p>
+          </section>
+
+          <!-- C) Two‑Column Pillars -->
+          <section class="pillars">
+            <div class="pillar-boxes">
+              <div class="pillar-box">
+                <div class="pillar-item">
+                  <div class="pillar-icon"><i class="fas fa-code-branch"></i></div>
+                  <h3>1. Open Source First</h3>
+                </div>
+                <div class="pillar-item">
+                  <div class="pillar-icon"><i class="fas fa-network-wired"></i></div>
+                  <h3>2. Decentralize Everything</h3>
+                </div>
+                <div class="pillar-item">
+                  <div class="pillar-icon"><i class="fas fa-terminal"></i></div>
+                  <h3>3. Code Over Conversation</h3>
+                </div>
+                <div class="pillar-item">
+                  <div class="pillar-icon"><i class="fas fa-users"></i></div>
+                  <h3>4. Community Over Competition</h3>
+                </div>
+                <div class="pillar-item">
+                  <div class="pillar-icon"><i class="fas fa-graduation-cap"></i></div>
+                  <h3>5. Learn Constantly</h3>
+                </div>
+                <div class="pillar-item">
+                  <div class="pillar-icon"><i class="fas fa-rocket"></i></div>
+                  <h3>6. Ship Early, Ship Often</h3>
+                </div>
+              </div>
+              <div class="pillar-box">
+                <div class="pillar-item">
+                  <div class="pillar-icon"><i class="fas fa-link"></i></div>
+                  <h3>7. Respect the Chain</h3>
+                </div>
+                <div class="pillar-item">
+                  <div class="pillar-icon"><i class="fas fa-redo"></i></div>
+                  <h3>8. Embrace Failure</h3>
+                </div>
+                <div class="pillar-item">
+                  <div class="pillar-icon"><i class="fas fa-shield-alt"></i></div>
+                  <h3>9. Act with Integrity</h3>
+                </div>
+                <div class="pillar-item">
+                  <div class="pillar-icon"><i class="fas fa-hand-holding-heart"></i></div>
+                  <h3>10. Pay It Forward</h3>
+                </div>
+                <div class="pillar-item">
+                  <div class="pillar-icon"><i class="fas fa-heart"></i></div>
+                  <h3>11. Cultivate Empathy</h3>
+                </div>
+                <div class="pillar-item">
+                  <div class="pillar-icon"><i class="fas fa-chess"></i></div>
+                  <h3>12. Think Long Term</h3>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <div class="section-divider"></div>
+
+          <!-- TECH MATRIX SECTION -->
+          <section class="tech-matrix">
+            <h2 class="matrix-title">Technology Matrix</h2>
+            <div class="matrix-grid">
+              <div class="matrix-card" data-tech="solana">
+                <div class="card-icon">
+                  <i class="fas fa-link"></i>
+                </div>
+                <div class="card-content">
+                  <h3>On‑Chain Provenance</h3>
+                  <div class="tech-stats">
+                    <div class="stat">
+                      <span class="stat-value">1/1</span>
+                      <span class="stat-label">Immutable</span>
+                    </div>
+                    <div class="stat">
+                      <span class="stat-value">100%</span>
+                      <span class="stat-label">Verifiable</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="matrix-card" data-tech="ai">
+                <div class="card-icon">
+                  <i class="fas fa-brain"></i>
+                </div>
+                <div class="card-content">
+                  <h3>Token Standards</h3>
+                  <div class="tech-stats">
+                    <div class="stat">
+                      <span class="stat-value">OERC/SPL</span>
+                      <span class="stat-label">Standards</span>
+                    </div>
+                    <div class="stat">
+                      <span class="stat-value">0</span>
+                      <span class="stat-label">Duplicates</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="matrix-card" data-tech="security">
+                <div class="card-icon">
+                  <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="card-content">
+                  <h3>Decentralized Access</h3>
+                  <div class="tech-stats">
+                    <div class="stat">
+                      <span class="stat-value">24/7</span>
+                      <span class="stat-label">Available</span>
+                    </div>
+                    <div class="stat">
+                      <span class="stat-value">0</span>
+                      <span class="stat-label">No Servers</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <div class="section-divider"></div>
+
+          <!-- EVOLUTION TIMELINE -->
+          <section class="evolution-section">
+            <h2 class="section-title">Evolution Timeline</h2>
+            <p class="section-text">
+              Witness the transformation of BitHead from concept to reality. Each milestone represents a 
+              quantum leap in our journey to revolutionize the digital landscape.
+            </p>
+            <div class="evolution-grid">
+              <div class="evolution-card">
+                <div class="evolution-year">2024</div>
+                <div class="evolution-content">
+                  <h3>Hello World</h3>
+                  <p>First Branding Forge prototype deployed, achieving autonomous branding through:</p>
+                  <ul>
+                    <li>Self-improving algorithms</li>
+                    <li>Customized training data</li> 
+                    <li>Adaptive branding protocols</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="evolution-card">
+                <div class="evolution-year">2025</div>
+                <div class="evolution-content">
+                  <h3>The Genesis</h3>
+                  <p>The BitHead concept was born from a fusion of art and AI, creating on-chain assets.</p>
+                  <ul>
+                    <li>Initial concept development</li>
+                    <li>AI model research begins</li>
+                    <li>Core team formation</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="evolution-card">
+                <div class="evolution-year">2026</div>
+                <div class="evolution-content">
+                  <h3>Future Rewards</h3>
+                  <p>Our upcoming reward system will redistribute value back to Genesis NFT holders.</p>
+                  <ul>
+                    <li>Profit-sharing mechanisms</li>
+                    <li>Community incentives</li>
+                    <li>Tokenomics integration</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <div class="section-divider"></div>
+
+          <!-- ACHIEVEMENT SHOWCASE -->
+          <section class="achievements-section">
+            <h2 class="achievements-title">Digital Milestones</h2>
+            <div class="achievements-grid">
+              <div class="achievement-card">
+                <div class="achievement-icon">
+                  <i class="fas fa-code-branch"></i>
+                </div>
+                <h3>100+ Commits</h3>
+                <p>Open source contributions</p>
+              </div>
+              <div class="achievement-card">
+                <div class="achievement-icon">
+                  <i class="fas fa-users"></i>
+                </div>
+                <h3>1K+ Users</h3>
+                <p>Active community members</p>
+              </div>
+              <div class="achievement-card">
+                <div class="achievement-icon">
+                  <i class="fas fa-server"></i>
+                </div>
+                <h3>99.99% Uptime</h3>
+                <p>System reliability</p>
+              </div>
+              <div class="achievement-card">
+                <div class="achievement-icon">
+                  <i class="fas fa-globe"></i>
+                </div>
+                <h3>Global Reach</h3>
+                <p>20+ countries</p>
+              </div>
+            </div>
+          </section>
+
+          <div class="section-divider"></div>
+
+          <!-- D) ROADMAP INTRO -->
+          <section class="roadmap-intro">
+            <h2>The Path Forward</h2>
+            <p>
+              Keep this vault secret and move forward with purpose; you carry powerful tools and an iron-clad promise — use them wisely. The Digital Sanctum remains hidden to all others; you've proven yourself among the chosen few. BitHead's beacon will continue to guide you, but your vision for the future will lead the way. Embrace the journey, builder — the revolution is yours to begin.
+            </p>
+          </section>
+
+          <!-- E) ROADMAP SVG -->
+          <section class="roadmap">
+            <svg id="milestone-roadmap" viewBox="0 0 800 150" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <linearGradient id="roadmap-gradient" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#4296d2" stop-opacity="0.2"/>
+                  <stop offset="50%" stop-color="#4296d2" stop-opacity="0.9"/>
+                  <stop offset="100%" stop-color="#4296d2" stop-opacity="0.2"/>
+                </linearGradient>
+                <linearGradient id="milestone-gradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#5bb6ff"/>
+                  <stop offset="100%" stop-color="#4296d2"/>
+                </linearGradient>
+                <linearGradient id="milestone-gradient-hover" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#aee6ff"/>
+                  <stop offset="100%" stop-color="#4296d2"/>
+                </linearGradient>
+              </defs>
+              <!-- Single connector line behind all milestones -->
+              <line x1="150" y1="75" x2="600" y2="75" stroke="url(#roadmap-gradient)" stroke-width="10" opacity="0.95" filter="drop-shadow(0 0 12px #4296d2) blur(0.5px)"/>
+              <g class="milestone" data-milestone="1" style="cursor:pointer;" transform="translate(150,75)">
+                <circle cx="0" cy="0" r="12" fill="url(#milestone-gradient)" stroke="url(#milestone-gradient-hover)" stroke-width="2"/>
+                <text x="0" y="-32" class="mile-num">1</text>
+                <text x="0" y="40" class="mile-label">Birth</text>
+              </g>
+              <g class="milestone" data-milestone="2" style="cursor:pointer;" transform="translate(300,75)">
+                <circle cx="0" cy="0" r="12" fill="#ffffff" stroke="#4296d2" stroke-width="2"/>
+                <text x="0" y="-32" class="mile-num" fill="#ffffff">2</text>
+                <text x="0" y="40" class="mile-label" fill="#ffffff">Growth</text>
+              </g>
+              <g class="milestone" data-milestone="3" style="cursor:pointer;" transform="translate(450,75)">
+                <circle cx="0" cy="0" r="12" fill="url(#milestone-gradient)" stroke="url(#milestone-gradient-hover)" stroke-width="2"/>
+                <text x="0" y="-32" class="mile-num">3</text>
+                <text x="0" y="40" class="mile-label">Launch</text>
+              </g>
+              <g class="milestone" data-milestone="4" style="cursor:pointer;" transform="translate(600,75)">
+                <circle cx="0" cy="0" r="12" fill="url(#milestone-gradient)" stroke="url(#milestone-gradient-hover)" stroke-width="2"/>
+                <text x="0" y="-32" class="mile-num">4</text>
+                <text x="0" y="40" class="mile-label">Genesis</text>
+              </g>
+            </svg>
+            <div id="milestone-panel" class="milestone-panel" style="display:none;">
+              <div class="milestone-panel-content">
+                
+                <div class="milestone-panel-text">
+                  <h3 id="milestone-title">Current Phase: Growth</h3>
+                  <p id="milestone-description">We are now in the Growth phase, building our community and preparing for the Genesis launch. This phase focuses on expanding our reach, developing our AI Branding Forge, and establishing the foundation for our future token ecosystem.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <div class="section-divider"></div>
+
+          <!-- F) NFT TEASER HEADER -->
+          <section class="nft-teaser">
+            <h2 class="nft-title">Behold the Genesis NFT</h2>
+          </section>
+
+          <!-- G) PARALLAX IMAGE -->
+          <section id="nftHero" class="nft-hero">
+            <img
+              src="assets/images/BitHead_NFT_Preview.png"
+              alt="Genesis NFT"
+              class="nft-image"
+            />
+          </section>
+
+          <!-- H) NFT DESCRIPTION -->
+          <section class="nft-teaser-text">
+            <p class="nft-description">
+Each Genesis NFT will manifest as a singular being — a mosaic of art and algorithm imbued with its own distinct identity. It is the birth of a new lineage, where code and creativity entwine to give life to virtual personas. To hold a Genesis BitHead is to claim a key to the AI Brand Forge. These tokens are not mere collectibles, but gateways to creation; they grant their holders the power to shape a personal brand in cyberspace. Every BitHead is unique — no two are the same, each a signature carved from the source code. The Genesis mint is a high-stakes ritual; those who succeed inscribe themselves into the legend of BitHead, forging their individuality on-chain.
+            </p>
+          </section>
+
+          <div class="section-divider"></div>
+
+          <!-- I) COUNTDOWN TO MINT -->
+          <section class="countdown-section">
+            <h2>Countdown to Genesis Mint</h2>
+            <div id="mintCountdown" class="countdown-timer">
+              <span id="days">00</span>d :
+              <span id="hours">00</span>h :
+              <span id="minutes">00</span>m :
+              <span id="seconds">00</span>s
+            </div>
+            <div class="whitelist-form">
+              <h3>Join the Whitelist</h3>
+              <form id="whitelistForm">
+                <input type="text" id="whitelistName" placeholder="Your Name" required />
+                <input type="email" id="whitelistEmail" placeholder="Your email" required />
+                <input type="text" id="walletAddress" placeholder="Your Solana wallet address" required />
+                <button type="submit" class="cta-button">Join Now</button>
+                <div id="whitelistStatus" class="whitelist-status"></div>
+              </form>
+            </div>
+            <div id="whitelistSuccess" class="whitelist-success" style="display:none;">You have successfully joined the whitelist!</div>
+          </section>
+
+          <div class="section-divider"></div>
+        </section>
+
+        <!-- Share Lore Section (separate, now after unlocked section) -->
+        <section class="share-lore-section">
+          <div class="share-lore-container">
+            <h2 class="share-headline">Share Your Lore</h2>
+            <p class="share-subtext">The best lore? <strong>Your own!</strong> Let the world know you joined the digital sanctum. #IamBitHead</p>
+            <button id="shareXBtn" class="share-x-button">
+              <svg viewBox="0 0 24 24" style="height: 1em; width: 1em; vertical-align: middle; margin-right: 0.5em; fill: currentColor;">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              </svg>Share
+            </button>
+          </div>
+        </section>
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            var shareBtn = document.getElementById('shareXBtn');
+            if (shareBtn) {
+              shareBtn.addEventListener('click', function() {
+                const text = encodeURIComponent('The best lore?\n\nYour own!\n\n#IamBitHead');
+                const url = `https://twitter.com/intent/tweet?text=${text}`;
+                window.open(url, '_blank');
+              });
+            }
+          });
+        </script>
+
+        <div class="section-divider"></div>
+      </div>
+    </main>
+
+    <!-- FOOTER START -->
+    <footer>
+      <div class="section-divider"></div>
+      <div class="footer-container">
+        <p>&copy; 2025 BitHeadOfficial. All rights reserved.</p>
+        <ul class="social-links">
+          <li>
+            <a href="https://x.com/BitHeadOfficial" target="_blank">X</a>
+          </li>
+        </ul>
+      </div>
+    </footer>
+    <!-- FOOTER END -->
+
+    <!-- Load genesis.js last -->
+    <script src="/scripts/genesis.js" defer></script>
+    <script src="scripts/script.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('whitelistForm');
+        const statusDiv = document.getElementById('whitelistStatus');
+        const successDiv = document.getElementById('whitelistSuccess');
+        if (localStorage.getItem('whitelist_submitted')) {
+          form.style.display = 'none';
+          successDiv.style.display = 'block';
+          successDiv.classList.add('visible');
+        } else {
+          successDiv.style.display = 'none';
+          successDiv.classList.remove('visible');
+        }
+        form.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          const name = document.getElementById('whitelistName').value;
+          const email = document.getElementById('whitelistEmail').value;
+          const wallet = document.getElementById('walletAddress').value;
+          statusDiv.textContent = '';
+          try {
+            const res = await fetch('/api/whitelist', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name, email, walletAddress: wallet })
+            });
+            const data = await res.json();
+            if (data.success) {
+              form.style.transition = 'opacity 0.7s cubic-bezier(.4,0,.2,1)';
+              form.style.opacity = '0';
+              setTimeout(() => {
+                form.style.display = 'none';
+                successDiv.style.display = 'block';
+                successDiv.classList.add('visible');
+              }, 700);
+              localStorage.setItem('whitelist_submitted', '1');
+            } else {
+              statusDiv.textContent = data.error || 'Failed to join whitelist.';
+              statusDiv.classList.add('error');
+            }
+          } catch (err) {
+            statusDiv.textContent = 'Server error. Please try again.';
+            statusDiv.classList.add('error');
+          }
+        });
+        // Render whitelist bar and count
+        fetch('/api/admin/whitelist')
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.whitelist) {
+              const used = data.whitelist.length;
+              const total = 8000;
+              let percent = Math.min(100, Math.round((used / total) * 100));
+              // Ensure a minimum width for visibility if percent > 0
+              let barWidth = percent > 0 ? Math.max(percent, 2) : 0;
+              document.getElementById('whitelistSpotsBar').innerHTML = barWidth > 0 ? `<div class='bar-fill' style='width:${barWidth}%;'></div>` : "<div class='bar-fill' style='width:0;'></div>";
+              document.getElementById('whitelistSpotsCount').style.display = 'block';
+              document.getElementById('whitelistSpotsCount').textContent = `${used} / ${total} whitelisted`;
+            }
+          })
+          .catch(() => {
+            document.getElementById('whitelistSpotsBar').innerHTML = '<div style="color:#fff;padding:2px;">N/A</div>';
+            document.getElementById('whitelistSpotsCount').textContent = '';
+          });
+      });
+    </script>
+    <script>
+      // Parallax effect for NFT image
+      document.addEventListener('DOMContentLoaded', function() {
+        const nftHero = document.querySelector('.nft-hero');
+        const nftImage = document.querySelector('.nft-hero .nft-image');
+        if (nftHero && nftImage) {
+          nftHero.addEventListener('mousemove', function(e) {
+            const rect = nftHero.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotateX = ((y - centerY) / centerY) * 10;
+            const rotateY = ((x - centerX) / centerX) * 10;
+            nftImage.style.transform = `rotateX(${-rotateX}deg) rotateY(${rotateY}deg)`;
+          });
+          nftHero.addEventListener('mouseleave', function() {
+            nftImage.style.transform = '';
+          });
+        }
+      });
+    </script>
+  </body>
+</html> 

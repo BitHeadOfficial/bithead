@@ -1,0 +1,161 @@
+/* Updated Shop Section Styling */
+#shop {
+  padding: 6rem 2rem;
+  background: #000;
+  color: #fff;
+  text-align: center;
+}
+
+.shop-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+#shop h2 {
+  font-family: "Montserrat", sans-serif;
+  font-size: 3rem;
+  text-transform: uppercase;
+  margin-bottom: 3rem;
+  letter-spacing: 0.1rem;
+}
+
+/* Change from flex to grid for better control */
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.shop-box {
+  background: #111;
+  border: 2px solid #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+}
+
+.shop-box:not(.locked):hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 30px rgba(255, 255, 255, 0.2);
+}
+
+.shop-box.locked:hover {
+  box-shadow: 0 8px 30px rgba(255, 255, 255, 0.2);
+}
+
+/* Locked shop styling */
+.shop-box.locked {
+  filter: grayscale(0.7);
+}
+
+.lock-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.locked:hover .lock-overlay {
+  opacity: 1;
+}
+
+.lock-overlay .lock-icon {
+  width: 80px;
+  height: 80px;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+  animation: floatIcon 2s ease-in-out infinite;
+}
+
+@keyframes floatIcon {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.shop-content {
+  position: relative;
+  z-index: 1;
+}
+
+.shop-box img {
+  width: 100%;
+  display: block;
+  transition: opacity 0.3s ease;
+}
+
+.shop-box img:hover {
+  opacity: 0.9;
+}
+
+.shop-details {
+  padding: 1rem;
+}
+
+.shop-details h3 {
+  font-family: "Montserrat", sans-serif;
+  font-size: 1.5rem;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.shop-details p {
+  font-family: "Inter", sans-serif;
+  font-size: 1rem;
+  color: #ccc;
+  margin-bottom: 1rem;
+}
+
+/* CTA Button */
+.cta-button {
+  display: inline-block;
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  background: transparent;
+  color: #fff;
+  border: 2px solid #fff;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.cta-button:hover {
+  background: #fff;
+  color: #000;
+  transform: translateY(-2px);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  #shop .shop-container {
+    text-align: center;
+    padding: 0 1rem;
+  }
+  .shop-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .shop-box {
+    max-width: 300px;
+    margin: 0 auto;
+  }
+  #shop h2 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+  }
+}

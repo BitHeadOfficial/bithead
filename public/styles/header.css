@@ -1,0 +1,220 @@
+/* Header container: fixed at top, full width */
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #000;
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Logo left, nav on right */
+  box-sizing: border-box;
+  z-index: 1000;
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
+}
+
+/* Nav logo styling */
+.nav-logo {
+  font-size: 1.5rem;
+  color: #fff;
+}
+
+/* Nav container: push navigation to the right */
+.nav-container {
+  margin-left: auto;
+}
+
+/* -------------------------------
+   MOBILE STYLES (max-width: 768px)
+--------------------------------- */
+
+/* Hamburger: visible on mobile */
+@media (max-width: 768px) {
+  .hamburger {
+    display: block !important;
+    font-size: 2rem !important;
+    color: #fff !important;
+    cursor: pointer !important;
+    z-index: 1001 !important;
+    position: absolute !important;
+    top: 0.7rem !important; /* Move up for better alignment with logo */
+    right: 1.5rem !important;
+    line-height: 1 !important;
+    height: 2.2rem !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  /* Mobile nav-links sliding menu */
+  .nav-links {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    right: -100%; /* Hidden off-screen by default */
+    height: 100%;
+    width: 250px; /* Default menu width */
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(10px);
+    box-shadow: -4px 0 10px rgba(0, 0, 0, 0.5);
+    padding: 2rem 1rem;
+    gap: 1rem;
+    transition: right 0.3s ease;
+    z-index: 15;
+  }
+
+  .nav-links.active {
+    right: 0; /* Slide into view */
+  }
+
+  .nav-links li {
+    border-bottom: 1px solid #fff;
+  }
+
+  .nav-links li:last-child {
+    border-bottom: none;
+  }
+
+  .nav-links li a {
+    font-size: 1rem;
+    color: #fff;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 0.5rem 0;
+    transition: color 0.3s ease;
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .nav-links li a:hover {
+    color: #4296d2;
+  }
+
+  .nav-links::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 1px;
+    background: #fff;
+  }
+}
+
+/* -------------------------------
+   DESKTOP STYLES (min-width: 769px)
+--------------------------------- */
+@media (min-width: 769px) {
+  /* Hide hamburger on desktop */
+  .hamburger {
+    display: none !important;
+  }
+
+  /* Show nav-links as an inline list */
+  .nav-container nav ul.nav-links {
+    position: static;
+    display: flex;
+    flex-direction: row;
+    gap: 2rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .nav-links {
+    position: static;
+    height: auto;
+    width: auto;
+    background: none;
+    box-shadow: none;
+    margin: 0;
+  }
+
+  .nav-links::before {
+    content: none;
+  }
+
+  .nav-links li {
+    border: none;
+  }
+
+  .nav-links li a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 1rem;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: clip;
+    padding: 0;
+  }
+
+  .nav-links li a:hover {
+    color: #4296d2;
+  }
+}
+
+.nav-logo a {
+  font-size: 1.8rem !important;
+  font-weight: bold !important;
+  color: #fff !important;
+  font-family: "Montserrat", "Inter", Arial, sans-serif !important;
+  font-style: oblique !important;
+  letter-spacing: 2px !important;
+  text-transform: uppercase !important;
+  transition: color 0.3s !important;
+  text-shadow: 0 0 10px rgba(66, 150, 210, 0.5) !important;
+  display: inline-block !important;
+  line-height: 1.1 !important;
+}
+.nav-logo a:hover {
+  color: #4296d2 !important;
+  text-shadow: 0 0 20px rgba(66, 150, 210, 0.8) !important;
+}
+
+/* Update navigation links to use oblique style */
+.nav-links li a {
+  font-style: oblique !important;
+  font-weight: 600 !important;
+}
+
+/* Add global styles for headers */
+h1, h2, h3, h4, h5, h6,
+.section-title,
+.achievements-title,
+.roadmap-intro h2,
+.nft-title,
+.final-section h2,
+.welcome-section h2,
+.achievement-card h3,
+.pillar-item h3,
+.exclusive-details h3,
+.modal h3,
+.about-text h2,
+.project-text h2,
+#originals h2,
+.caption-headline {
+  font-style: oblique !important;
+  font-weight: 600 !important;
+}
+
+/* Exclude specific elements from oblique style */
+.drama-headline,
+.caption-subtext {
+  font-style: normal !important;
+}
+
+/* --- Header always flush at top, content always below --- */
+body > header {
+  margin-bottom: 0 !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 1000 !important;
+}
+body > .container:first-of-type {
+  margin-top: 80px !important; /* header height + spacing */
+}

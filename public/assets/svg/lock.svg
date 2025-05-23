@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Lock Body -->
+    <rect x="30" y="50" width="60" height="50" rx="8" fill="white" fill-opacity="0.9"/>
+    
+    <!-- Lock Shackle -->
+    <path d="M40 50V35C40 24.5066 48.5066 16 59 16H61C71.4934 16 80 24.5066 80 35V50" 
+          stroke="white" 
+          stroke-width="8" 
+          stroke-linecap="round"
+          fill="none"
+          stroke-opacity="0.9"/>
+    
+    <!-- Keyhole -->
+    <circle cx="60" cy="70" r="8" fill="black"/>
+    <rect x="58" y="70" width="4" height="15" rx="2" fill="black"/>
+</svg> 

@@ -1,0 +1,50 @@
+/* Footer specific styles */
+footer {
+  padding: 2rem 1rem;
+  background-color: #000;
+  text-align: center;
+  color: #fff;
+}
+
+footer p {
+  margin: 0;
+  font-size: 1rem;
+  color: #ccc;
+}
+
+.section-divider {
+  width: 80%; /* almost full‑width */
+  height: 2px; /* thin line */
+  margin: 3rem auto; /* vertical spacing + center */
+  background: linear-gradient(
+    to right,
+    transparent,
+    #4296d2,
+    transparent
+  ); /* glowing fade‑in out */
+  opacity: 0.8;
+}
+
+.social-links {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 2rem 0;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.social-links li {
+  margin: 0;
+}
+
+.social-links a {
+  font-size: 1rem;
+  color: #fff;
+  text-transform: uppercase;
+  transition: color 0.3s ease;
+}
+
+.social-links a:hover {
+  color: #ccc;
+}

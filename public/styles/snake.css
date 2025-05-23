@@ -1,0 +1,363 @@
+/* Snake Section Styling */
+#snake-section {
+  padding: 6rem 2rem;
+  background: #000;
+  color: #fff;
+  font-family: "Montserrat", sans-serif;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.snake-header h2 {
+  font-size: 2.5rem;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.snake-header p {
+  font-size: 1.2rem;
+  color: #ccc;
+  line-height: 1.8;
+  margin-bottom: 2rem;
+}
+
+/* Container for left (info & betting), center (canvas), right (leaderboard) */
+.snake-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (min-width: 769px) {
+  .snake-content {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0.1rem;
+    justify-content: center;
+    position: relative;
+  }
+  .snake-left,
+  .snake-right {
+    flex: 0 0 auto;
+  }
+  .snake-center {
+    flex: 0 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* Left column: info panel & betting controls */
+.snake-left {
+  flex: 1;
+  max-width: 320px;
+  min-width: 220px;
+  text-align: left;
+}
+
+.snake-info {
+  background: #111;
+  padding: 1rem;
+  border: 2px solid #fff;
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
+  margin-bottom: 1rem;
+}
+
+#scoreboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+#scoreboard-table th,
+#scoreboard-table td {
+  border: 1px solid #fff;
+  padding: 0.3rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+#round-timer {
+  font-size: 1rem;
+  color: #ccc;
+  white-space: nowrap;
+}
+
+/* Betting Controls */
+.betting-controls button {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: background 0.3s, color 0.3s, border 0.3s; /* Added border transition */
+}
+
+/* Default bet button styles */
+.betting-controls button.filled-button {
+  background: #fff;
+  color: #000;
+  border: 2px solid #fff;
+}
+
+/* Increased specificity for outline button */
+.betting-controls button.outline-button {
+  background: transparent;
+  color: #fff;
+  border: 2px solid #fff !important; /* !important as fallback */
+}
+
+/* Hover effects - now properly scoped */
+.betting-controls button.filled-button:hover,
+.betting-controls button.outline-button:hover {
+  background: #4296d2;
+  color: #fff;
+}
+
+/* Selected bet indicator - increased specificity */
+.betting-controls button.selected-bet {
+  background: #4296d2;
+  color: #fff;
+}
+
+/* Streak display */
+#streak-display {
+  margin-top: 0.5rem;
+  font-size: 1rem;
+}
+
+/* Center column: game canvas */
+.snake-center {
+  flex: 1;
+  text-align: center;
+}
+
+#snakeCanvas {
+  width: 100%;
+  max-width: 500px; /* Maximum size */
+  height: auto; /* JS sets square aspect ratio */
+  border: 2px solid #fff;
+  background: #000;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Right column: leaderboard */
+.snake-right {
+  flex: 1;
+  max-width: 320px;
+  min-width: 220px;
+  text-align: left;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1rem 1rem 1rem 1rem;
+  border-radius: 10px;
+  border: 2px solid rgba(66, 150, 210, 0.3);
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
+}
+
+.snake-right h3 {
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  text-transform: uppercase;
+  text-align: center;
+  color: #4296d2;
+  text-shadow: 0 0 10px rgba(66, 150, 210, 0.5);
+}
+
+#leaderboard {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#leaderboard li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.2rem;
+  border-bottom: 1px solid rgba(66, 150, 210, 0.2);
+  transition: background-color 0.3s ease;
+}
+
+#leaderboard li:hover {
+  background: rgba(66, 150, 210, 0.1);
+}
+
+#leaderboard li:last-child {
+  border-bottom: none;
+}
+
+#leaderboard li img {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #4296d2;
+  box-shadow: 0 0 10px rgba(66, 150, 210, 0.3);
+  order: 0;
+  margin-right: 0.2em;
+}
+
+.leaderboard-pos {
+  display: inline-block;
+  width: 2.2em;
+  min-width: 2.2em;
+  text-align: right;
+  font-weight: bold;
+  flex-shrink: 0;
+  color: #4296d2;
+  order: 1;
+}
+
+#leaderboard li a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.9rem;
+  flex: 2;
+  transition: color 0.3s ease;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 16em;
+  order: 2;
+}
+
+#leaderboard li a:hover {
+  color: #4296d2;
+}
+
+#leaderboard li span {
+  font-size: 1rem;
+  color: #4296d2;
+  font-weight: bold;
+  min-width: 30px;
+  text-align: right;
+}
+
+/* Mobile-friendly stacking */
+@media (max-width: 768px) {
+  .snake-content {
+    flex-direction: column;
+  }
+  .snake-left,
+  .snake-center,
+  .snake-right {
+    max-width: 100%;
+  }
+  .snake-left,
+  .snake-right {
+    text-align: center;
+  }
+  .snake-right {
+    margin-top: 2rem;
+  }
+}
+
+/* Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #111;
+  padding: 2rem;
+  border-radius: 10px;
+  border: 2px solid #4296d2;
+  box-shadow: 0 0 20px rgba(66, 150, 210, 0.3);
+  width: 90%;
+  max-width: 400px;
+}
+
+.modal h3 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  color: #fff;
+}
+
+.modal p {
+  margin-bottom: 1.5rem;
+  text-align: center;
+  color: #ccc;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #fff;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.8rem;
+  background: #000;
+  border: 1px solid #4296d2;
+  border-radius: 5px;
+  color: #fff;
+  font-size: 1rem;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #fff;
+  box-shadow: 0 0 10px rgba(66, 150, 210, 0.3);
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.form-actions button {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.submit-btn {
+  background: #4296d2;
+  color: #fff;
+}
+
+.submit-btn:hover {
+  background: #357ebd;
+}
+
+.cancel-btn {
+  background: transparent;
+  color: #fff;
+  border: 1px solid #fff !important;
+}
+
+.cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}

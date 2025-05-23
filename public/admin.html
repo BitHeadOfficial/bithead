@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BitHeadz Admin Panel</title>
+    <link rel="stylesheet" href="/styles/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER START -->
+        <header>
+            <div class="nav-logo">
+                <a href="#">BITHEAD</a>
+            </div>
+        </header>
+        <!-- HEADER END -->
+        <!-- Login Form -->
+        <div id="adminLoginForm" class="login-form">
+            <div class="login-container">
+                <h2>BitHeadz Admin Panel</h2>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" class="form-control" placeholder="Username (default: admin)">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" class="form-control" placeholder="Password">
+                </div>
+                <button id="loginButton" class="btn btn-primary">Login</button>
+                <div id="loginError" class="error-message"></div>
+            </div>
+        </div>
+        <!-- Admin Dashboard (Simple, Clean) -->
+        <div id="adminDashboard" class="dashboard hidden" style="background:#f5f7fa; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+            <div id="logoutButtonContainer"></div>
+            <div class="main-content" style="width:100%; max-width:1000px; margin:2rem auto;">
+                <section id="section-whitelist" class="content-section active" style="background:#fff; border-radius:14px; box-shadow:0 2px 12px rgba(66,150,210,0.08); padding:2.5rem 2rem;">
+                    <h2 style="color:#4296d2; text-align:center; font-size:2rem; font-weight:700; margin-bottom:2rem; letter-spacing:1px;">Whitelist Management</h2>
+                    <div class="whitelist-actions" style="margin-bottom:1.5rem; display:flex; gap:1rem; justify-content:center;">
+                        <button id="addWhitelistEntry" class="btn btn-primary" style="background:#4296d2; border:none; color:#fff; font-weight:600; border-radius:6px; padding:0.7em 1.5em; font-size:1rem;">Add to Whitelist</button>
+                        <button id="exportWhitelist" class="btn btn-secondary" style="background:#fff; color:#4296d2; border:2px solid #4296d2; font-weight:600; border-radius:6px; padding:0.7em 1.5em; font-size:1rem;">Export as CSV</button>
+                    </div>
+                    <div id="whitelistCount" style="font-weight:bold; margin:0.5rem 0;"></div>
+                    <div class="table-container" style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(66,150,210,0.04); padding:1rem;">
+                        <table class="data-table" style="width:100%; border-collapse:separate; border-spacing:0 0.5rem; table-layout:fixed;">
+                            <thead>
+                                <tr style="background:#4296d2; color:#fff; font-size:1.1rem;">
+                                    <th style="padding:1.2em 1em; border-radius:8px 0 0 8px; width:22%;">Name</th>
+                                    <th style="padding:1.2em 1em; width:28%;">Email</th>
+                                    <th class="wallet-address" style="padding:1.2em 1em; width:32%;">Wallet Address</th>
+                                    <th style="padding:1.2em 1em; width:13%;">Date Added</th>
+                                    <th class="actions" style="padding:1.2em 1em; border-radius:0 8px 8px 0; width:5%;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="whitelistTableBody">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </div>
+        <!-- Add Whitelist Modal (Simple) -->
+        <div id="addWhitelistModal" class="modal">
+            <div class="modal-content" style="background:#fff; border-radius:12px; box-shadow:0 4px 24px rgba(66,150,210,0.15); padding:2rem; max-width:400px; margin:auto;">
+                <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <h2 style="color:#4296d2; font-size:1.3rem;">Add to Whitelist</h2>
+                    <button class="close-modal" style="background:none; border:none; font-size:2rem; color:#2f6d99; cursor:pointer;">&times;</button>
+                </div>
+                <form id="addWhitelistForm">
+                    <div class="form-group">
+                        <label for="whitelistName" style="color:#2f6d99; font-weight:600;">Name</label>
+                        <input type="text" id="whitelistName" class="form-control" required placeholder="Name" style="border:1px solid #4296d2; border-radius:6px; padding:0.7em; margin-bottom:1em;">
+                    </div>
+                    <div class="form-group">
+                        <label for="whitelistEmail" style="color:#2f6d99; font-weight:600;">Email</label>
+                        <input type="email" id="whitelistEmail" class="form-control" required placeholder="Email" style="border:1px solid #4296d2; border-radius:6px; padding:0.7em; margin-bottom:1em;">
+                    </div>
+                    <div class="form-group">
+                        <label for="whitelistWallet" style="color:#2f6d99; font-weight:600;">Wallet Address</label>
+                        <input type="text" id="whitelistWallet" class="form-control" required placeholder="Wallet Address" style="border:1px solid #4296d2; border-radius:6px; padding:0.7em; margin-bottom:1em;">
+                    </div>
+                    <div class="form-actions" style="display:flex; gap:1rem; justify-content:flex-end;">
+                        <button type="submit" class="btn btn-primary" style="background:#4296d2; color:#fff; border:none; border-radius:6px; padding:0.7em 1.5em; font-weight:600;">Add</button>
+                        <button type="button" class="btn btn-secondary close-modal" style="background:#fff; color:#4296d2; border:2px solid #4296d2; border-radius:6px; padding:0.7em 1.5em; font-weight:600;">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="/scripts/admin.js" defer></script>
+    <!-- FOOTER START -->
+    <footer>
+        <div class="section-divider"></div>
+        <div class="footer-container">
+            <p>&copy; 2025 BitHead Official. All rights reserved.</p>
+            <ul class="social-links">
+                <li>
+                    <a href="https://x.com/BitHeadOfficial" target="_blank">X</a>
+                </li>
+            </ul>
+        </div>
+    </footer>
+    <!-- FOOTER END -->
+</body>
+</html> 
