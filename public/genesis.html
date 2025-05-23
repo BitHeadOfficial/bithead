@@ -27,10 +27,14 @@
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
 
     <script>
+      // Inject environment variables
+      window.API_URL = "__BUILD_ENV__VITE_API_URL__";
+      window.SOLANA_RPC_URL = "__BUILD_ENV__SOLANA_RPC_URL__";
+
       // Initialize Solana connection to devnet
       const initSolana = () => {
         try {
-          window.solanaConnection = new solanaWeb3.Connection('https://fragrant-icy-general.solana-mainnet.quiknode.pro/71ce468fd28dbbcf7e3a1b2e404bfacac9f60a55/');
+          window.solanaConnection = new solanaWeb3.Connection(window.SOLANA_RPC_URL);
           window.Transaction = solanaWeb3.Transaction;
           window.SystemProgram = solanaWeb3.SystemProgram;
           window.PublicKey = solanaWeb3.PublicKey;

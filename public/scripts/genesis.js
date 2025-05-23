@@ -1,9 +1,9 @@
 // genesis.js
 // API configuration
-const API_URL = window.location.origin + '/api';
+const API_URL = window.API_URL; // Read from global variable
 
 // Initialize Solana connection with configurable RPC URL and commitment settings
-const SOLANA_RPC_URL = 'https://fragrant-icy-general.solana-mainnet.quiknode.pro';
+const SOLANA_RPC_URL = window.SOLANA_RPC_URL; // Read from global variable
 const connection = new solanaWeb3.Connection(SOLANA_RPC_URL, {
     commitment: 'confirmed',
     confirmTransactionInitialTimeout: 60000, // 60 seconds initial timeout
