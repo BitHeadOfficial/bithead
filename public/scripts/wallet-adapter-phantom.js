@@ -1,0 +1,1 @@
+Package version not found: @solana/wallet-adapter-phantom@1.0.0
