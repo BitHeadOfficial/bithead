@@ -13,7 +13,7 @@ import solanaWeb3 from '@solana/web3.js';
 const router = express.Router();
 
 // Initialize Solana connection to mainnet (QuickNode)
-const connection = new Connection('https://fragrant-icy-general.solana-mainnet.quiknode.pro/71ce468fd28dbbcf7e3a1b2e404bfacac9f60a55/');
+const connection = new Connection(process.env.SOLANA_RPC_URL);
 
 // Your devnet wallet address to receive payments
 const RECIPIENT_WALLET = new PublicKey('5Zd2EiC7S2DaT5mQyC1etYmusNPyEQtHDgojdf5oLHLE');
@@ -116,7 +116,7 @@ router.post('/payments', validateRequest(createPaymentSchema), async (req, res) 
         const { publicKey, amount } = req.body;
         
         // Create a connection to the Solana network
-        const connection = new Connection('https://fragrant-icy-general.solana-mainnet.quiknode.pro/71ce468fd28dbbcf7e3a1b2e404bfacac9f60a55/');
+        const connection = new Connection(process.env.SOLANA_RPC_URL);
         
         // Create a transaction
         const transaction = new Transaction();
@@ -219,6 +219,25 @@ router.get('/recent', authenticate, async (req, res) => {
         logger.error('Recent payments retrieval error:', error);
         res.status(500).json({ error: 'Failed to retrieve recent payments' });
     }
+});
+
+// Placeholder Whitelist routes (Temporarily moved here for debugging)
+router.post('/whitelist', (req, res) => {
+    logger.info('Received POST request to /api/whitelist (placeholder)', { body: req.body });
+    // Placeholder success response
+    res.json({ success: true, message: 'Whitelist submission received (placeholder)' });
+});
+
+router.get('/admin/whitelist', (req, res) => {
+    logger.info('Received GET request to /api/admin/whitelist (placeholder)');
+    // Placeholder response
+    res.json({ whitelist: [], message: 'Admin whitelist endpoint reached (placeholder)' });
+});
+
+router.get('/check-whitelist', (req, res) => {
+     logger.info('Received GET request to /api/check-whitelist (placeholder)', { query: req.query });
+     // Placeholder response - assume not whitelisted for now
+     res.json({ isWhitelisted: false, message: 'Check whitelist endpoint reached (placeholder)' });
 });
 
 export default router; 

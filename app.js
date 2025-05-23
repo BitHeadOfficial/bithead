@@ -31,13 +31,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Import routes
 const paymentRoutes = require('./routes/payment');
-const whitelistRoutes = require('./routes/whitelist');
+// const whitelistRoutes = require('./routes/whitelist'); // Removed import
 
 // Routes
 app.use('/api', paymentRoutes);
-app.use('/api', whitelistRoutes);
+// app.use('/api', whitelistRoutes); // Removed usage
 
-console.log('Whitelist routes mounted under /api');
+// console.log('Whitelist routes mounted under /api'); // Removed log
 
 // Unlock endpoint
 app.post('/api/unlock', (req, res) => {
