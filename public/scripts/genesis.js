@@ -496,7 +496,7 @@ function setupWhitelistForm() {
         const wallet = window.solana.publicKey.toString();
 
         try {
-            const res = await fetch('/api/whitelist', {
+            const res = await fetch(`${API_URL}/api/whitelist`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, email, walletAddress: wallet })
@@ -751,7 +751,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const email = document.getElementById('whitelistEmail').value;
         const wallet = document.getElementById('walletAddress').value;
         try {
-            const res = await fetch('/api/whitelist', {
+            const res = await fetch(`${API_URL}/api/whitelist`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, email, walletAddress: wallet })

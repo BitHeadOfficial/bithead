@@ -203,8 +203,8 @@ function initializeContactForm() {
         
         try {
             // Submit to our proxy endpoint
-            console.log('[Contact Form] Sending request to /api/contact');
-            const response = await fetch('/api/contact', {
+            console.log('[Contact Form] Sending request to ' + API_URL + '/api/contact');
+            const response = await fetch(API_URL + '/api/contact', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
