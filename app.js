@@ -31,9 +31,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Import routes
 const paymentRoutes = require('./routes/payment');
+const whitelistRoutes = require('./routes/whitelist');
 
 // Routes
 app.use('/api', paymentRoutes);
+app.use('/api', whitelistRoutes);
 
 // Unlock endpoint
 app.post('/api/unlock', (req, res) => {
