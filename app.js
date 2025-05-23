@@ -91,6 +91,27 @@ app.post('/api/unlock', (req, res) => {
     }
 });
 
+// Placeholder Whitelist routes
+app.post('/api/whitelist', (req, res) => {
+    console.log('Received POST request to /api/whitelist');
+    console.log('Request body:', req.body);
+    // Placeholder success response
+    res.json({ success: true, message: 'Whitelist submission received (placeholder)' });
+});
+
+app.get('/api/admin/whitelist', (req, res) => {
+    console.log('Received GET request to /api/admin/whitelist');
+    // Placeholder response
+    res.json({ whitelist: [], message: 'Admin whitelist endpoint reached (placeholder)' });
+});
+
+app.get('/api/check-whitelist', (req, res) => {
+     console.log('Received GET request to /api/check-whitelist');
+     console.log('Query parameters:', req.query);
+     // Placeholder response - assume not whitelisted for now
+     res.json({ isWhitelisted: false, message: 'Check whitelist endpoint reached (placeholder)' });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error('Server error:', err);
