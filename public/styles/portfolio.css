@@ -45,7 +45,7 @@
 
 /* Hover: shift upward and add a bigger shadow on desktop */
 .portfolio-card:hover {
-  transform: translateY(-10px);
+  /* transform: translateY(-10px); */
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8);
 }
 
@@ -90,7 +90,7 @@
 
 /* Slight zoom on hover for the front image (desktop only) */
 .portfolio-card:hover .card-front img {
-  transform: scale(1.05);
+  /* transform: scale(1.05); */
 }
 
 /* =======================
