@@ -37,6 +37,8 @@ const whitelistRoutes = require('./routes/whitelist');
 app.use('/api', paymentRoutes);
 app.use('/api', whitelistRoutes);
 
+console.log('Whitelist routes mounted under /api');
+
 // Unlock endpoint
 app.post('/api/unlock', (req, res) => {
     try {
