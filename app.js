@@ -25,7 +25,9 @@ if (!process.env.ACCESS_PASSWORD) {
 }
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: 'https://nimble-malabi-65e406.netlify.app'
+}));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('trust proxy', 1);
