@@ -27,14 +27,16 @@
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
 
     <script>
-      // Inject environment variables
-      window.API_URL = "__BUILD_ENV__VITE_API_URL__";
-      window.SOLANA_RPC_URL = "__BUILD_ENV__SOLANA_RPC_URL__";
+      // Inject environment variables from Netlify
+      window.env = {
+        API_URL: "${VITE_API_URL}", // Netlify build will replace this
+        SOLANA_RPC_URL: "${SOLANA_RPC_URL}" // Netlify build will replace this
+      };
 
-      // Initialize Solana connection to devnet
+      // Initialize Solana connection
       const initSolana = () => {
         try {
-          window.solanaConnection = new solanaWeb3.Connection(window.SOLANA_RPC_URL);
+          window.solanaConnection = new solanaWeb3.Connection(window.env.SOLANA_RPC_URL);
           window.Transaction = solanaWeb3.Transaction;
           window.SystemProgram = solanaWeb3.SystemProgram;
           window.PublicKey = solanaWeb3.PublicKey;

@@ -1,9 +1,9 @@
 // genesis.js
 // API configuration
-const API_URL = window.API_URL; // Read from global variable
+const API_URL = window.env.API_URL; // Read from global env object
 
 // Initialize Solana connection with configurable RPC URL and commitment settings
-const SOLANA_RPC_URL = window.SOLANA_RPC_URL; // Read from global variable
+const SOLANA_RPC_URL = window.env.SOLANA_RPC_URL; // Read from global env object
 const connection = new solanaWeb3.Connection(SOLANA_RPC_URL, {
     commitment: 'confirmed',
     confirmTransactionInitialTimeout: 60000, // 60 seconds initial timeout
