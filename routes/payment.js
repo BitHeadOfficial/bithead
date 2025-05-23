@@ -221,23 +221,4 @@ router.get('/recent', authenticate, async (req, res) => {
     }
 });
 
-// Placeholder Whitelist routes (Temporarily moved here for debugging)
-router.post('/whitelist', (req, res) => {
-    logger.info('Received POST request to /api/whitelist (placeholder)', { body: req.body });
-    // Placeholder success response
-    res.json({ success: true, message: 'Whitelist submission received (placeholder)' });
-});
-
-router.get('/admin/whitelist', (req, res) => {
-    logger.info('Received GET request to /api/admin/whitelist (placeholder)');
-    // Placeholder response
-    res.json({ whitelist: [], message: 'Admin whitelist endpoint reached (placeholder)' });
-});
-
-router.post('/check-whitelist', (req, res) => {
-     logger.info('Received POST request to /api/check-whitelist (placeholder)', { query: req.query });
-     // Placeholder response - assume not whitelisted for now
-     res.json({ isWhitelisted: false, message: 'Check whitelist endpoint reached (placeholder)' });
-});
-
 export default router; 

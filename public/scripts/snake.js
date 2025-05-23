@@ -80,7 +80,7 @@ window.initSnakeGame = function () {
   // Fetch leaderboard from backend
   async function fetchLeaderboard() {
     try {
-      const res = await fetch('/api/leaderboard');
+      const res = await fetch(`${API_URL}/api/leaderboard`);
       const data = await res.json();
       if (data.success && Array.isArray(data.leaderboard)) {
         leaderboardData = data.leaderboard.map((entry, i) => ({
@@ -137,7 +137,7 @@ window.initSnakeGame = function () {
       }
       errorDiv.textContent = '';
       try {
-        const res = await fetch('/api/leaderboard', {
+        const res = await fetch(`${API_URL}/api/leaderboard`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ displayName, twitterHandle, profilePic, score: currentStreak })

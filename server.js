@@ -23,6 +23,7 @@ import monitoringRoutes from './routes/monitoring.js';
 import { updateMetrics } from './utils/logger.js';
 import rateLimit from 'express-rate-limit';
 import contactRoutes from './routes/contact.js';
+import whitelistRoutes from './routes/whitelist.js';
 
 // Load environment variables
 dotenv.config();
@@ -99,6 +100,9 @@ app.use(helmet({
 app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
+
+// Trust proxy for rate limiting behind reverse proxy
+app.set('trust proxy', 1);
 
 // Serve static files from the public directory
 app.use(express.static(join(__dirname, 'public'), {
@@ -448,6 +452,7 @@ app.post('/api/check-access-wallet', async (req, res) => {
 app.use('/api/users', userRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRouter);
+app.use('/api/whitelist', whitelistRoutes);
 
 // Add monitoring routes
 app.use('/api/monitoring', monitoringRoutes);

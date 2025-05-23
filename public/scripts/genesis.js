@@ -327,10 +327,10 @@ async function checkWalletAccessOnConnect(publicKey) {
     }
 }
 
-// Add this function to check whitelist status
+// Update API endpoint paths
 async function checkWhitelistStatus(walletAddress) {
     try {
-        const response = await fetch(`${API_URL}/check-whitelist`, {
+        const response = await fetch(`${API_URL}/whitelist/check`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ walletAddress })
@@ -496,7 +496,7 @@ function setupWhitelistForm() {
         const wallet = window.solana.publicKey.toString();
 
         try {
-            const res = await fetch(`${API_URL}/api/whitelist`, {
+            const res = await fetch(`${API_URL}/whitelist`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, email, walletAddress: wallet })
@@ -507,8 +507,7 @@ function setupWhitelistForm() {
                 successDiv.style.display = 'block';
                 successDiv.classList.add('visible');
                 statusDiv.textContent = '';
-                // Store whitelist status in localStorage with wallet address
-                localStorage.setItem(`whitelist_${wallet}`, 'true');
+                localStorage.setItem('whitelist_submitted', '1');
             } else {
                 statusDiv.textContent = data.error || 'Failed to join whitelist.';
             }
@@ -751,7 +750,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const email = document.getElementById('whitelistEmail').value;
         const wallet = document.getElementById('walletAddress').value;
         try {
-            const res = await fetch(`${API_URL}/api/whitelist`, {
+            const res = await fetch(`${API_URL}/whitelist`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, email, walletAddress: wallet })

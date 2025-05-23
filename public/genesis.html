@@ -604,7 +604,7 @@ Each Genesis NFT will manifest as a singular being — a mosaic of art and algor
           const wallet = document.getElementById('walletAddress').value;
           statusDiv.textContent = '';
           try {
-            const res = await fetch(`${API_URL}/api/whitelist`, {
+            const res = await fetch(`${API_URL}/whitelist`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ name, email, walletAddress: wallet })
@@ -629,7 +629,7 @@ Each Genesis NFT will manifest as a singular being — a mosaic of art and algor
           }
         });
         // Render whitelist bar and count
-        fetch(`${API_URL}/api/admin/whitelist`)
+        fetch(`${API_URL}/admin/whitelist`)
           .then(res => res.json())
           .then(data => {
             if (data && data.whitelist) {
