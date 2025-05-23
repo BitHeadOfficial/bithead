@@ -580,8 +580,7 @@ app.post('/api/whitelist', async (req, res) => {
                     return res.status(500).json({ success: false, error: 'Failed to join whitelist.', details: err.message });
                 }
                 res.json({ success: true });
-        }
-        );
+        });
     } catch (error) {
         console.error('[Whitelist] Handler Error:', error.message, error.stack);
         res.status(500).json({ success: false, error: 'Server error.', details: error.message });
@@ -787,6 +786,17 @@ async function initializeDatabase() {
             )
         `);
 
+        // Admin users table
+        await db.run(`
+            CREATE TABLE IF NOT EXISTS admin_users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                role TEXT DEFAULT 'admin',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
         // Insert default settings if not exists
         const settings = await db.get('SELECT * FROM settings LIMIT 1');
         if (!settings) {
@@ -794,6 +804,18 @@ async function initializeDatabase() {
                 INSERT INTO settings (site_name, maintenance_mode, whitelist_enabled, max_users)
                 VALUES (?, ?, ?, ?)
             `, ['BitHeadz', 0, 1, 1000]);
+        }
+
+        // Insert default admin user if table is empty
+        const adminUser = await db.get('SELECT * FROM admin_users LIMIT 1');
+        if (!adminUser) {
+            if (!process.env.ADMIN_PASSWORD) {
+                console.error('ADMIN_PASSWORD environment variable is not set. Cannot create default admin user.');
+            } else {
+                const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
+                await db.run('INSERT INTO admin_users (username, password_hash) VALUES (?, ?)', ['admin', hashedPassword]);
+                console.log("Default admin user 'admin' created.");
+            }
         }
 
         console.log('Database initialized successfully');
