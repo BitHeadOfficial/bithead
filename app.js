@@ -39,6 +39,7 @@ app.use('/api', paymentRoutes);
 app.post('/api/unlock', (req, res) => {
     try {
         console.log('=== Unlock Request Debug ===');
+        console.log('Received password in backend:', req.body.password);
         console.log('Request body:', JSON.stringify(req.body, null, 2));
         console.log('Environment variables:', {
             JWT_SECRET: process.env.JWT_SECRET ? 'Set' : 'Not set',
