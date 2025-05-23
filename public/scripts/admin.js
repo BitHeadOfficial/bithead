@@ -1,6 +1,6 @@
 // Admin Panel JavaScript
 
-const API_URL = window.location.origin + '/api';
+const API_URL = 'https://bithead.onrender.com/api'; // Explicitly set backend URL
 const TOKEN_KEY = 'admin_token';
 
 // Remove hardcoded JWT token
