@@ -28,6 +28,7 @@ if (!process.env.ACCESS_PASSWORD) {
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+app.set('trust proxy', 1);
 
 // Placeholder Whitelist routes (Directly in app.js for debugging)
 // app.post('/api/whitelist', (req, res) => {
