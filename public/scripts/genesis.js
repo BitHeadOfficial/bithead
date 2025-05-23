@@ -330,10 +330,11 @@ async function checkWalletAccessOnConnect(publicKey) {
 // Update API endpoint paths
 async function checkWhitelistStatus(walletAddress) {
     try {
-        const response = await fetch(`${API_URL}/whitelist/check`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ walletAddress })
+        // Changed to GET and passing walletAddress as a query parameter
+        const response = await fetch(`${API_URL}/whitelist/check?walletAddress=${encodeURIComponent(walletAddress)}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }, // Still include for consistency, though less critical for GET with query params
+            // No body for GET request
         });
         const data = await response.json();
         return data.isWhitelisted;
@@ -509,7 +510,12 @@ function setupWhitelistForm() {
                 statusDiv.textContent = '';
                 localStorage.setItem('whitelist_submitted', '1');
             } else {
-                statusDiv.textContent = data.error || 'Failed to join whitelist.';
+                // Check for unique constraint error message
+                if (data.error && data.error.includes('UNIQUE constraint failed')) {
+                    statusDiv.textContent = 'You are already whitelisted with this email or wallet address.';
+                } else {
+                    statusDiv.textContent = data.error || 'Failed to join whitelist.';
+                }
             }
         } catch (err) {
             statusDiv.textContent = 'Failed to join whitelist.';
