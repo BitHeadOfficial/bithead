@@ -234,8 +234,8 @@ router.get('/admin/whitelist', (req, res) => {
     res.json({ whitelist: [], message: 'Admin whitelist endpoint reached (placeholder)' });
 });
 
-router.get('/check-whitelist', (req, res) => {
-     logger.info('Received GET request to /api/check-whitelist (placeholder)', { query: req.query });
+router.post('/check-whitelist', (req, res) => {
+     logger.info('Received POST request to /api/check-whitelist (placeholder)', { query: req.query });
      // Placeholder response - assume not whitelisted for now
      res.json({ isWhitelisted: false, message: 'Check whitelist endpoint reached (placeholder)' });
 });
