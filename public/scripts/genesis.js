@@ -11,7 +11,7 @@ const connection = new solanaWeb3.Connection(SOLANA_RPC_URL, {
 });
 const { Transaction } = solanaWeb3;
 const LAMPORTS_PER_SOL = 1000000000;
-const PAYMENT_AMOUNT = 0.01; // 0.01 SOL
+const PAYMENT_AMOUNT = 1; // 1 SOL
 const TRANSACTION_TIMEOUT = 180000; // 3 minutes timeout for transaction confirmation
 
 // Token management functions
