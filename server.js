@@ -729,6 +729,11 @@ app.get('/genesis', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'genesis.html'));
 });
 
+// Route for the admin panel
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
 // Serve 404 page for all other unmatched routes
 app.use((req, res) => {
   res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
