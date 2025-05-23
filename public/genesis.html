@@ -628,25 +628,39 @@ Each Genesis NFT will manifest as a singular being — a mosaic of art and algor
             statusDiv.classList.add('error');
           }
         });
-        // Render whitelist bar and count
-        fetch(`${API_URL}/admin/whitelist`)
-          .then(res => res.json())
-          .then(data => {
-            if (data && data.whitelist) {
-              const used = data.whitelist.length;
-              const total = 8000;
-              let percent = Math.min(100, Math.round((used / total) * 100));
-              // Ensure a minimum width for visibility if percent > 0
-              let barWidth = percent > 0 ? Math.max(percent, 2) : 0;
-              document.getElementById('whitelistSpotsBar').innerHTML = barWidth > 0 ? `<div class='bar-fill' style='width:${barWidth}%;'></div>` : "<div class='bar-fill' style='width:0;'></div>";
-              document.getElementById('whitelistSpotsCount').style.display = 'block';
-              document.getElementById('whitelistSpotsCount').textContent = `${used} / ${total} whitelisted`;
-            }
-          })
-          .catch(() => {
+        // Render whitelist bar and count - only fetch if authenticated
+        const storedToken = getStoredToken(); // Assuming getStoredToken is available in genesis.js and can be accessed globally or passed
+        if (storedToken) {
+          fetch(`${API_URL}/admin/whitelist`)
+            .then(res => {
+                if (!res.ok) {
+                    // Handle non-200 responses, e.g., 401
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                return res.json();
+            })
+            .then(data => {
+              if (data && data.whitelist) {
+                const used = data.whitelist.length;
+                const total = 8000;
+                let percent = Math.min(100, Math.round((used / total) * 100));
+                // Ensure a minimum width for visibility if percent > 0
+                let barWidth = percent > 0 ? Math.max(percent, 2) : 0;
+                document.getElementById('whitelistSpotsBar').innerHTML = barWidth > 0 ? `<div class='bar-fill' style='width:${barWidth}%;'></div>` : "<div class='bar-fill' style='width:0;'></div>";
+                document.getElementById('whitelistSpotsCount').style.display = 'block';
+                document.getElementById('whitelistSpotsCount').textContent = `${used} / ${total} whitelisted`;
+              }
+            })
+            .catch(error => {
+              console.error('Error fetching admin whitelist:', error);
+              document.getElementById('whitelistSpotsBar').innerHTML = '<div style="color:#fff;padding:2px;">N/A</div>';
+              document.getElementById('whitelistSpotsCount').textContent = '';
+            });
+        } else {
+            // Display default state if not authenticated
             document.getElementById('whitelistSpotsBar').innerHTML = '<div style="color:#fff;padding:2px;">N/A</div>';
             document.getElementById('whitelistSpotsCount').textContent = '';
-          });
+        }
       });
     </script>
     <script>
