@@ -26,16 +26,14 @@
 
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
 
-    <script>
-      // Inject environment variables from Netlify
-      window.env = {
-        API_URL: "${VITE_API_URL}", // Netlify build will replace this
-        SOLANA_RPC_URL: "${SOLANA_RPC_URL}" // Netlify build will replace this
-      };
+    <!-- Environment Variables Script -->
+    <script src="/config.js"></script>
 
+    <script>
       // Initialize Solana connection
       const initSolana = () => {
         try {
+          // Read from global env object defined in config.js
           window.solanaConnection = new solanaWeb3.Connection(window.env.SOLANA_RPC_URL);
           window.Transaction = solanaWeb3.Transaction;
           window.SystemProgram = solanaWeb3.SystemProgram;
