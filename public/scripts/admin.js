@@ -74,7 +74,10 @@ function showError(message) {
 // Metrics and Whitelist
 async function loadMetricsAndWhitelist() {
     const token = localStorage.getItem(TOKEN_KEY);
+    console.log('[Admin Debug] Token retrieved from localStorage:', token ? 'Exists' : 'Does not exist');
+
     if (!token) {
+        console.log('[Admin Debug] No token found, showing login form.');
         showLoginForm();
         return;
     }
@@ -98,10 +101,24 @@ async function loadMetricsAndWhitelist() {
 
     // Load whitelist
     try {
+        console.log('[Admin Debug] Attempting to fetch admin whitelist.');
         const wlRes = await fetch(`${API_URL}/admin/whitelist`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
+        console.log('[Admin Debug] Admin whitelist response status:', wlRes.status);
+        if (!wlRes.ok) {
+             const errorText = await wlRes.text();
+             console.error('[Admin Debug] Error fetching admin whitelist:', wlRes.status, errorText);
+             // Check if the error is due to unauthorized access (token invalid or expired)
+             if (wlRes.status === 401 || wlRes.status === 403) {
+                 console.log('[Admin Debug] Received 401/403, showing login form.');
+                 showLoginForm();
+             }
+             return; // Stop processing if the request was not successful
+        }
         const wlData = await wlRes.json();
+        console.log('[Admin Debug] Admin whitelist data received:', wlData);
+
         if (wlData.success) {
             updateWhitelistTable(wlData.whitelist);
             const spotsLeft = 8000 - wlData.whitelist.length;
@@ -129,10 +146,14 @@ async function loadMetricsAndWhitelist() {
             }
         }
     } catch (e) {
-        console.error('Error loading whitelist:', e);
-        if (e.status === 401) {
-            showLoginForm();
-        }
+        console.error('[Admin Debug] Error loading whitelist:', e);
+        // This catch block is for network errors or issues before receiving a response status
+        // Re-throw or handle as needed if you want to differentiate from HTTP errors
+        // For now, let's just log and potentially show login if it's a likely auth issue
+         if (e instanceof TypeError || e.message.includes('fetch')) { // Basic check for network errors
+             console.log('[Admin Debug] Likely network error during whitelist fetch.');
+         }
+         // Consider adding a generic error message to the user
     }
 }
 
