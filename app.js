@@ -29,15 +29,27 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Placeholder Whitelist routes (Directly in app.js for debugging)
+// app.post('/api/whitelist', (req, res) => {
+//     console.log('Received POST request to /api/whitelist (direct in app.js)', { body: req.body });
+//     res.json({ success: true, message: 'Whitelist submission received (placeholder - direct)' });
+// });
+
+// app.get('/api/admin/whitelist', (req, res) => {
+//     console.log('Received GET request to /api/admin/whitelist (direct in app.js)');
+//     res.json({ whitelist: [], message: 'Admin whitelist endpoint reached (placeholder - direct)' });
+// });
+
+// app.get('/api/check-whitelist', (req, res) => {
+//      console.log('Received GET request to /api/check-whitelist (direct in app.js)', { query: req.query });
+//      res.json({ isWhitelisted: false, message: 'Check whitelist endpoint reached (placeholder - direct)' });
+// });
+
 // Import routes
 const paymentRoutes = require('./routes/payment');
-// const whitelistRoutes = require('./routes/whitelist'); // Removed import
 
 // Routes
 app.use('/api', paymentRoutes);
-// app.use('/api', whitelistRoutes); // Removed usage
-
-// console.log('Whitelist routes mounted under /api'); // Removed log
 
 // Unlock endpoint
 app.post('/api/unlock', (req, res) => {
@@ -93,27 +105,6 @@ app.post('/api/unlock', (req, res) => {
             details: error.message
         });
     }
-});
-
-// Placeholder Whitelist routes
-app.post('/api/whitelist', (req, res) => {
-    console.log('Received POST request to /api/whitelist');
-    console.log('Request body:', req.body);
-    // Placeholder success response
-    res.json({ success: true, message: 'Whitelist submission received (placeholder)' });
-});
-
-app.get('/api/admin/whitelist', (req, res) => {
-    console.log('Received GET request to /api/admin/whitelist');
-    // Placeholder response
-    res.json({ whitelist: [], message: 'Admin whitelist endpoint reached (placeholder)' });
-});
-
-app.get('/api/check-whitelist', (req, res) => {
-     console.log('Received GET request to /api/check-whitelist');
-     console.log('Query parameters:', req.query);
-     // Placeholder response - assume not whitelisted for now
-     res.json({ isWhitelisted: false, message: 'Check whitelist endpoint reached (placeholder)' });
 });
 
 // Error handling middleware
