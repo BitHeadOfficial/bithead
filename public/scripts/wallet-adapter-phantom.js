@@ -1,1 +1,1 @@
-Package version not found: @solana/wallet-adapter-phantom@1.0.0
+Not found: /@solana/wallet-adapter-phantom@0.9.24/lib/index.iife.min.js
