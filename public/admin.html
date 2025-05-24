@@ -37,6 +37,48 @@
         <div id="adminDashboard" class="dashboard hidden" style="background:#f5f7fa; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;">
             <div id="logoutButtonContainer"></div>
             <div class="main-content" style="width:100%; max-width:1000px; margin:2rem auto;">
+                <!-- Metrics Section -->
+                <section id="section-metrics" class="content-section active" style="background:#fff; border-radius:14px; box-shadow:0 2px 12px rgba(66,150,210,0.08); padding:2.5rem 2rem; margin-bottom:2rem;">
+                    <h2 style="color:#4296d2; text-align:center; font-size:2rem; font-weight:700; margin-bottom:2rem; letter-spacing:1px;">Dashboard Metrics</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Total Users</h3>
+                                <p id="totalUsers">0</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-crown"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Genesis Users</h3>
+                                <p id="genesisUsers">0</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Total Revenue</h3>
+                                <p id="totalRevenue">0 SOL</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Active Users (24h)</h3>
+                                <p id="activeUsers">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
                 <section id="section-whitelist" class="content-section active" style="background:#fff; border-radius:14px; box-shadow:0 2px 12px rgba(66,150,210,0.08); padding:2.5rem 2rem;">
                     <h2 style="color:#4296d2; text-align:center; font-size:2rem; font-weight:700; margin-bottom:2rem; letter-spacing:1px;">Whitelist Management</h2>
                     <div class="whitelist-actions" style="margin-bottom:1.5rem; display:flex; gap:1rem; justify-content:center;">

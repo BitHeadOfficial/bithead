@@ -84,16 +84,23 @@ async function loadMetricsAndWhitelist() {
 
     // Load metrics
     try {
+        console.log('[Admin Debug] Fetching dashboard stats...');
         const statsRes = await fetch(`${API_URL}/admin/stats`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
+        console.log('[Admin Debug] Stats response status:', statsRes.status);
         const statsData = await statsRes.json();
-        if (statsData.success) {
-            document.getElementById('totalUsers').textContent = statsData.stats.total_users.count || 0;
-            document.getElementById('genesisUsers').textContent = statsData.stats.genesis_users.count || 0;
+        console.log('[Admin Debug] Stats data received:', statsData);
+        
+        if (statsData.success && statsData.stats) {
+            const stats = statsData.stats;
+            document.getElementById('totalUsers').textContent = stats.total_users || 0;
+            document.getElementById('genesisUsers').textContent = stats.genesis_users || 0;
+            document.getElementById('totalRevenue').textContent = `${stats.total_revenue || 0} SOL`;
+            document.getElementById('activeUsers').textContent = stats.active_users || 0;
         }
     } catch (e) {
-        console.error('Error loading metrics:', e);
+        console.error('[Admin Debug] Error loading metrics:', e);
         if (e.status === 401) {
             showLoginForm();
         }
