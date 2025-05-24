@@ -749,11 +749,51 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
+// Promisify database methods (add dbRun)
+const dbAll = (query, params = []) => {
+    return new Promise((resolve, reject) => {
+        db.all(query, params, (err, rows) => {
+            if (err) {
+                console.error('Database all error:', err);
+                reject(err);
+            } else {
+                resolve(rows);
+            }
+        });
+    });
+};
+
+const dbGet = (query, params = []) => {
+    return new Promise((resolve, reject) => {
+        db.get(query, params, (err, row) => {
+            if (err) {
+                console.error('Database get error:', err);
+                reject(err);
+            } else {
+                resolve(row);
+            }
+        });
+    });
+};
+
+const dbRun = (query, params = []) => {
+    return new Promise((resolve, reject) => {
+        db.run(query, params, function(err) {
+            if (err) {
+                console.error('Database run error:', err);
+                reject(err);
+            } else {
+                resolve({ lastID: this.lastID, changes: this.changes });
+            }
+        });
+    });
+};
+
 // Initialize database tables
 async function initializeDatabase() {
     try {
         // Settings table
-        await db.run(`
+        await dbRun(`
             CREATE TABLE IF NOT EXISTS settings (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 site_name TEXT,
@@ -766,7 +806,7 @@ async function initializeDatabase() {
         `);
 
         // Activity logs table
-        await db.run(`
+        await dbRun(`
             CREATE TABLE IF NOT EXISTS activity_logs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER,
@@ -777,7 +817,7 @@ async function initializeDatabase() {
         `);
 
         // Admin users table
-        await db.run(`
+        await dbRun(`
             CREATE TABLE IF NOT EXISTS admin_users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT UNIQUE NOT NULL,
@@ -788,22 +828,22 @@ async function initializeDatabase() {
         `);
 
         // Insert default settings if not exists
-        const settings = await db.get('SELECT * FROM settings LIMIT 1');
+        const settings = await dbGet('SELECT * FROM settings LIMIT 1');
         if (!settings) {
-            await db.run(`
+            await dbRun(`
                 INSERT INTO settings (site_name, maintenance_mode, whitelist_enabled, max_users)
                 VALUES (?, ?, ?, ?)
             `, ['BitHeadz', 0, 1, 1000]);
         }
 
         // Insert default admin user if table is empty
-        const adminUser = await db.get('SELECT * FROM admin_users LIMIT 1');
+        const adminUser = await dbGet('SELECT * FROM admin_users LIMIT 1');
         if (!adminUser) {
             if (!process.env.ADMIN_PASSWORD) {
                 console.error('ADMIN_PASSWORD environment variable is not set. Cannot create default admin user.');
             } else {
                 const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
-                await db.run('INSERT INTO admin_users (username, password_hash) VALUES (?, ?)', ['admin', hashedPassword]);
+                await dbRun('INSERT INTO admin_users (username, password_hash) VALUES (?, ?)', ['admin', hashedPassword]);
                 console.log("Default admin user 'admin' created.");
             }
         }
