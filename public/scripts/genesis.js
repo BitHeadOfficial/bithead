@@ -502,6 +502,22 @@ function setupWhitelistForm() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, email, walletAddress: wallet })
             });
+
+            // Check for non-200 status codes
+            if (!res.ok) {
+                const errorData = await res.json(); // Attempt to parse JSON error
+                if (errorData.error) {
+                    if (errorData.error.includes('UNIQUE constraint failed')) {
+                        statusDiv.textContent = 'You are already whitelisted with this email or wallet address.';
+                    } else {
+                        statusDiv.textContent = errorData.error;
+                    }
+                } else {
+                    statusDiv.textContent = `Error: ${res.status} ${res.statusText}`; // Generic error for non-JSON responses
+                }
+                return; // Stop processing on error
+            }
+
             const data = await res.json();
             if (data.success) {
                 form.style.display = 'none';
@@ -510,7 +526,8 @@ function setupWhitelistForm() {
                 statusDiv.textContent = '';
                 localStorage.setItem('whitelist_submitted', '1');
             } else {
-                // Check for unique constraint error message
+                // This part might be redundant if backend always sends error in !res.ok
+                // but keep as a fallback
                 if (data.error && data.error.includes('UNIQUE constraint failed')) {
                     statusDiv.textContent = 'You are already whitelisted with this email or wallet address.';
                 } else {
@@ -518,7 +535,8 @@ function setupWhitelistForm() {
                 }
             }
         } catch (err) {
-            statusDiv.textContent = 'Failed to join whitelist.';
+            console.error('Whitelist submission fetch error:', err);
+            statusDiv.textContent = 'An unexpected error occurred. Please try again.';
         }
     });
 
