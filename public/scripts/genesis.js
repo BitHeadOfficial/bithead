@@ -486,8 +486,15 @@ function setupWhitelistForm() {
     // Update form submission handler
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
+
+        // Disable form elements immediately on submission
+        const formElements = form.querySelectorAll('input, button');
+        formElements.forEach(el => el.disabled = true);
+
         if (!window.solana || !window.solana.isConnected) {
             showStatus('Please connect your wallet first', 'error');
+            // Re-enable form elements on error before fetch
+            formElements.forEach(el => el.disabled = false);
             return;
         }
 
@@ -515,6 +522,8 @@ function setupWhitelistForm() {
                 } else {
                     statusDiv.textContent = `Error: ${res.status} ${res.statusText}`; // Generic error for non-JSON responses
                 }
+                // Re-enable form elements on error
+                formElements.forEach(el => el.disabled = false);
                 return; // Stop processing on error
             }
 
@@ -533,10 +542,14 @@ function setupWhitelistForm() {
                 } else {
                     statusDiv.textContent = data.error || 'Failed to join whitelist.';
                 }
+                // Re-enable form elements on error
+                formElements.forEach(el => el.disabled = false);
             }
         } catch (err) {
             console.error('Whitelist submission fetch error:', err);
             statusDiv.textContent = 'An unexpected error occurred. Please try again.';
+            // Re-enable form elements on catch
+            formElements.forEach(el => el.disabled = false);
         }
     });
 
