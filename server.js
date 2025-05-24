@@ -793,7 +793,7 @@ const dbRun = (query, params = []) => {
 async function initializeDatabase() {
     try {
         // Check if settings table exists and has correct structure
-        const tableExists = await dbGet("SELECT name FROM sqlite_master WHERE type='table' AND name='settings'");
+        let tableExists = await dbGet("SELECT name FROM sqlite_master WHERE type='table' AND name='settings'");
         if (tableExists) {
             const columns = await dbAll("PRAGMA table_info(settings)");
             const requiredColumns = ['id', 'site_name', 'maintenance_mode', 'whitelist_enabled', 'max_users', 'created_at', 'updated_at'];
