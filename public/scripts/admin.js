@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function showDashboard() {
     loginForm.classList.add('hidden');
     dashboard.classList.remove('hidden');
-    loadMetricsAndWhitelist();
+    setTimeout(loadMetricsAndWhitelist, 50);
 }
 
 function showLoginForm() {
