@@ -60,30 +60,71 @@ const dbGet = (query, params = []) => {
 router.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;
-        logger.info('Admin login attempt');
+        logger.info('Admin login attempt', { username, hasPassword: !!password });
+        
         if (!username || !password) {
-            logger.warn('Login attempt missing username or password');
-            return res.status(400).json({ success: false, error: 'Username and password are required' });
+            logger.warn('Login attempt missing username or password', { 
+                hasUsername: !!username, 
+                hasPassword: !!password 
+            });
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Username and password are required' 
+            });
         }
+
         // Look up user in admin_users table
+        logger.info('Looking up admin user in database...');
         const user = await dbGet('SELECT * FROM admin_users WHERE username = ?', [username]);
+        
         if (!user) {
-            logger.warn('Admin login failed - user not found');
-            return res.status(401).json({ success: false, error: 'Invalid username or password' });
+            logger.warn('Admin login failed - user not found', { username });
+            return res.status(401).json({ 
+                success: false, 
+                error: 'Invalid username or password' 
+            });
         }
+
+        logger.info('User found, comparing password hash...');
         // Compare password hash
         const valid = await bcrypt.compare(password, user.password_hash);
+        
         if (!valid) {
-            logger.warn('Admin login failed - invalid password');
-            return res.status(401).json({ success: false, error: 'Invalid username or password' });
+            logger.warn('Admin login failed - invalid password', { username });
+            return res.status(401).json({ 
+                success: false, 
+                error: 'Invalid username or password' 
+            });
         }
+
         // Success: issue JWT
-        const token = jwt.sign({ role: 'admin', username: user.username }, process.env.JWT_SECRET, { expiresIn: '24h' });
-        logger.info('Admin login successful');
-        res.json({ success: true, token });
+        logger.info('Password valid, generating JWT token...');
+        const token = jwt.sign(
+            { 
+                role: 'admin', 
+                username: user.username,
+                id: user.id 
+            }, 
+            process.env.JWT_SECRET, 
+            { expiresIn: '24h' }
+        );
+        
+        logger.info('Admin login successful', { username });
+        res.json({ 
+            success: true, 
+            token,
+            user: {
+                username: user.username,
+                role: user.role
+            }
+        });
     } catch (error) {
         logger.error('Admin login error:', error);
-        res.status(500).json({ success: false, error: 'Server error during login' });
+        res.status(500).json({ 
+            success: false, 
+            error: 'Server error during login',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     }
 });
 
