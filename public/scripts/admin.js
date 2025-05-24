@@ -128,29 +128,6 @@ async function loadMetricsAndWhitelist() {
 
         if (wlData.success) {
             updateWhitelistTable(wlData.whitelist);
-            const spotsLeft = 8000 - wlData.whitelist.length;
-            whitelistSpots.textContent = spotsLeft;
-            if (spotsLeft <= 0) {
-                addWhitelistBtn.disabled = true;
-                whitelistFullMsg.style.display = 'block';
-                whitelistFullMsg.textContent = 'Whitelist is full. No more entries can be added.';
-                whitelistSpots.style.background = '#ff4c60';
-                whitelistSpots.style.color = '#fff';
-            } else if (spotsLeft <= 100) {
-                whitelistSpots.style.background = '#ff9800';
-                whitelistSpots.style.color = '#fff';
-            } else {
-                whitelistSpots.style.background = '#4CAF50';
-                whitelistSpots.style.color = '#fff';
-            }
-            // Also lock modal form if full
-            if (addWhitelistForm) {
-                Array.from(addWhitelistForm.elements).forEach(el => {
-                    if (el.tagName === 'BUTTON' || el.tagName === 'INPUT') {
-                        el.disabled = (spotsLeft <= 0);
-                    }
-                });
-            }
         }
     } catch (e) {
         console.error('[Admin Debug] Error loading whitelist:', e);
@@ -267,9 +244,10 @@ function filterWhitelistTable(value) {
 // Add Whitelist Modal
 addWhitelistBtn.addEventListener('click', () => {
     addWhitelistModal.classList.add('active');
-    // Re-enable form if spots are available
-    if (parseInt(whitelistSpots.textContent, 10) > 0) {
-        Array.from(addWhitelistForm.elements).forEach(el => {
+    // Re-enable form if spots are available - simplified logic
+    // Assuming admin can always add manually unless a hard limit is enforced differently
+    if (addWhitelistForm) {
+         Array.from(addWhitelistForm.elements).forEach(el => {
             if (el.tagName === 'BUTTON' || el.tagName === 'INPUT') {
                 el.disabled = false;
             }
