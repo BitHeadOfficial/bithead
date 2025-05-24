@@ -792,25 +792,41 @@ const dbRun = (query, params = []) => {
 // Initialize database tables
 async function initializeDatabase() {
     try {
-        // Settings table
-        await dbRun(`
-            CREATE TABLE IF NOT EXISTS settings (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                site_name TEXT,
-                maintenance_mode BOOLEAN DEFAULT 0,
-                whitelist_enabled BOOLEAN DEFAULT 1,
-                max_users INTEGER DEFAULT 1000,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
+        // Check if settings table exists and has correct structure
+        const tableExists = await dbGet("SELECT name FROM sqlite_master WHERE type='table' AND name='settings'");
+        if (tableExists) {
+            const columns = await dbAll("PRAGMA table_info(settings)");
+            const requiredColumns = ['id', 'site_name', 'maintenance_mode', 'whitelist_enabled', 'max_users', 'created_at', 'updated_at'];
+            const hasAllColumns = requiredColumns.every(col => columns.some(c => c.name === col));
+            
+            if (!hasAllColumns) {
+                console.log("Settings table exists but has incorrect structure. Dropping and recreating...");
+                await dbRun("DROP TABLE settings");
+                tableExists = null; // Force recreation
+            }
+        }
 
-        // Check if site_name column exists in settings table, add if not
-        const settingsColumns = await dbAll("PRAGMA table_info(settings)");
-        const hasSiteNameColumn = settingsColumns.some(col => col.name === 'site_name');
-        if (!hasSiteNameColumn) {
-            console.log("Column 'site_name' not found in 'settings' table. Adding it...");
-            await dbRun("ALTER TABLE settings ADD COLUMN site_name TEXT;");
+        // Create settings table if it doesn't exist or was dropped
+        if (!tableExists) {
+            console.log("Creating settings table...");
+            await dbRun(`
+                CREATE TABLE settings (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    site_name TEXT,
+                    maintenance_mode BOOLEAN DEFAULT 0,
+                    whitelist_enabled BOOLEAN DEFAULT 1,
+                    max_users INTEGER DEFAULT 1000,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            `);
+            
+            // Insert default settings
+            await dbRun(`
+                INSERT INTO settings (site_name, maintenance_mode, whitelist_enabled, max_users)
+                VALUES (?, ?, ?, ?)
+            `, ['BitHeadz', 0, 1, 1000]);
+            console.log("Default settings inserted.");
         }
 
         // Activity logs table
@@ -834,18 +850,6 @@ async function initializeDatabase() {
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
         `);
-
-        // Insert default settings if not exists (check for id=1 instead of site_name)
-        const settings = await dbGet('SELECT * FROM settings WHERE id = 1');
-        if (!settings) {
-            await dbRun(`
-                INSERT INTO settings (site_name, maintenance_mode, whitelist_enabled, max_users)
-                VALUES (?, ?, ?, ?)
-            `, ['BitHeadz', 0, 1, 1000]);
-        } else if (!settings.site_name) {
-            // If settings exist but site_name is null (e.g., after adding the column), update it.
-            await dbRun("UPDATE settings SET site_name = ? WHERE id = 1;", ['BitHeadz']);
-        }
 
         // Insert default admin user if table is empty
         const adminUser = await dbGet('SELECT * FROM admin_users LIMIT 1');
