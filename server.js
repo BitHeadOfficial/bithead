@@ -805,6 +805,14 @@ async function initializeDatabase() {
             )
         `);
 
+        // Check if site_name column exists in settings table, add if not
+        const settingsColumns = await dbAll("PRAGMA table_info(settings)");
+        const hasSiteNameColumn = settingsColumns.some(col => col.name === 'site_name');
+        if (!hasSiteNameColumn) {
+            console.log("Column 'site_name' not found in 'settings' table. Adding it...");
+            await dbRun("ALTER TABLE settings ADD COLUMN site_name TEXT;");
+        }
+
         // Activity logs table
         await dbRun(`
             CREATE TABLE IF NOT EXISTS activity_logs (
@@ -827,13 +835,16 @@ async function initializeDatabase() {
             );
         `);
 
-        // Insert default settings if not exists
-        const settings = await dbGet('SELECT * FROM settings LIMIT 1');
+        // Insert default settings if not exists (check for id=1 instead of site_name)
+        const settings = await dbGet('SELECT * FROM settings WHERE id = 1');
         if (!settings) {
             await dbRun(`
                 INSERT INTO settings (site_name, maintenance_mode, whitelist_enabled, max_users)
                 VALUES (?, ?, ?, ?)
             `, ['BitHeadz', 0, 1, 1000]);
+        } else if (!settings.site_name) {
+            // If settings exist but site_name is null (e.g., after adding the column), update it.
+            await dbRun("UPDATE settings SET site_name = ? WHERE id = 1;", ['BitHeadz']);
         }
 
         // Insert default admin user if table is empty
