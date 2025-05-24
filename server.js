@@ -738,16 +738,6 @@ app.use((req, res) => {
   res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
-// Start server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log('Admin routes registered:');
-    console.log('- POST /api/admin/login');
-    console.log('- GET /api/admin/verify');
-    console.log('- GET /api/admin/whitelist');
-});
-
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
   console.error('Unhandled Promise Rejection:', err);
@@ -821,11 +811,33 @@ async function initializeDatabase() {
         console.log('Database initialized successfully');
     } catch (error) {
         console.error('Error initializing database:', error);
+        // Do not exit here, let the startServer catch handle it
+        throw error; // Re-throw to be caught by startServer
+    }
+}
+
+// Move server start into an async function that awaits database initialization
+async function startServer() {
+    try {
+        await initializeDatabase();
+
+        // Start server
+        const PORT = process.env.PORT || 3000;
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
+            console.log('Admin routes registered:');
+            console.log('- POST /api/admin/login');
+            console.log('- GET /api/admin/verify');
+            console.log('- GET /api/admin/whitelist');
+        });
+
+    } catch (error) {
+        console.error('Failed to start server after database initialization:', error);
         process.exit(1);
     }
 }
 
-// Initialize database
-initializeDatabase();
+// Start the application
+startServer();
 
 export default app;
