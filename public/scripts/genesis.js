@@ -1,6 +1,6 @@
 // genesis.js
 // API configuration
-const API_URL = window.env.API_URL; // Read from global env object
+const API_URL = 'https://bithead.at/api'; // Use the custom domain for backend API calls
 
 // Initialize Solana connection with configurable RPC URL and commitment settings
 const SOLANA_RPC_URL = window.env.SOLANA_RPC_URL; // Read from global env object
