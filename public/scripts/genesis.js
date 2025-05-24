@@ -780,33 +780,6 @@ document.addEventListener("DOMContentLoaded", () => {
         successDiv.classList.remove('visible');
     }
 
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        statusDiv.textContent = '';
-        const name = document.getElementById('whitelistName').value;
-        const email = document.getElementById('whitelistEmail').value;
-        const wallet = document.getElementById('walletAddress').value;
-        try {
-            const res = await fetch(`${API_URL}/whitelist`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email, walletAddress: wallet })
-            });
-            const data = await res.json();
-            if (data.success) {
-                localStorage.setItem('whitelist_submitted', '1');
-                form.style.display = 'none';
-                successDiv.style.display = 'block';
-                successDiv.classList.add('visible');
-                statusDiv.textContent = '';
-            } else {
-                statusDiv.textContent = data.error || 'Failed to join whitelist.';
-            }
-        } catch (err) {
-            statusDiv.textContent = 'Failed to join whitelist.';
-        }
-    });
-
     // Countdown timer
     initCountdown();
 
