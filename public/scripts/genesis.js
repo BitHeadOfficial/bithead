@@ -354,6 +354,8 @@ function setupWhitelistForm() {
 
     if (!form || !walletInput || !submitButton) return;
 
+    let isSubmitting = false; // Add a flag to prevent multiple submissions
+
     // Make wallet input read-only but keep original styling
     walletInput.readOnly = true;
     // Remove the opacity and cursor changes to keep original styling
@@ -487,14 +489,22 @@ function setupWhitelistForm() {
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
 
+        if (isSubmitting) {
+            console.log('Whitelist form already submitting, ignoring.');
+            return; // Prevent multiple submissions if already submitting
+        }
+
+        isSubmitting = true; // Set flag at the start of submission
+
         // Disable form elements immediately on submission
         const formElements = form.querySelectorAll('input, button');
         formElements.forEach(el => el.disabled = true);
 
         if (!window.solana || !window.solana.isConnected) {
             showStatus('Please connect your wallet first', 'error');
-            // Re-enable form elements on error before fetch
+            // Re-enable form elements on error before fetch and reset flag
             formElements.forEach(el => el.disabled = false);
+            isSubmitting = false;
             return;
         }
 
@@ -522,34 +532,35 @@ function setupWhitelistForm() {
                 } else {
                     statusDiv.textContent = `Error: ${res.status} ${res.statusText}`; // Generic error for non-JSON responses
                 }
-                // Re-enable form elements on error
-                formElements.forEach(el => el.disabled = false);
-                return; // Stop processing on error
-            }
-
-            const data = await res.json();
-            if (data.success) {
-                form.style.display = 'none';
-                successDiv.style.display = 'block';
-                successDiv.classList.add('visible');
-                statusDiv.textContent = '';
-                localStorage.setItem('whitelist_submitted', '1');
-            } else {
-                // This part might be redundant if backend always sends error in !res.ok
-                // but keep as a fallback
-                if (data.error && data.error.includes('UNIQUE constraint failed')) {
-                    statusDiv.textContent = 'You are already whitelisted with this email or wallet address.';
+            } else { // Success
+                const data = await res.json();
+                if (data.success) {
+                    form.style.display = 'none';
+                    successDiv.style.display = 'block';
+                    successDiv.classList.add('visible');
+                    statusDiv.textContent = '';
+                    localStorage.setItem('whitelist_submitted', '1');
+                    // No need to re-enable form or reset flag on success, form is hidden
+                    return; // Exit after successful submission
                 } else {
-                    statusDiv.textContent = data.error || 'Failed to join whitelist.';
+                     // This part might be redundant if backend always sends error in !res.ok
+                    // but keep as a fallback for non-success data with 200 status
+                    if (data.error && data.error.includes('UNIQUE constraint failed')) {
+                        statusDiv.textContent = 'You are already whitelisted with this email or wallet address.';
+                    } else {
+                        statusDiv.textContent = data.error || 'Failed to join whitelist.';
+                    }
                 }
-                // Re-enable form elements on error
-                formElements.forEach(el => el.disabled = false);
             }
         } catch (err) {
             console.error('Whitelist submission fetch error:', err);
             statusDiv.textContent = 'An unexpected error occurred. Please try again.';
-            // Re-enable form elements on catch
-            formElements.forEach(el => el.disabled = false);
+        } finally {
+            // Always re-enable form elements and reset flag on error or catch
+            if (form.style.display !== 'none') { // Only re-enable if form is still visible
+                formElements.forEach(el => el.disabled = false);
+            }
+            isSubmitting = false; // Reset flag
         }
     });
 
