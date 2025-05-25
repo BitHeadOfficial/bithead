@@ -1,7 +1,4 @@
 // genesis.js
-// API configuration
-window.API_URL = 'https://bithead.at/api'; // Use the custom domain for backend API calls
-
 // Initialize Solana connection with configurable RPC URL and commitment settings
 const SOLANA_RPC_URL = window.env.SOLANA_RPC_URL; // Read from global env object
 const connection = new solanaWeb3.Connection(SOLANA_RPC_URL, {
@@ -306,7 +303,7 @@ async function checkWalletAccessOnConnect(publicKey) {
         // Check if user has already paid 0.01 SOL or more
         if (data.hasAccess || (data.totalSent && data.totalSent >= 0.01 * LAMPORTS_PER_SOL)) {
             if (data.token) {
-                storeToken(data.token, 'wallet');
+                window.storeToken(data.token, 'wallet');
             }
             showStatus('Wallet access verified! Unlocking content...', 'success');
             unlockContent();

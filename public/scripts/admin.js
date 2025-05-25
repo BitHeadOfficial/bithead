@@ -1,11 +1,5 @@
 // Admin Panel JavaScript
 
-const API_URL = window.API_URL || 'https://bithead.at/api';
-const TOKEN_KEY = 'admin_token';
-
-// Remove hardcoded JWT token
-// const FORCED_JWT = '...'; // Removed for security
-
 const loginForm = document.getElementById('adminLoginForm');
 const dashboard = document.getElementById('adminDashboard');
 const loginButton = document.getElementById('loginButton');
@@ -48,14 +42,14 @@ async function handleLogin(e) {
         return;
     }
     try {
-        const response = await fetch(`${API_URL}/admin/login`, {
+        const response = await fetch(`${window.API_URL}/admin/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: username.value, password: password.value })
         });
         const data = await response.json();
         if (data.success) {
-            localStorage.setItem(TOKEN_KEY, data.token);
+            window.storeToken(data.token, 'admin');
             showDashboard();
         } else {
             showError(data.error || 'Login failed');
@@ -73,7 +67,7 @@ function showError(message) {
 
 // Metrics and Whitelist
 async function loadMetricsAndWhitelist() {
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token = window.getStoredToken('admin');
     console.log('[Admin Debug] Token retrieved from localStorage:', token ? 'Exists' : 'Does not exist');
 
     if (!token) {
@@ -85,7 +79,7 @@ async function loadMetricsAndWhitelist() {
     // Load metrics
     try {
         console.log('[Admin Debug] Fetching dashboard stats...');
-        const statsRes = await fetch(`${API_URL}/admin/stats`, {
+        const statsRes = await fetch(`${window.API_URL}/admin/stats`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         console.log('[Admin Debug] Stats response status:', statsRes.status);
@@ -109,7 +103,7 @@ async function loadMetricsAndWhitelist() {
     // Load whitelist
     try {
         console.log('[Admin Debug] Attempting to fetch admin whitelist.');
-        const wlRes = await fetch(`${API_URL}/admin/whitelist`, {
+        const wlRes = await fetch(`${window.API_URL}/admin/whitelist`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         console.log('[Admin Debug] Admin whitelist response status:', wlRes.status);
@@ -260,7 +254,7 @@ closeModalBtns.forEach(btn => btn.addEventListener('click', () => {
 
 addWhitelistForm.addEventListener('submit', async function(e) {
     e.preventDefault();
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token = window.getStoredToken('admin');
     if (!token) {
         showLoginForm();
         return;
@@ -270,7 +264,7 @@ addWhitelistForm.addEventListener('submit', async function(e) {
     const email = document.getElementById('whitelistEmail').value;
     const walletAddress = document.getElementById('whitelistWallet').value;
     try {
-        const response = await fetch(`${API_URL}/admin/whitelist`, {
+        const response = await fetch(`${window.API_URL}/admin/whitelist`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -298,14 +292,14 @@ addWhitelistForm.addEventListener('submit', async function(e) {
 async function removeFromWhitelist(walletAddress) {
     if (!confirm('Are you sure you want to remove this entry from the whitelist?')) return;
     
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token = window.getStoredToken('admin');
     if (!token) {
         showLoginForm();
         return;
     }
 
     try {
-        const response = await fetch(`${API_URL}/admin/whitelist/${walletAddress}`, {
+        const response = await fetch(`${window.API_URL}/admin/whitelist/${walletAddress}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -337,14 +331,14 @@ async function removeFromWhitelist(walletAddress) {
 
 // Export CSV
 exportWhitelistBtn.addEventListener('click', async () => {
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token = window.getStoredToken('admin');
     if (!token) {
         showLoginForm();
         return;
     }
 
     try {
-        const wlRes = await fetch(`${API_URL}/admin/whitelist`, {
+        const wlRes = await fetch(`${window.API_URL}/admin/whitelist`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const wlData = await wlRes.json();
@@ -379,9 +373,9 @@ exportWhitelistBtn.addEventListener('click', async () => {
 
 // On load, check if already logged in
 (function() {
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token = window.getStoredToken('admin');
     if (token) {
-        fetch(`${API_URL}/admin/verify`, {
+        fetch(`${window.API_URL}/admin/verify`, {
             headers: { 'Authorization': `Bearer ${token}` }
         }).then(res => res.json()).then(data => {
             if (data.success) {
