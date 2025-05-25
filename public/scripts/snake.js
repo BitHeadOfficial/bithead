@@ -77,6 +77,8 @@ window.initSnakeGame = function () {
 
   let leaderboardData = [];
 
+  const API_URL = window.API_URL || 'https://bithead.at/api';
+
   // Fetch leaderboard from backend
   async function fetchLeaderboard() {
     try {
