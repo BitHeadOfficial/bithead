@@ -9,6 +9,7 @@
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
     <!-- CookieConsent by Osano -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css" />
+    <link rel="stylesheet" href="/styles/cookieconsent-bithead.css" />
     <script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js"></script>
     <script>
     window.addEventListener('load', function(){
@@ -31,10 +32,16 @@
           if (status == 'allow') {
             enableGA();
           }
+          if (status == 'allow' || status == 'deny') {
+            removeCookieBanner();
+          }
         },
         onStatusChange: function(status) {
           if (status == 'allow') {
             enableGA();
+          }
+          if (status == 'allow' || status == 'deny') {
+            removeCookieBanner();
           }
         }
       });
@@ -49,6 +56,11 @@
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
         gtag('config', 'G-RS08PRH4N6');
+      }
+
+      function removeCookieBanner() {
+        var banner = document.querySelector('.cc-window, .cc-banner, .cc-floating');
+        if (banner) banner.remove();
       }
     });
     </script>

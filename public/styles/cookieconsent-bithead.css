@@ -1,0 +1,40 @@
+/* BitHead Cookie Banner Customization */
+.cc-window, .cc-banner, .cc-floating, .cc-message, .cc-compliance, .cc-btn {
+  font-family: 'Inter', 'Montserrat', Arial, sans-serif !important;
+  background: #181c24 !important;
+  color: #00ff88 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 24px rgba(66, 150, 210, 0.15) !important;
+  border: 1px solid #4296d2 !important;
+}
+
+.cc-btn {
+  background: linear-gradient(90deg, #4296d2 0%, #00ff88 100%) !important;
+  color: #181c24 !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  padding: 0.7em 1.5em !important;
+  margin: 0 0.5em !important;
+  box-shadow: 0 2px 8px rgba(0,255,136,0.08) !important;
+  transition: background 0.2s;
+}
+
+.cc-btn:hover {
+  background: linear-gradient(90deg, #00ff88 0%, #4296d2 100%) !important;
+  color: #181c24 !important;
+}
+
+.cc-link {
+  color: #4296d2 !important;
+  text-decoration: underline !important;
+}
+
+@media (max-width: 600px) {
+  .cc-window, .cc-banner, .cc-floating {
+    width: 95vw !important;
+    left: 2.5vw !important;
+    right: 2.5vw !important;
+    font-size: 1em !important;
+    border-radius: 10px !important;
+  }
+} 
