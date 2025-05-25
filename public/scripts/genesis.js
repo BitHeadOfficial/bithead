@@ -11,38 +11,6 @@ const LAMPORTS_PER_SOL = 1000000000;
 const PAYMENT_AMOUNT = 1; // 1 SOL
 const TRANSACTION_TIMEOUT = 180000; // 3 minutes timeout for transaction confirmation
 
-// Token management functions
-const TOKEN_KEYS = {
-    WALLET: 'bithead_wallet_token',
-    PASSWORD: 'bithead_password_token',
-    ACCESS_TYPE: 'bithead_access_type'
-};
-
-function storeToken(token, type) {
-    if (type === 'wallet') {
-        localStorage.setItem(TOKEN_KEYS.WALLET, token);
-    } else if (type === 'password') {
-        localStorage.setItem(TOKEN_KEYS.PASSWORD, token);
-    }
-    localStorage.setItem(TOKEN_KEYS.ACCESS_TYPE, type);
-}
-
-function getStoredToken() {
-    const type = localStorage.getItem(TOKEN_KEYS.ACCESS_TYPE);
-    if (type === 'wallet') {
-        return localStorage.getItem(TOKEN_KEYS.WALLET);
-    } else if (type === 'password') {
-        return localStorage.getItem(TOKEN_KEYS.PASSWORD);
-    }
-    return null;
-}
-
-function clearTokens() {
-    localStorage.removeItem(TOKEN_KEYS.WALLET);
-    localStorage.removeItem(TOKEN_KEYS.PASSWORD);
-    localStorage.removeItem(TOKEN_KEYS.ACCESS_TYPE);
-}
-
 // Initialize GSAP
 function initializeGSAP() {
     if (typeof gsap !== 'undefined') {
@@ -140,7 +108,7 @@ function showStatus(message, type) {
 function updateWalletButtonState() {
     console.log('Updating wallet button state...');
     const solanaPayBtn = document.getElementById('solanaPayBtn');
-    const accessType = localStorage.getItem(TOKEN_KEYS.ACCESS_TYPE);
+    const accessType = window.getStoredToken();
 
     if (solanaPayBtn) {
         // Always show "Sacrifice 0.01 SOL" text
@@ -210,9 +178,9 @@ function setupWalletConnection() {
                             unlockStatus.className = 'status';
                         }
                         // Clear wallet token
-                        localStorage.removeItem(TOKEN_KEYS.WALLET);
-                        if (localStorage.getItem(TOKEN_KEYS.ACCESS_TYPE) === 'wallet') {
-                            localStorage.removeItem(TOKEN_KEYS.ACCESS_TYPE);
+                        window.clearTokens();
+                        if (window.getStoredToken() === 'wallet') {
+                            window.clearTokens();
                         }
                         // Scroll to top
                         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -689,7 +657,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (data.success) {
           console.log('Unlock successful, storing token');
-                storeToken(data.token, 'password');
+          window.storeToken(data.token, 'password');
           if (unlockStatus) {
             unlockStatus.textContent = 'Access granted. Content Unlocked!';
           unlockStatus.className = 'status success';
@@ -734,7 +702,7 @@ document.addEventListener("DOMContentLoaded", () => {
             window.scrollTo({ top: 0, behavior: "smooth" });
           }
         });
-            clearTokens();
+        window.clearTokens();
         unlockStatus.textContent = '';
         unlockStatus.className = 'status';
         donationWarningContainer.style.display = 'none';
@@ -806,12 +774,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (paymentDescription) {
             paymentDescription.textContent = 'Support the cause by sending 0.01 SOL to unlock exclusive content.';
         }
-            } else {
+    } else {
         console.error('Solana payment button not found in DOM');
     }
 
     // Check for existing access
-    const storedToken = getStoredToken();
+    const storedToken = window.getStoredToken();
     if (storedToken) {
         console.log('Found existing token, checking access...');
         loadProtectedContent();
@@ -885,7 +853,7 @@ async function loadProtectedContent() {
     try {
         console.log('Loading protected content...');
         
-        const token = getStoredToken();
+        const token = window.getStoredToken();
         if (!token) {
             console.log('No token found');
             throw new Error('No access token found');
@@ -900,7 +868,7 @@ async function loadProtectedContent() {
 
         if (!response.ok) {
             console.log('Access verification failed:', response.status);
-            clearTokens();
+            window.clearTokens();
             throw new Error('Failed to verify access');
         }
 
@@ -909,7 +877,7 @@ async function loadProtectedContent() {
 
         if (data.hasAccess) {
             // Store the token type for future reference
-            storeToken(token, data.accessType);
+            window.storeToken(token, data.accessType);
 
         // Call unlockContent for consistent animation behavior
         unlockContent();
@@ -932,7 +900,7 @@ async function loadProtectedContent() {
         console.log('Protected content loaded successfully');
         } else {
             console.log('Access denied by server');
-            clearTokens();
+            window.clearTokens();
             throw new Error('Access denied');
         }
     } catch (error) {
@@ -1294,7 +1262,7 @@ async function handleSolanaPayment() {
                 if (confirmationSuccess) {
                     // Store token and unlock content immediately after confirmation
                     console.log('Storing token and unlocking content...');
-                    storeToken(token, 'wallet');
+                    window.storeToken(token, 'wallet');
                     
                     // Force a check-access call to verify the token
                     try {
@@ -1331,7 +1299,7 @@ async function handleSolanaPayment() {
                 if (confirmationAttempts >= maxAttempts) {
                     // Even if confirmation fails, try to unlock content if we have the token
                     console.log('Attempting to unlock content despite confirmation failure...');
-                    storeToken(token, 'wallet');
+                    window.storeToken(token, 'wallet');
                     unlockContent();
                     updateWalletButtonState();
                     throw new Error('Transaction sent but confirmation status unclear. Content unlocked anyway - please check your wallet for status.');
@@ -1345,7 +1313,7 @@ async function handleSolanaPayment() {
         if (!confirmationSuccess) {
             // Try to unlock content anyway
             console.log('Attempting to unlock content despite confirmation failure...');
-            storeToken(token, 'wallet');
+            window.storeToken(token, 'wallet');
             unlockContent();
             updateWalletButtonState();
             throw new Error('Transaction sent but confirmation status unclear. Content unlocked anyway - please check your wallet for status.');
