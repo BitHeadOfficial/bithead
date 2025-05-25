@@ -29,13 +29,50 @@
     <!-- Environment Variables Script -->
     <script src="/config.js"></script>
 
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RS08PRH4N6"></script>
+    <!-- CookieConsent by Osano -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js"></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-RS08PRH4N6');
+    window.addEventListener('load', function(){
+      window.cookieconsent.initialise({
+        palette: {
+          popup: { background: "#222" },
+          button: { background: "#4296d2" }
+        },
+        theme: "classic",
+        position: "bottom-right",
+        type: "opt-in",
+        content: {
+          message: "This website uses cookies to ensure you get the best experience and to analyze traffic (Google Analytics).",
+          allow: "Allow cookies",
+          deny: "Decline",
+          link: "Learn more",
+          href: "/privacy-policy.html"
+        },
+        onInitialise: function (status) {
+          if (status == 'allow') {
+            enableGA();
+          }
+        },
+        onStatusChange: function(status) {
+          if (status == 'allow') {
+            enableGA();
+          }
+        }
+      });
+
+      function enableGA() {
+        var gtagScript = document.createElement('script');
+        gtagScript.async = true;
+        gtagScript.src = "https://www.googletagmanager.com/gtag/js?id=G-RS08PRH4N6";
+        document.head.appendChild(gtagScript);
+
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-RS08PRH4N6');
+      }
+    });
     </script>
 
     <script>
