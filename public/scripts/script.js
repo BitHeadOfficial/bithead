@@ -1,3 +1,5 @@
+const API_URL = 'https://bithead.at/api';
+
 // Load a file
 const loadComponent = async (path) => {
   try {
