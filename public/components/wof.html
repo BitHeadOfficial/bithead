@@ -1,15 +1,17 @@
 <section id="wof" class="wof-section">
   <div class="container">
-    <h2>Wall of Fame</h2>
-    <p class="subtitle">Join the pioneers of the future. Show your brand on our wall of fame.</p>
+    <div class="section-header">
+      <h2>Wall of Fame</h2>
+      <p class="section-subtitle">Join the pioneers of the future. Show your brand on our wall of fame.</p>
+    </div>
     <div class="price-info">
       <p>Current Price: <span id="currentPrice">Loading...</span> SOL</p>
       <p>Total Submissions: <span id="totalSubmissions">Loading...</span></p>
     </div>
     <div class="logo-grid" id="logoGrid">
-      <!-- Last 4 logos will be dynamically inserted here -->
+      <!-- Last 5 logos will be dynamically inserted here -->
     </div>
-    <div class="cta-container">
+    <div class="section-cta">
       <a href="/wall-of-fame.html" class="cta-button">View All Logos</a>
     </div>
   </div>
@@ -18,24 +20,27 @@
 <style>
 .wof-section {
   padding: 6rem 2rem;
-  background: linear-gradient(45deg, rgba(0,0,0,0.9), rgba(0,0,0,0.7));
+  background: #000;
   text-align: center;
+}
+
+.wof-section .section-header {
+  margin-bottom: 3rem;
 }
 
 .wof-section h2 {
   font-size: 3rem;
   margin-bottom: 1rem;
-  background: linear-gradient(45deg, #fff, #4296d2);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  text-shadow: 0 0 15px rgba(66, 150, 210, 0.6);
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 2px;
 }
 
-.wof-section .subtitle {
+.wof-section .section-subtitle {
   font-size: 1.2rem;
   color: rgba(255, 255, 255, 0.8);
-  margin-bottom: 2rem;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .wof-section .price-info {
@@ -48,14 +53,14 @@
 
 .wof-section .price-info p {
   background: rgba(255, 255, 255, 0.1);
-  padding: 0.5rem 1rem;
+  padding: 0.8rem 1.5rem;
   border-radius: 4px;
   backdrop-filter: blur(10px);
 }
 
 .wof-section .logo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(5, 1fr);
   gap: 2rem;
   max-width: 1200px;
   margin: 3rem auto;
@@ -96,13 +101,13 @@
   color: rgba(255, 255, 255, 0.6);
 }
 
-.wof-section .cta-container {
+.wof-section .section-cta {
   margin-top: 3rem;
 }
 
 .wof-section .cta-button {
   display: inline-block;
-  background: linear-gradient(45deg, #9945FF, #14F195);
+  background: #4296d2;
   color: #fff;
   padding: 1rem 2rem;
   border-radius: 4px;
@@ -113,7 +118,14 @@
 
 .wof-section .cta-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(153, 69, 255, 0.4);
+  background: #2d7bb8;
+  box-shadow: 0 4px 15px rgba(66, 150, 210, 0.4);
+}
+
+@media (max-width: 1200px) {
+  .wof-section .logo-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 @media (max-width: 768px) {
@@ -127,7 +139,7 @@
   }
 
   .wof-section .logo-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
   }
 }
@@ -138,13 +150,13 @@
   }
 
   .wof-section .logo-grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    grid-template-columns: 1fr;
   }
 }
 </style>
 
 <script>
-// Load and display last 4 logos for the Wall of Fame section
+// Load and display last 5 logos for the Wall of Fame section
 async function loadWofLogos() {
   try {
     const response = await fetch(`${window.env.API_URL}/api/logo/logos`);
@@ -153,8 +165,8 @@ async function loadWofLogos() {
     const logoGrid = document.getElementById('logoGrid');
     if (!logoGrid) return;
 
-    // Only show the last 4 logos
-    const recentLogos = logos.slice(-4);
+    // Only show the last 5 logos
+    const recentLogos = logos.slice(-5);
     
     logoGrid.innerHTML = '';
     recentLogos.forEach(logo => {

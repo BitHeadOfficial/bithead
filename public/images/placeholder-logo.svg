@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <rect width="200" height="200" fill="#1a1a1a"/>
+    <text x="100" y="100" font-family="Arial" font-size="24" fill="#4296d2" text-anchor="middle" dominant-baseline="middle">
+        Logo
+    </text>
+    <text x="100" y="130" font-family="Arial" font-size="16" fill="#666" text-anchor="middle" dominant-baseline="middle">
+        Not Available
+    </text>
+</svg> 

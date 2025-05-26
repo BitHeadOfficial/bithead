@@ -1,5 +1,5 @@
 // Global constants and utilities
-window.API_URL = window.API_URL || 'https://bithead.at/api';
+window.API_URL = window.env.API_URL || 'https://bithead.onrender.com';
 
 // Token management
 const TOKEN_KEYS = {
@@ -8,6 +8,41 @@ const TOKEN_KEYS = {
     ACCESS_TYPE: 'bithead_access_type',
     ADMIN: 'admin_token'
 };
+
+// Component loading functions
+async function loadComponent(containerId, componentPath) {
+    try {
+        const container = document.getElementById(containerId);
+        if (!container) {
+            console.error(`Container ${containerId} not found`);
+            return;
+        }
+
+        const response = await fetch(componentPath);
+        if (!response.ok) {
+            throw new Error(`Failed to load component: ${response.statusText}`);
+        }
+
+        const html = await response.text();
+        container.innerHTML = html;
+
+        // Execute any scripts in the loaded component
+        const scripts = container.getElementsByTagName('script');
+        for (const script of scripts) {
+            const newScript = document.createElement('script');
+            newScript.textContent = script.textContent;
+            script.parentNode.replaceChild(newScript, script);
+        }
+    } catch (error) {
+        console.error(`Error loading component ${componentPath}:`, error);
+    }
+}
+
+// Load header and footer on page load
+document.addEventListener('DOMContentLoaded', () => {
+    loadComponent('header-container', '/components/header.html');
+    loadComponent('footer-container', '/components/footer.html');
+});
 
 // Token management functions
 function storeToken(token, type) {
@@ -50,4 +85,5 @@ function clearTokens(type) {
 window.storeToken = storeToken;
 window.getStoredToken = getStoredToken;
 window.clearTokens = clearTokens;
-window.TOKEN_KEYS = TOKEN_KEYS; 
+window.TOKEN_KEYS = TOKEN_KEYS;
+window.loadComponent = loadComponent; 

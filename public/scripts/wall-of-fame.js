@@ -1,5 +1,9 @@
 // Initialize Solana connection
-const connection = new solanaWeb3.Connection(window.env.SOLANA_RPC_URL);
+const connection = new solanaWeb3.Connection(
+    window.location.hostname === 'localhost'
+        ? 'http://localhost:8899'  // Development
+        : 'https://api.mainnet-beta.solana.com'  // Production
+);
 
 // DOM Elements
 const connectWalletBtn = document.getElementById('connectWallet');
@@ -18,7 +22,10 @@ let selectedFile = null;
 // Load current price and total submissions
 async function loadPriceInfo() {
     try {
-        const response = await fetch(`${window.env.API_URL}/api/logo/price`);
+        const response = await fetch(`${window.API_URL}/api/logo/price`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
         
         if (currentPriceEl) currentPriceEl.textContent = data.price.toFixed(2);
@@ -26,7 +33,7 @@ async function loadPriceInfo() {
     } catch (error) {
         console.error('Error loading price info:', error);
         if (statusMessage) {
-            statusMessage.textContent = 'Error loading price information';
+            statusMessage.textContent = 'Error loading price information. Please try again later.';
             statusMessage.className = 'status-message error';
         }
     }
@@ -35,7 +42,10 @@ async function loadPriceInfo() {
 // Load and display logos
 async function loadLogos() {
     try {
-        const response = await fetch(`${window.env.API_URL}/api/logo/logos`);
+        const response = await fetch(`${window.API_URL}/api/logo/logos`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const logos = await response.json();
         
         if (!logoGrid) return;
@@ -48,6 +58,10 @@ async function loadLogos() {
             const img = document.createElement('img');
             img.src = logo.logo_url;
             img.alt = `Logo #${logo.position}`;
+            img.onerror = () => {
+                img.src = '/images/placeholder-logo.png';
+                img.alt = 'Logo not available';
+            };
             
             const position = document.createElement('div');
             position.className = 'position';
@@ -66,7 +80,7 @@ async function loadLogos() {
     } catch (error) {
         console.error('Error loading logos:', error);
         if (statusMessage) {
-            statusMessage.textContent = 'Error loading logos';
+            statusMessage.textContent = 'Error loading logos. Please try again later.';
             statusMessage.className = 'status-message error';
         }
     }
@@ -159,12 +173,12 @@ function setupFormSubmission() {
             statusMessage.className = 'status-message';
 
             // Get current price
-            const priceResponse = await fetch(`${window.env.API_URL}/api/logo/price`);
+            const priceResponse = await fetch(`${window.API_URL}/api/logo/price`);
             const priceData = await priceResponse.json();
             const amount = priceData.price;
 
             // Create transaction
-            const response = await fetch(`${window.env.API_URL}/api/logo/submit`, {
+            const response = await fetch(`${window.API_URL}/api/logo/submit`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -196,7 +210,7 @@ function setupFormSubmission() {
             formData.append('logo', selectedFile);
             formData.append('signature', signature);
             
-            const uploadResponse = await fetch(`${window.env.API_URL}/api/logo/confirm`, {
+            const uploadResponse = await fetch(`${window.API_URL}/api/logo/confirm`, {
                 method: 'POST',
                 body: formData
             });
@@ -227,11 +241,11 @@ function setupFormSubmission() {
     });
 }
 
-// Initialize
+// Initialize the page
 document.addEventListener('DOMContentLoaded', () => {
-    loadPriceInfo();
-    loadLogos();
     setupWalletConnection();
     setupFileUpload();
     setupFormSubmission();
+    loadPriceInfo();
+    loadLogos();
 }); 
