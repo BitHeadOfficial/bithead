@@ -498,12 +498,12 @@ function setupWhitelistForm() {
                     statusDiv.textContent = `Error: ${res.status} ${res.statusText}`; // Generic error for non-JSON responses
                 }
             } else { // Success
-                const data = await res.json();
-                if (data.success) {
-                    form.style.display = 'none';
-                    successDiv.style.display = 'block';
-                    successDiv.classList.add('visible');
-                    statusDiv.textContent = '';
+            const data = await res.json();
+            if (data.success) {
+                form.style.display = 'none';
+                successDiv.style.display = 'block';
+                successDiv.classList.add('visible');
+                statusDiv.textContent = '';
                     localStorage.setItem('whitelist_submitted', '1');
                     // No need to re-enable form or reset flag on success, form is hidden
                     return; // Exit after successful submission
@@ -512,8 +512,8 @@ function setupWhitelistForm() {
                     // but keep as a fallback for non-success data with 200 status
                     if (data.error && data.error.includes('UNIQUE constraint failed')) {
                         statusDiv.textContent = 'You are already whitelisted with this email or wallet address.';
-                    } else {
-                        statusDiv.textContent = data.error || 'Failed to join whitelist.';
+            } else {
+                statusDiv.textContent = data.error || 'Failed to join whitelist.';
                     }
                 }
             }
@@ -774,7 +774,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (paymentDescription) {
             paymentDescription.textContent = 'Support the cause by sending 0.01 SOL to unlock exclusive content.';
         }
-    } else {
+            } else {
         console.error('Solana payment button not found in DOM');
     }
 

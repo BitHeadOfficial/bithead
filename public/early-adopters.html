@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Early Adopters Gallery - BitHeadz</title>
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/styles/early-adopters.css">
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <script src="/scripts/config.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <div class="nav-content">
+            <a href="/" class="nav-logo">BitHeadz</a>
+            <div class="nav-links">
+                <a href="/genesis.html">Genesis</a>
+                <a href="/early-adopters.html" class="active">Early Adopters</a>
+                <a href="/the-american-dream.html">The American Dream</a>
+                <a href="/fuck-the-rest.html">Fuck The Rest</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="early-adopters">
+        <section class="hero">
+            <h1>Early Adopters Gallery</h1>
+            <p class="subtitle">Join the pioneers of the future. Show your brand on our wall of fame.</p>
+            <div class="price-info">
+                <p>Current Price: <span id="currentPrice">Loading...</span> SOL</p>
+                <p>Total Submissions: <span id="totalSubmissions">Loading...</span></p>
+            </div>
+        </section>
+
+        <!-- Logo Submission Form -->
+        <section class="submission-form" id="submissionForm">
+            <h2>Submit Your Logo</h2>
+            <div class="form-container">
+                <div class="wallet-section">
+                    <button id="connectWallet" class="wallet-button">
+                        Connect Wallet
+                    </button>
+                    <div id="walletStatus" class="status"></div>
+                </div>
+
+                <form id="logoForm" enctype="multipart/form-data">
+                    <div class="file-upload">
+                        <input type="file" id="logoFile" name="logo" accept="image/*" required>
+                        <label for="logoFile">
+                            <span class="upload-icon">📁</span>
+                            <span class="upload-text">Choose your logo</span>
+                        </label>
+                        <div id="filePreview" class="file-preview"></div>
+                    </div>
+
+                    <button type="submit" id="submitLogo" class="submit-button" disabled>
+                        Submit Logo
+                    </button>
+                </form>
+
+                <div id="submissionStatus" class="status"></div>
+            </div>
+        </section>
+
+        <!-- Logo Gallery -->
+        <section class="logo-gallery">
+            <h2>Wall of Fame</h2>
+            <div id="logoGrid" class="logo-grid">
+                <!-- Logos will be dynamically inserted here -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="/privacy-policy.html">Privacy Policy</a>
+                <a href="https://twitter.com/bitheadz" target="_blank">Twitter</a>
+                <a href="https://github.com/bitheadz" target="_blank">GitHub</a>
+            </div>
+            <p class="copyright">© 2024 BitHeadz. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="/scripts/early-adopters.js"></script>
+</body>
+</html> 

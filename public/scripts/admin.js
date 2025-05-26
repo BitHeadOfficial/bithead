@@ -130,7 +130,7 @@ async function loadMetricsAndWhitelist() {
         // For now, let's just log and potentially show login if it's a likely auth issue
          if (e instanceof TypeError || e.message.includes('fetch')) { // Basic check for network errors
              console.log('[Admin Debug] Likely network error during whitelist fetch.');
-         }
+        }
          // Consider adding a generic error message to the user
     }
 }
@@ -241,7 +241,7 @@ addWhitelistBtn.addEventListener('click', () => {
     // Re-enable form if spots are available - simplified logic
     // Assuming admin can always add manually unless a hard limit is enforced differently
     if (addWhitelistForm) {
-         Array.from(addWhitelistForm.elements).forEach(el => {
+        Array.from(addWhitelistForm.elements).forEach(el => {
             if (el.tagName === 'BUTTON' || el.tagName === 'INPUT') {
                 el.disabled = false;
             }
