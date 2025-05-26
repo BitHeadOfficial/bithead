@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import fs from 'fs';
 import sqlite3 from 'sqlite3';
-import { verifyToken } from '../middleware/auth.js';
+// import { verifyToken } from '../middleware/auth.js'; // Removed, not needed
 import { config } from '../config/index.js';
 import logger from '../utils/logger.js';
 
