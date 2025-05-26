@@ -12,33 +12,22 @@ const loadComponent = async (path) => {
   }
 };
 
-// Setup smooth scrolling with proper section handling
+// Smooth scrolling with offset for hero section
 const setupSmoothScrolling = () => {
-  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function(e) {
-      e.preventDefault();
-      const href = this.getAttribute('href');
-      
-      // If we're on a subpage and the link points to a section
-      if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
-        // Navigate to index page with the section hash
-        window.location.href = '/index.html' + href;
-        return;
-      }
-
-      // If we're on the index page, handle smooth scrolling
-      const targetId = href.substring(1);
-      const targetElement = document.getElementById(targetId);
-      
-      if (targetElement) {
-        const headerOffset = 80; // Adjust based on your header height
-        const elementPosition = targetElement.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth'
-        });
+  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+    anchor.addEventListener("click", function (e) {
+      const targetId = this.getAttribute("href");
+      if (targetId.length > 1 && targetId.startsWith("#")) {
+        const target = document.querySelector(targetId);
+        if (target) {
+          e.preventDefault();
+          const offset = 70; // header height offset
+          const targetPosition = target.getBoundingClientRect().top + window.pageYOffset;
+          window.scrollTo({
+            top: targetPosition - offset,
+            behavior: "smooth",
+          });
+        }
       }
     });
   });
@@ -280,7 +269,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       "nft-mint": "components/nft-mint.html",
       shop: "components/shop.html",
       exclusive: "components/exclusive.html",
-      wof: "components/wof.html", // Add Wall of Fame component
       cta: "components/cta.html",
       footer: "components/footer.html",
     };
@@ -291,52 +279,28 @@ document.addEventListener("DOMContentLoaded", async () => {
       content += html;
     }
     app.innerHTML = content;
-
     // Set nav link hrefs to #section for smooth scroll on index
     document.querySelectorAll('.nav-links a, .nav-logo a').forEach(link => {
       const section = link.getAttribute('data-section');
-      if (section) {
-        link.setAttribute('href', `#${section}`);
-      }
+      if (section) link.setAttribute('href', `#${section}`);
     });
-
-    // If there's a hash in the URL, scroll to that section after a short delay
-    if (window.location.hash) {
-      setTimeout(() => {
-        const targetId = window.location.hash.substring(1);
-        const targetElement = document.getElementById(targetId);
-        if (targetElement) {
-          const headerOffset = 80;
-          const elementPosition = targetElement.getBoundingClientRect().top;
-          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth'
-          });
-        }
-      }, 100);
-    }
-
     setupBurgerMenu();
     setupSmoothScrolling();
     setupScrollSpy();
-    initializeContactForm();
+    initializeContactForm(); // Initialize the contact form
   } else {
     // We're on a subpage
     if (headerContainer) {
       const headerHtml = await loadComponent("components/header.html");
       headerContainer.innerHTML = headerHtml;
-      
       // Set nav link hrefs to index.html#section for cross-page nav
       document.querySelectorAll('.nav-links a, .nav-logo a').forEach(link => {
         const section = link.getAttribute('data-section');
-        if (section) {
-          link.setAttribute('href', `/index.html#${section}`);
-        }
+        if (section) link.setAttribute('href', `index.html#${section}`);
       });
-      
-      setupBurgerMenu();
+      setupBurgerMenu(); // Attach after AJAX load
     } else {
+      // If header is static in HTML, attach after DOMContentLoaded
       setupBurgerMenu();
     }
 

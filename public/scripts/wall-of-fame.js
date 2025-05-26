@@ -1,251 +1,239 @@
 // Initialize Solana connection
-const connection = new solanaWeb3.Connection(
-    window.location.hostname === 'localhost'
-        ? 'http://localhost:8899'  // Development
-        : 'https://api.mainnet-beta.solana.com'  // Production
-);
+const connection = new solanaWeb3.Connection(window.env.SOLANA_RPC_URL, {
+    commitment: 'confirmed',
+    confirmTransactionInitialTimeout: 60000
+});
 
 // DOM Elements
 const connectWalletBtn = document.getElementById('connectWallet');
 const walletStatus = document.getElementById('walletStatus');
-const logoFileInput = document.getElementById('logoFile');
+const logoForm = document.getElementById('logoForm');
+const logoFile = document.getElementById('logoFile');
 const filePreview = document.getElementById('filePreview');
-const submitButton = document.getElementById('submitButton');
-const statusMessage = document.getElementById('statusMessage');
+const submitLogoBtn = document.getElementById('submitLogo');
+const submissionStatus = document.getElementById('submissionStatus');
 const currentPriceEl = document.getElementById('currentPrice');
 const totalSubmissionsEl = document.getElementById('totalSubmissions');
 const logoGrid = document.getElementById('logoGrid');
 
-let wallet = null;
+// State
 let selectedFile = null;
+let walletConnected = false;
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    loadPriceInfo();
+    loadLogos();
+    setupWalletConnection();
+    setupFileUpload();
+    setupFormSubmission();
+});
 
 // Load current price and total submissions
 async function loadPriceInfo() {
     try {
-        const response = await fetch(`${window.API_URL}/api/logo/price`);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        const response = await fetch(`${window.env.API_URL}/api/logo/price`);
         const data = await response.json();
         
-        if (currentPriceEl) currentPriceEl.textContent = data.price.toFixed(2);
-        if (totalSubmissionsEl) totalSubmissionsEl.textContent = data.count;
+        currentPriceEl.textContent = data.price.toFixed(2);
+        totalSubmissionsEl.textContent = data.count;
     } catch (error) {
         console.error('Error loading price info:', error);
-        if (statusMessage) {
-            statusMessage.textContent = 'Error loading price information. Please try again later.';
-            statusMessage.className = 'status-message error';
-        }
+        currentPriceEl.textContent = 'Error';
+        totalSubmissionsEl.textContent = 'Error';
     }
 }
 
 // Load and display logos
 async function loadLogos() {
     try {
-        const response = await fetch(`${window.API_URL}/api/logo/logos`);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        const response = await fetch(`${window.env.API_URL}/api/logo/logos`);
         const logos = await response.json();
         
-        if (!logoGrid) return;
-
         logoGrid.innerHTML = '';
         logos.forEach(logo => {
-            const logoItem = document.createElement('div');
-            logoItem.className = 'logo-item';
-            
-            const img = document.createElement('img');
-            img.src = logo.logo_url;
-            img.alt = `Logo #${logo.position}`;
-            img.onerror = () => {
-                img.src = '/images/placeholder-logo.png';
-                img.alt = 'Logo not available';
-            };
-            
-            const position = document.createElement('div');
-            position.className = 'position';
-            position.textContent = `#${logo.position}`;
-            
-            const amount = document.createElement('div');
-            amount.className = 'amount';
-            amount.textContent = `${logo.amount} SOL`;
-            
-            logoItem.appendChild(img);
-            logoItem.appendChild(position);
-            logoItem.appendChild(amount);
-            
+            const logoItem = createLogoElement(logo);
             logoGrid.appendChild(logoItem);
         });
     } catch (error) {
         console.error('Error loading logos:', error);
-        if (statusMessage) {
-            statusMessage.textContent = 'Error loading logos. Please try again later.';
-            statusMessage.className = 'status-message error';
-        }
+        logoGrid.innerHTML = '<p class="error">Failed to load logos</p>';
     }
+}
+
+// Create logo element
+function createLogoElement(logo) {
+    const div = document.createElement('div');
+    div.className = 'logo-item';
+    
+    const img = document.createElement('img');
+    img.src = logo.logo_url;
+    img.alt = `Logo #${logo.position}`;
+    
+    const position = document.createElement('div');
+    position.className = 'position';
+    position.textContent = `#${logo.position}`;
+    
+    const amount = document.createElement('div');
+    amount.className = 'amount';
+    amount.textContent = `${logo.amount} SOL`;
+    
+    div.appendChild(img);
+    div.appendChild(position);
+    div.appendChild(amount);
+    
+    return div;
 }
 
 // Setup wallet connection
 function setupWalletConnection() {
-    if (!connectWalletBtn) return;
-
     connectWalletBtn.addEventListener('click', async () => {
         try {
             if (!window.solana || !window.solana.isPhantom) {
-                window.open('https://phantom.app/', '_blank');
-                throw new Error('Phantom wallet is not installed!');
+                showStatus(walletStatus, 'Please install Phantom wallet', 'error');
+                return;
             }
 
-            const resp = await window.solana.connect();
-            wallet = resp.publicKey.toString();
-            
-            walletStatus.textContent = `Connected: ${wallet.slice(0, 4)}...${wallet.slice(-4)}`;
-            walletStatus.className = 'wallet-status success';
-            
-            // Enable submit button if file is selected
-            if (selectedFile) {
-                submitButton.disabled = false;
+            if (!window.solana.isConnected) {
+                await window.solana.connect();
             }
+
+            walletConnected = true;
+            connectWalletBtn.textContent = 'Wallet Connected';
+            connectWalletBtn.disabled = true;
+            showStatus(walletStatus, 'Wallet connected successfully', 'success');
+            submitLogoBtn.disabled = false;
         } catch (error) {
             console.error('Wallet connection error:', error);
-            walletStatus.textContent = error.message;
-            walletStatus.className = 'wallet-status error';
+            showStatus(walletStatus, 'Failed to connect wallet', 'error');
         }
     });
 }
 
 // Setup file upload
 function setupFileUpload() {
-    if (!logoFileInput || !filePreview) return;
-
-    logoFileInput.addEventListener('change', (e) => {
+    logoFile.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
         // Validate file type
-        if (!file.type.startsWith('image/')) {
-            statusMessage.textContent = 'Please select an image file';
-            statusMessage.className = 'status-message error';
+        const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml'];
+        if (!validTypes.includes(file.type)) {
+            showStatus(submissionStatus, 'Invalid file type. Please upload an image.', 'error');
             return;
         }
 
-        // Validate file size (max 5MB)
+        // Validate file size (5MB)
         if (file.size > 5 * 1024 * 1024) {
-            statusMessage.textContent = 'File size must be less than 5MB';
-            statusMessage.className = 'status-message error';
+            showStatus(submissionStatus, 'File too large. Maximum size is 5MB.', 'error');
             return;
         }
 
         selectedFile = file;
         
-        // Show preview
+        // Preview image
         const reader = new FileReader();
         reader.onload = (e) => {
-            filePreview.innerHTML = `<img src="${e.target.result}" alt="Logo preview">`;
+            filePreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
         };
         reader.readAsDataURL(file);
-
-        // Enable submit button if wallet is connected
-        if (wallet) {
-            submitButton.disabled = false;
-        }
-
-        statusMessage.textContent = '';
-        statusMessage.className = 'status-message';
     });
 }
 
 // Setup form submission
 function setupFormSubmission() {
-    if (!submitButton) return;
+    logoForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-    submitButton.addEventListener('click', async () => {
-        if (!wallet || !selectedFile) {
-            statusMessage.textContent = 'Please connect wallet and select a logo';
-            statusMessage.className = 'status-message error';
+        if (!walletConnected) {
+            showStatus(submissionStatus, 'Please connect your wallet first', 'error');
+            return;
+        }
+
+        if (!selectedFile) {
+            showStatus(submissionStatus, 'Please select a logo file', 'error');
             return;
         }
 
         try {
-            submitButton.disabled = true;
-            statusMessage.textContent = 'Creating transaction...';
-            statusMessage.className = 'status-message';
+            submitLogoBtn.disabled = true;
+            showStatus(submissionStatus, 'Preparing submission...', 'info');
 
-            // Get current price
-            const priceResponse = await fetch(`${window.API_URL}/api/logo/price`);
-            const priceData = await priceResponse.json();
-            const amount = priceData.price;
-
-            // Create transaction
-            const response = await fetch(`${window.API_URL}/api/logo/submit`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    wallet_address: wallet,
-                    amount: amount
-                })
-            });
-
-            const data = await response.json();
-            
-            if (!response.ok) {
-                throw new Error(data.error || 'Failed to create transaction');
-            }
-
-            // Sign and send transaction
-            const transaction = solanaWeb3.Transaction.from(Buffer.from(data.transaction, 'base64'));
-            const signed = await window.solana.signTransaction(transaction);
-            const signature = await connection.sendRawTransaction(signed.serialize());
-            
-            statusMessage.textContent = 'Confirming transaction...';
-            
-            // Wait for confirmation
-            await connection.confirmTransaction(signature);
-            
-            // Upload logo
+            // Create form data
             const formData = new FormData();
             formData.append('logo', selectedFile);
-            formData.append('signature', signature);
-            
-            const uploadResponse = await fetch(`${window.API_URL}/api/logo/confirm`, {
+            formData.append('publicKey', window.solana.publicKey.toString());
+
+            // Submit logo
+            const response = await fetch(`${window.env.API_URL}/api/logo/submit`, {
                 method: 'POST',
                 body: formData
             });
-            
-            if (!uploadResponse.ok) {
-                throw new Error('Failed to upload logo');
+
+            if (!response.ok) {
+                throw new Error('Failed to submit logo');
             }
 
-            statusMessage.textContent = 'Logo submitted successfully!';
-            statusMessage.className = 'status-message success';
+            const { transaction: serializedTransaction, submissionId } = await response.json();
+
+            // Convert base64 to Uint8Array
+            const transactionBytes = Uint8Array.from(atob(serializedTransaction), c => c.charCodeAt(0));
+            const transaction = solanaWeb3.Transaction.from(transactionBytes);
+
+            // Sign and send transaction
+            showStatus(submissionStatus, 'Please sign the transaction in your wallet...', 'info');
+            const signed = await window.solana.signAndSendTransaction(transaction);
+            
+            // Wait for confirmation
+            showStatus(submissionStatus, 'Transaction sent! Waiting for confirmation...', 'info');
+            
+            const confirmation = await connection.confirmTransaction(signed.signature, 'confirmed');
+            if (confirmation.value.err) {
+                throw new Error('Transaction failed');
+            }
+
+            // Confirm submission
+            const confirmResponse = await fetch(`${window.env.API_URL}/api/logo/confirm`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ submissionId, signature: signed.signature })
+            });
+
+            if (!confirmResponse.ok) {
+                throw new Error('Failed to confirm submission');
+            }
+
+            // Success
+            showStatus(submissionStatus, 'Logo submitted successfully!', 'success');
             
             // Reset form
-            logoFileInput.value = '';
+            logoForm.reset();
             filePreview.innerHTML = '';
             selectedFile = null;
-            submitButton.disabled = true;
             
             // Reload data
             loadPriceInfo();
             loadLogos();
-            
+
         } catch (error) {
             console.error('Submission error:', error);
-            statusMessage.textContent = error.message || 'Failed to submit logo';
-            statusMessage.className = 'status-message error';
-            submitButton.disabled = false;
+            showStatus(submissionStatus, error.message || 'Failed to submit logo', 'error');
+        } finally {
+            submitLogoBtn.disabled = false;
         }
     });
 }
 
-// Initialize the page
-document.addEventListener('DOMContentLoaded', () => {
-    setupWalletConnection();
-    setupFileUpload();
-    setupFormSubmission();
-    loadPriceInfo();
-    loadLogos();
-}); 
+// Helper function to show status messages
+function showStatus(element, message, type) {
+    element.textContent = message;
+    element.className = `status ${type}`;
+    element.style.display = 'block';
+    
+    // Auto-hide success messages after 5 seconds
+    if (type === 'success') {
+        setTimeout(() => {
+            element.style.display = 'none';
+        }, 5000);
+    }
+} 

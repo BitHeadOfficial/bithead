@@ -1,27 +1,19 @@
-/* Wall of Fame Page Styles */
-.wall-of-fame {
+/* Early Adopters Gallery Styles */
+.early-adopters {
     min-height: 100vh;
-    background: linear-gradient(45deg, #000000, #1a1a1a);
+    background-color: #000;
     color: #fff;
     padding: 2rem 0;
 }
 
-.wall-of-fame .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 2rem;
-}
-
 /* Hero Section */
-.wall-of-fame .hero {
+.hero {
     text-align: center;
-    padding: 4rem 0;
+    padding: 4rem 2rem;
     background: linear-gradient(45deg, rgba(0,0,0,0.9), rgba(0,0,0,0.7));
-    border-radius: 8px;
-    margin-bottom: 3rem;
 }
 
-.wall-of-fame h1 {
+.hero h1 {
     font-size: 3.5rem;
     margin-bottom: 1rem;
     background: linear-gradient(45deg, #fff, #4296d2);
@@ -31,129 +23,133 @@
     text-shadow: 0 0 15px rgba(66, 150, 210, 0.6);
 }
 
-.wall-of-fame .subtitle {
+.subtitle {
     font-size: 1.2rem;
     color: rgba(255, 255, 255, 0.8);
     margin-bottom: 2rem;
 }
 
-/* Price Info */
-.wall-of-fame .price-info {
+.price-info {
     display: flex;
     justify-content: center;
     gap: 2rem;
-    margin: 2rem 0;
+    margin-top: 2rem;
     font-size: 1.1rem;
 }
 
-.wall-of-fame .price-info p {
+.price-info p {
     background: rgba(255, 255, 255, 0.1);
-    padding: 0.8rem 1.5rem;
+    padding: 0.5rem 1rem;
     border-radius: 4px;
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Submission Form */
-.wall-of-fame .submission-form {
-    background: rgba(255, 255, 255, 0.05);
+.submission-form {
+    max-width: 600px;
+    margin: 0 auto;
     padding: 2rem;
+    background: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
-    margin-bottom: 3rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
 }
 
-.wall-of-fame .wallet-section {
-    margin-bottom: 2rem;
+.submission-form h2 {
     text-align: center;
+    margin-bottom: 2rem;
+    color: #fff;
 }
 
-.wall-of-fame .wallet-button {
+.form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Wallet Section */
+.wallet-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.wallet-button {
     background: linear-gradient(45deg, #9945FF, #14F195);
     color: #fff;
     border: none;
-    padding: 1rem 2rem;
+    padding: 0.75rem 1.5rem;
     border-radius: 4px;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
-.wall-of-fame .wallet-button:hover {
+.wallet-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(153, 69, 255, 0.4);
 }
 
-.wall-of-fame .wallet-status {
-    margin-top: 1rem;
-    padding: 0.5rem;
-    border-radius: 4px;
-}
-
-.wall-of-fame .wallet-status.error {
-    background: rgba(255, 0, 0, 0.1);
-    color: #ff4444;
-}
-
-.wall-of-fame .wallet-status.success {
-    background: rgba(20, 241, 149, 0.1);
-    color: #14F195;
-}
-
 /* File Upload */
-.wall-of-fame .file-upload {
-    margin: 2rem 0;
-    text-align: center;
-}
-
-.wall-of-fame .file-input {
-    display: none;
-}
-
-.wall-of-fame .file-label {
-    display: inline-block;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 2rem;
+.file-upload {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    border: 2px dashed rgba(255, 255, 255, 0.3);
     border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    border: 2px dashed rgba(255, 255, 255, 0.2);
 }
 
-.wall-of-fame .file-label:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.3);
+.file-upload:hover {
+    border-color: #4296d2;
+    background: rgba(66, 150, 210, 0.1);
 }
 
-.wall-of-fame .upload-icon {
+.file-upload input[type="file"] {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.upload-icon {
     font-size: 2rem;
-    display: block;
     margin-bottom: 0.5rem;
 }
 
-.wall-of-fame .upload-text {
+.upload-text {
     color: rgba(255, 255, 255, 0.8);
 }
 
-.wall-of-fame .file-preview {
-    margin-top: 1rem;
-    max-width: 200px;
-    margin: 1rem auto;
+.file-preview {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 6px;
+    overflow: hidden;
 }
 
-.wall-of-fame .file-preview img {
-    width: 100%;
-    height: auto;
-    border-radius: 4px;
+.file-preview img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
 }
 
 /* Submit Button */
-.wall-of-fame .submit-button {
-    display: block;
-    width: 100%;
-    max-width: 300px;
-    margin: 2rem auto;
-    background: linear-gradient(45deg, #9945FF, #14F195);
+.submit-button {
+    background: linear-gradient(45deg, #14F195, #9945FF);
     color: #fff;
     border: none;
     padding: 1rem;
@@ -161,122 +157,135 @@
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
+    width: 100%;
 }
 
-.wall-of-fame .submit-button:disabled {
+.submit-button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
     transform: none;
 }
 
-.wall-of-fame .submit-button:not(:disabled):hover {
+.submit-button:not(:disabled):hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(153, 69, 255, 0.4);
+    box-shadow: 0 4px 15px rgba(20, 241, 149, 0.4);
 }
 
-/* Status Message */
-.wall-of-fame .status-message {
-    text-align: center;
-    margin-top: 1rem;
+/* Status Messages */
+.status {
     padding: 1rem;
     border-radius: 4px;
+    text-align: center;
+    margin-top: 1rem;
+    display: none;
 }
 
-.wall-of-fame .status-message.error {
-    background: rgba(255, 0, 0, 0.1);
-    color: #ff4444;
+.status.error {
+    background: rgba(244, 67, 54, 0.2);
+    border: 1px solid rgba(244, 67, 54, 0.4);
+    color: #f44336;
+    display: block;
 }
 
-.wall-of-fame .status-message.success {
-    background: rgba(20, 241, 149, 0.1);
-    color: #14F195;
+.status.success {
+    background: rgba(76, 175, 80, 0.2);
+    border: 1px solid rgba(76, 175, 80, 0.4);
+    color: #4caf50;
+    display: block;
+}
+
+.status.info {
+    background: rgba(33, 150, 243, 0.2);
+    border: 1px solid rgba(33, 150, 243, 0.4);
+    color: #2196f3;
+    display: block;
 }
 
 /* Logo Gallery */
-.wall-of-fame .logo-gallery {
-    margin-top: 4rem;
+.logo-gallery {
+    padding: 4rem 2rem;
 }
 
-.wall-of-fame .logo-gallery h2 {
+.logo-gallery h2 {
     text-align: center;
+    margin-bottom: 3rem;
     font-size: 2.5rem;
-    margin-bottom: 2rem;
     background: linear-gradient(45deg, #fff, #4296d2);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
 }
 
-.wall-of-fame .logo-grid {
+.logo-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 2rem;
-    margin-top: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-.wall-of-fame .logo-item {
+.logo-item {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
-    padding: 1.5rem;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1rem;
     transition: all 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.wall-of-fame .logo-item:hover {
+.logo-item:hover {
     transform: translateY(-5px);
     background: rgba(255, 255, 255, 0.1);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
-.wall-of-fame .logo-item img {
+.logo-item img {
     width: 100%;
-    height: 200px;
+    height: 150px;
     object-fit: contain;
     border-radius: 4px;
 }
 
-.wall-of-fame .logo-item .position {
+.logo-item .position {
     font-size: 1.2rem;
     font-weight: bold;
     color: #4296d2;
 }
 
-.wall-of-fame .logo-item .amount {
+.logo-item .amount {
     font-size: 0.9rem;
     color: rgba(255, 255, 255, 0.6);
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .wall-of-fame h1 {
+    .hero h1 {
         font-size: 2.5rem;
     }
 
-    .wall-of-fame .price-info {
+    .price-info {
         flex-direction: column;
         gap: 1rem;
     }
 
-    .wall-of-fame .logo-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    .logo-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         gap: 1rem;
     }
 }
 
 @media (max-width: 480px) {
-    .wall-of-fame h1 {
+    .hero h1 {
         font-size: 2rem;
     }
 
-    .wall-of-fame .logo-grid {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    .submission-form {
+        padding: 1rem;
     }
 
-    .wall-of-fame .container {
-        padding: 0 1rem;
+    .logo-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     }
 } 

@@ -24,7 +24,6 @@ import { updateMetrics } from './utils/logger.js';
 import rateLimit from 'express-rate-limit';
 import contactRoutes from './routes/contact.js';
 import whitelistRoutes from './routes/whitelist.js';
-import logoRoutes from './routes/logo.js';
 
 // Load environment variables
 dotenv.config();
@@ -454,7 +453,6 @@ app.use('/api/users', userRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRouter);
 app.use('/api/whitelist', whitelistRoutes);
-app.use('/api/logo', logoRoutes);
 
 // Add monitoring routes
 app.use('/api/monitoring', monitoringRoutes);
@@ -864,19 +862,6 @@ async function initializeDatabase() {
                 console.log("Default admin user 'admin' created.");
             }
         }
-
-        // Create logo_submissions table
-        await dbRun(`
-            CREATE TABLE IF NOT EXISTS logo_submissions (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                wallet_address TEXT NOT NULL,
-                logo_url TEXT NOT NULL,
-                amount REAL NOT NULL,
-                position INTEGER NOT NULL,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                UNIQUE(wallet_address)
-            )
-        `);
 
         console.log('Database initialized successfully');
     } catch (error) {

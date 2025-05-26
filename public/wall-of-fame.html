@@ -3,117 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Wall of Fame - Show your brand on BitHead's Wall of Fame" />
-    <title>Wall of Fame - Bithead</title>
-
-    <!-- Core Styles -->
-    <link rel="stylesheet" href="styles/base.css" />
-    <link rel="stylesheet" href="styles/header.css" />
-    <link rel="stylesheet" href="styles/footer.css" />
-    <link rel="stylesheet" href="styles/wall-of-fame.css" />
-
-    <!-- Favicon -->
-    <link rel="icon" href="favicon.ico" type="image/x-icon" />
-
-    <!-- CookieConsent -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css" />
-    <link rel="stylesheet" href="styles/cookieconsent-bithead.css" />
-    <script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js"></script>
-
-    <!-- Core Dependencies -->
+    <title>Early Adopters Gallery - BitHeadz</title>
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/styles/early-adopters.css">
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
-    <script src="config.js"></script>
-    <script src="scripts/utils.js"></script>
-    <script src="scripts/wall-of-fame.js"></script>
-
-    <script>
-    window.addEventListener('load', function(){
-        window.cookieconsent.initialise({
-            palette: {
-                popup: { background: "#222" },
-                button: { background: "#4296d2" }
-            },
-            theme: "classic",
-            position: "bottom-right",
-            type: "opt-in",
-            content: {
-                message: "This website uses cookies to ensure you get the best experience and to analyze traffic (Google Analytics).",
-                allow: "Allow cookies",
-                deny: "Decline",
-                link: "Learn more",
-                href: "/privacy-policy.html"
-            },
-            onInitialise: function (status) {
-                if (status == 'allow') enableGA();
-                if (status == 'allow' || status == 'deny') removeCookieBanner();
-            },
-            onStatusChange: function(status) {
-                if (status == 'allow') enableGA();
-                if (status == 'allow' || status == 'deny') removeCookieBanner();
-            }
-        });
-
-        function enableGA() {
-            var gtagScript = document.createElement('script');
-            gtagScript.async = true;
-            gtagScript.src = "https://www.googletagmanager.com/gtag/js?id=G-RS08PRH4N6";
-            document.head.appendChild(gtagScript);
-
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-RS08PRH4N6');
-        }
-
-        function removeCookieBanner() {
-            var banner = document.querySelector('.cc-window, .cc-banner, .cc-floating');
-            if (banner) banner.remove();
-        }
-    });
-    </script>
+    <script src="/scripts/config.js"></script>
 </head>
 <body>
-    <div id="header-container"></div>
-
-    <main class="wall-of-fame">
-        <div class="container">
-            <div class="hero">
-                <h1>Wall of Fame</h1>
-                <p class="subtitle">Join the pioneers of the future. Show your brand on our wall of fame.</p>
-                <div class="price-info">
-                    <p>Current Price: <span id="currentPrice">Loading...</span> SOL</p>
-                    <p>Total Submissions: <span id="totalSubmissions">Loading...</span></p>
-                </div>
-            </div>
-
-            <div class="submission-form">
-                <div class="wallet-section">
-                    <button id="connectWallet" class="wallet-button">Connect Wallet</button>
-                    <div id="walletStatus" class="wallet-status"></div>
-                </div>
-
-                <div class="file-upload">
-                    <input type="file" id="logoFile" accept="image/*" class="file-input">
-                    <label for="logoFile" class="file-label">
-                        <span class="upload-icon">📁</span>
-                        <span class="upload-text">Choose your logo</span>
-                    </label>
-                    <div id="filePreview" class="file-preview"></div>
-                </div>
-
-                <button id="submitButton" class="submit-button" disabled>Submit Logo</button>
-                <div id="statusMessage" class="status-message"></div>
-            </div>
-
-            <div class="logo-gallery">
-                <h2>All Submissions</h2>
-                <div class="logo-grid" id="logoGrid">
-                    <!-- Logos will be dynamically inserted here -->
-                </div>
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <div class="nav-content">
+            <a href="/" class="nav-logo">BitHeadz</a>
+            <div class="nav-links">
+                <a href="/genesis.html">Genesis</a>
+                <a href="/early-adopters.html" class="active">Early Adopters</a>
+                <a href="/the-american-dream.html">The American Dream</a>
+                <a href="/fuck-the-rest.html">Fuck The Rest</a>
             </div>
         </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="early-adopters">
+        <section class="hero">
+            <h1>Early Adopters Gallery</h1>
+            <p class="subtitle">Join the pioneers of the future. Show your brand on our wall of fame.</p>
+            <div class="price-info">
+                <p>Current Price: <span id="currentPrice">Loading...</span> SOL</p>
+                <p>Total Submissions: <span id="totalSubmissions">Loading...</span></p>
+            </div>
+        </section>
+
+        <!-- Logo Submission Form -->
+        <section class="submission-form" id="submissionForm">
+            <h2>Submit Your Logo</h2>
+            <div class="form-container">
+                <div class="wallet-section">
+                    <button id="connectWallet" class="wallet-button">
+                        Connect Wallet
+                    </button>
+                    <div id="walletStatus" class="status"></div>
+                </div>
+
+                <form id="logoForm" enctype="multipart/form-data">
+                    <div class="file-upload">
+                        <input type="file" id="logoFile" name="logo" accept="image/*" required>
+                        <label for="logoFile">
+                            <span class="upload-icon">📁</span>
+                            <span class="upload-text">Choose your logo</span>
+                        </label>
+                        <div id="filePreview" class="file-preview"></div>
+                    </div>
+
+                    <button type="submit" id="submitLogo" class="submit-button" disabled>
+                        Submit Logo
+                    </button>
+                </form>
+
+                <div id="submissionStatus" class="status"></div>
+            </div>
+        </section>
+
+        <!-- Logo Gallery -->
+        <section class="logo-gallery">
+            <h2>Wall of Fame</h2>
+            <div id="logoGrid" class="logo-grid">
+                <!-- Logos will be dynamically inserted here -->
+            </div>
+        </section>
     </main>
 
-    <div id="footer-container"></div>
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="/privacy-policy.html">Privacy Policy</a>
+                <a href="https://twitter.com/bitheadz" target="_blank">Twitter</a>
+                <a href="https://github.com/bitheadz" target="_blank">GitHub</a>
+            </div>
+            <p class="copyright">© 2024 BitHeadz. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="/scripts/early-adopters.js"></script>
 </body>
 </html> 
