@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wall of Fame - Bithead</title>
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/styles/wall-of-fame.css">
+    <script src="/scripts/config.js"></script>
+    <script src="/scripts/wall-of-fame.js"></script>
+</head>
+<body>
+    <div id="header-container"></div>
+
+    <main class="wall-of-fame">
+        <div class="container">
+            <div class="hero">
+                <h1>Wall of Fame</h1>
+                <p class="subtitle">Join the pioneers of the future. Show your brand on our wall of fame.</p>
+                <div class="price-info">
+                    <p>Current Price: <span id="currentPrice">Loading...</span> SOL</p>
+                    <p>Total Submissions: <span id="totalSubmissions">Loading...</span></p>
+                </div>
+            </div>
+
+            <div class="submission-form">
+                <div class="wallet-section">
+                    <button id="connectWallet" class="wallet-button">Connect Wallet</button>
+                    <div id="walletStatus" class="wallet-status"></div>
+                </div>
+
+                <div class="file-upload">
+                    <input type="file" id="logoFile" accept="image/*" class="file-input">
+                    <label for="logoFile" class="file-label">
+                        <span class="upload-icon">📁</span>
+                        <span class="upload-text">Choose your logo</span>
+                    </label>
+                    <div id="filePreview" class="file-preview"></div>
+                </div>
+
+                <button id="submitButton" class="submit-button" disabled>Submit Logo</button>
+                <div id="statusMessage" class="status-message"></div>
+            </div>
+
+            <div class="logo-gallery">
+                <h2>All Submissions</h2>
+                <div class="logo-grid" id="logoGrid">
+                    <!-- Logos will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="footer-container"></div>
+</body>
+</html> 
