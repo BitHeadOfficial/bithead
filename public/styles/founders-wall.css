@@ -1,0 +1,217 @@
+.founders-wall {
+    padding-top: 80px; /* Account for fixed header */
+    min-height: 100vh;
+    background: #000;
+    color: #fff;
+}
+
+.founders-wall .hero {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,0.4));
+}
+
+.founders-wall h1 {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    text-shadow: 0 0 20px rgba(66, 150, 210, 0.5);
+}
+
+.founders-wall .subtitle {
+    font-size: 1.2rem;
+    color: #ccc;
+    margin-bottom: 2rem;
+}
+
+.price-info {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 2rem;
+    font-size: 1.1rem;
+}
+
+.price-info p {
+    background: rgba(66, 150, 210, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    border: 1px solid rgba(66, 150, 210, 0.3);
+}
+
+.submission-form {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.form-container {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.wallet-section {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.wallet-button {
+    background: linear-gradient(45deg, #4296d2, #2c5d8f);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 4px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.wallet-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(66, 150, 210, 0.3);
+}
+
+.wallet-button.connected {
+    background: linear-gradient(45deg, #2c8f2c, #1a5d1a);
+}
+
+.file-upload {
+    margin: 2rem 0;
+    text-align: center;
+}
+
+.file-upload input[type="file"] {
+    display: none;
+}
+
+.file-upload label {
+    display: inline-block;
+    padding: 1rem 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.file-upload label:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.upload-icon {
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
+}
+
+.file-preview {
+    margin-top: 1rem;
+    max-width: 200px;
+    margin: 1rem auto;
+}
+
+.file-preview img {
+    max-width: 100%;
+    border-radius: 4px;
+    box-shadow: 0 0 20px rgba(66, 150, 210, 0.2);
+}
+
+.submit-button {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(45deg, #4296d2, #2c5d8f);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.submit-button:disabled {
+    background: #666;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.submit-button:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(66, 150, 210, 0.3);
+}
+
+.status {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.status.error {
+    background: rgba(255, 0, 0, 0.1);
+    border: 1px solid rgba(255, 0, 0, 0.3);
+    color: #ff6b6b;
+}
+
+.status.success {
+    background: rgba(0, 255, 0, 0.1);
+    border: 1px solid rgba(0, 255, 0, 0.3);
+    color: #6bff6b;
+}
+
+.logo-gallery {
+    padding: 4rem 2rem;
+}
+
+.logo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.logo-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.logo-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(66, 150, 210, 0.2);
+}
+
+.logo-item img {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+
+.logo-item .timestamp {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #888;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .founders-wall h1 {
+        font-size: 2.5rem;
+    }
+
+    .price-info {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .logo-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+        padding: 1rem;
+    }
+} 

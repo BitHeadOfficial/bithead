@@ -6,10 +6,25 @@ yarn-error.log*
 package-lock.json
 yarn.lock
 
+# User uploads
+public/uploads/
+public/uploads/*
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+*.svg
+*.ico
+
 # Environment variables
 .env
 .env.local
 .env.*.local
+.env.development
+.env.test
+.env.production
+*.env
 
 # Build output
 dist/
@@ -20,6 +35,8 @@ build/
 *.sqlite
 *.sqlite3
 *.db
+*.sql
+*.dump
 
 # Logs
 logs/
@@ -27,6 +44,8 @@ logs/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+access.log
+error.log
 
 # Runtime data
 pids/
@@ -37,6 +56,8 @@ pids/
 # Testing
 coverage/
 .nyc_output/
+test-results/
+junit.xml
 
 # IDE
 .idea/
@@ -44,36 +65,40 @@ coverage/
 *.swp
 *.swo
 .DS_Store
+*.sublime-workspace
+*.sublime-project
 
 # Temporary files
 *.tmp
 *.temp
 .cache/
+.temp/
+.tmp/
+*.bak
+*.backup
+*~
 
 # Production
 /build
 /dist
+/deploy
+/deployment
+*.pem
+*.key
+*.cert
 
-# Misc
-.DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# Local development
+.local/
+*.local
+config.local.js
+settings.local.json
 
-# OS generated files
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# IDE specific files
-*.swp
-*.swo
-*.swn
+# Backup files
 *.bak
+*.backup
+*~
+*.old
+*.orig
 
 # OS generated files
 .DS_Store
@@ -83,6 +108,7 @@ Thumbs.db
 .Trashes
 ehthumbs.db
 Thumbs.db
+desktop.ini
 
 # IDE specific files
 .idea/
@@ -91,15 +117,22 @@ Thumbs.db
 *.swo
 *.swn
 *.bak
+.project
+.classpath
+.settings/
+*.code-workspace
 
 # Testing
 coverage/
-
-# Production
-/build
-/dist
+.nyc_output/
+test-results/
+junit.xml
 
 # Misc
 .cache/
 .temp/
-.tmp/ 
+.tmp/
+*.zip
+*.tar.gz
+*.rar
+*.7z 

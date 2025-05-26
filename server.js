@@ -17,6 +17,7 @@ import { dirname, join } from 'path';
 import userRoutes from './routes/user.js';
 import paymentRoutes from './routes/payment.js';
 import adminRouter from './routes/admin.js';
+import foundersRouter from './routes/founders.js';
 import db from './db/index.js';
 import { Connection, PublicKey, Transaction, SystemProgram } from '@solana/web3.js';
 import monitoringRoutes from './routes/monitoring.js';
@@ -452,6 +453,7 @@ app.post('/api/check-access-wallet', async (req, res) => {
 app.use('/api/users', userRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRouter);
+app.use('/api/founders', foundersRouter);
 app.use('/api/whitelist', whitelistRoutes);
 
 // Add monitoring routes
