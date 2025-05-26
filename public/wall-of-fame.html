@@ -3,11 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Wall of Fame - Show your brand on BitHead's Wall of Fame" />
     <title>Wall of Fame - Bithead</title>
-    <link rel="stylesheet" href="/styles/main.css">
-    <link rel="stylesheet" href="/styles/wall-of-fame.css">
-    <script src="/scripts/config.js"></script>
-    <script src="/scripts/wall-of-fame.js"></script>
+
+    <!-- Core Styles -->
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/header.css" />
+    <link rel="stylesheet" href="styles/footer.css" />
+    <link rel="stylesheet" href="styles/wall-of-fame.css" />
+
+    <!-- Favicon -->
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+
+    <!-- CookieConsent -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css" />
+    <link rel="stylesheet" href="styles/cookieconsent-bithead.css" />
+    <script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js"></script>
+
+    <!-- Core Dependencies -->
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <script src="config.js"></script>
+    <script src="scripts/utils.js"></script>
+    <script src="scripts/wall-of-fame.js"></script>
+
+    <script>
+    window.addEventListener('load', function(){
+        window.cookieconsent.initialise({
+            palette: {
+                popup: { background: "#222" },
+                button: { background: "#4296d2" }
+            },
+            theme: "classic",
+            position: "bottom-right",
+            type: "opt-in",
+            content: {
+                message: "This website uses cookies to ensure you get the best experience and to analyze traffic (Google Analytics).",
+                allow: "Allow cookies",
+                deny: "Decline",
+                link: "Learn more",
+                href: "/privacy-policy.html"
+            },
+            onInitialise: function (status) {
+                if (status == 'allow') enableGA();
+                if (status == 'allow' || status == 'deny') removeCookieBanner();
+            },
+            onStatusChange: function(status) {
+                if (status == 'allow') enableGA();
+                if (status == 'allow' || status == 'deny') removeCookieBanner();
+            }
+        });
+
+        function enableGA() {
+            var gtagScript = document.createElement('script');
+            gtagScript.async = true;
+            gtagScript.src = "https://www.googletagmanager.com/gtag/js?id=G-RS08PRH4N6";
+            document.head.appendChild(gtagScript);
+
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-RS08PRH4N6');
+        }
+
+        function removeCookieBanner() {
+            var banner = document.querySelector('.cc-window, .cc-banner, .cc-floating');
+            if (banner) banner.remove();
+        }
+    });
+    </script>
 </head>
 <body>
     <div id="header-container"></div>
