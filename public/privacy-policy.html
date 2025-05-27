@@ -1,69 +1,266 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Privacy Policy | BitHead</title>
-  <link rel="stylesheet" href="/styles/base.css" />
-  <link rel="stylesheet" href="/styles/header.css" />
-  <link rel="stylesheet" href="/styles/footer.css" />
-  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-  <style>
-    body { background: #000; color: #fff; font-family: 'Inter', sans-serif; }
-    .privacy-container { max-width: 800px; margin: 4rem auto 2rem auto; padding: 2rem; background: rgba(255,255,255,0.03); border-radius: 12px; box-shadow: 0 2px 12px rgba(66,150,210,0.08); }
-    h1, h2, h3 { color: #4296d2; }
-    a { color: #4296d2; text-decoration: underline; }
-    ul { margin-left: 1.5em; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy | BitHead</title>
+
+    <!-- GLOBAL STYLES -->
+    <link rel="stylesheet" href="/styles/base.css">
+    <link rel="stylesheet" href="/styles/header.css">
+    <link rel="stylesheet" href="/styles/footer.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+
+    <style>
+        .privacy-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            color: #fff;
+        }
+
+        .privacy-container h1 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            color: #4296d2;
+            text-align: center;
+        }
+
+        .privacy-container h2 {
+            font-size: 1.8rem;
+            margin: 2rem 0 1rem;
+            color: #4296d2;
+        }
+
+        .privacy-container h3 {
+            font-size: 1.4rem;
+            margin: 1.5rem 0 1rem;
+            color: #4296d2;
+        }
+
+        .privacy-container p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .privacy-container ul {
+            margin-bottom: 1rem;
+            padding-left: 2rem;
+        }
+
+        .privacy-container li {
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+
+        .privacy-container .last-updated {
+            font-style: italic;
+            color: #a0a0a0;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .privacy-container .section {
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(66, 150, 210, 0.05);
+            border-radius: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .privacy-container {
+                padding: 1rem;
+            }
+
+            .privacy-container h1 {
+                font-size: 2rem;
+            }
+
+            .privacy-container h2 {
+                font-size: 1.5rem;
+            }
+
+            .privacy-container h3 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+
+    <!-- CookieConsent by Osano -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js"></script>
+    <script>
+    window.addEventListener('load', function(){
+      window.cookieconsent.initialise({
+        palette: {
+          popup: { background: "#222" },
+          button: { background: "#4296d2" }
+        },
+        theme: "classic",
+        position: "bottom-right",
+        type: "opt-in",
+        content: {
+          message: "This website uses cookies to ensure you get the best experience and to analyze traffic (Google Analytics).",
+          allow: "Allow cookies",
+          deny: "Decline",
+          link: "Learn more",
+          href: "/privacy-policy.html"
+        },
+        onInitialise: function (status) {
+          if (status == 'allow') {
+            enableGA();
+          }
+        },
+        onStatusChange: function(status) {
+          if (status == 'allow') {
+            enableGA();
+          }
+        }
+      });
+
+      function enableGA() {
+        var gtagScript = document.createElement('script');
+        gtagScript.async = true;
+        gtagScript.src = "https://www.googletagmanager.com/gtag/js?id=G-RS08PRH4N6";
+        document.head.appendChild(gtagScript);
+
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-RS08PRH4N6');
+      }
+    });
+    </script>
 </head>
 <body>
-  <header>
-    <div class="nav-logo">
-      <a href="index.html#hero">BITHEAD</a>
-    </div>
-  </header>
-  <main>
-    <div class="privacy-container">
-      <h1>Privacy Policy</h1>
-      <p>Last updated: May 2025</p>
-      <h2>Who We Are</h2>
-      <p>This is the official website of BitHead ("we", "us", "our"). We are committed to protecting your privacy and being transparent about how we use your data.</p>
-      <h2>What Data We Collect</h2>
-      <ul>
-        <li><strong>Google Analytics:</strong> We use Google Analytics to understand how visitors use our site. Google Analytics collects anonymized information such as pages visited, time spent on site, browser/device type, and approximate location. No personally identifiable information is collected by us through Google Analytics.</li>
-        <li><strong>Cookies:</strong> We use cookies to remember your cookie consent preferences and to enable Google Analytics <em>only if you consent</em>.</li>
-        <li><strong>Contact Form:</strong> If you use our contact form, we collect your name, email address, and message. This information is securely forwarded to us via Formspree and is used solely to respond to your inquiry.</li>
-        <li><strong>Whitelist Form:</strong> If you join our whitelist, we collect your name, email, and Solana wallet address. This is used to manage whitelist access and is stored securely in our backend database.</li>
-      </ul>
-      <h2>How We Use Your Data</h2>
-      <ul>
-        <li>To analyze and improve our website (Google Analytics, only if you consent).</li>
-        <li>To respond to your inquiries (contact form).</li>
-        <li>To manage whitelist access for special features or drops.</li>
-      </ul>
-      <h2>Third-Party Services</h2>
-      <ul>
-        <li><strong>Google Analytics:</strong> See <a href="https://policies.google.com/privacy" target="_blank">Google's Privacy Policy</a>.</li>
-        <li><strong>Formspree:</strong> Used for secure contact form submissions. See <a href="https://formspree.io/legal/privacy-policy/" target="_blank">Formspree's Privacy Policy</a>.</li>
-      </ul>
-      <h2>Your Rights</h2>
-      <ul>
-        <li>You can decline non-essential cookies at any time using the cookie banner.</li>
-        <li>You may request deletion of your contact or whitelist data by emailing us at <a href="mailto:bithead.nft@gmail.com">bithead.nft@gmail.com</a>.</li>
-      </ul>
-      <h2>Contact</h2>
-      <p>If you have any questions about this privacy policy or your data, please contact us at <a href="mailto:bithead.nft@gmail.com">bithead.nft@gmail.com</a>.</p>
-    </div>
-  </main>
-  <footer>
-    <div class="section-divider"></div>
-    <div class="footer-container">
-      <p>&copy; 2025 BitHeadOfficial. All rights reserved.</p>
-      <ul class="social-links">
-        <li><a href="https://x.com/BitHeadOfficial" target="_blank">X</a></li>
-        <li><a href="/privacy-policy.html">Privacy Policy</a></li>
-      </ul>
-    </div>
-  </footer>
+    <!-- HEADER START -->
+    <header>
+        <div class="nav-logo">
+            <a href="/">BITHEAD</a>
+        </div>
+        <div class="nav-container">
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="/#about">About</a></li>
+                    <li><a href="/#portfolio">Portfolio</a></li>
+                    <li><a href="/#snake-section">Snake</a></li>
+                    <li><a href="/#nft-mint">NFT</a></li>
+                    <li><a href="/#shop">Shops</a></li>
+                    <li><a href="/#exclusive">Drops</a></li>
+                    <li><a href="/#cta">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+        <div class="hamburger">☰</div>
+    </header>
+    <!-- HEADER END -->
+
+    <main class="privacy-container">
+        <h1>Privacy Policy</h1>
+        <p class="last-updated">Last Updated: March 2024</p>
+
+        <div class="section">
+            <h2>Introduction</h2>
+            <p>Welcome to BitHead's Privacy Policy. This document explains how we collect, use, and protect your personal information when you visit our website. We are committed to ensuring that your privacy is protected and that we comply with all applicable data protection laws.</p>
+        </div>
+
+        <div class="section">
+            <h2>Information We Collect</h2>
+            <h3>Automatically Collected Information</h3>
+            <p>When you visit our website, we automatically collect certain information through Google Analytics, including:</p>
+            <ul>
+                <li>Device information (browser type, operating system)</li>
+                <li>IP address (anonymized)</li>
+                <li>Pages visited and time spent on pages</li>
+                <li>Referring website or source</li>
+                <li>Geographic location (country/region level)</li>
+            </ul>
+
+            <h3>Information You Provide</h3>
+            <p>We collect information that you voluntarily provide, such as:</p>
+            <ul>
+                <li>Email address (when joining the whitelist)</li>
+                <li>Name (when joining the whitelist)</li>
+                <li>Wallet address (when joining the whitelist)</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>How We Use Your Information</h2>
+            <p>We use the collected information for the following purposes:</p>
+            <ul>
+                <li>To analyze website traffic and improve user experience</li>
+                <li>To manage and process whitelist applications</li>
+                <li>To communicate with you about updates and announcements</li>
+                <li>To prevent fraud and ensure website security</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Cookies and Tracking</h2>
+            <p>We use cookies and similar tracking technologies to:</p>
+            <ul>
+                <li>Remember your cookie preferences</li>
+                <li>Analyze website traffic through Google Analytics</li>
+                <li>Improve website functionality and user experience</li>
+            </ul>
+            <p>You can control cookie preferences through our cookie consent banner. Essential cookies cannot be disabled as they are necessary for the website to function properly.</p>
+        </div>
+
+        <div class="section">
+            <h2>Third-Party Services</h2>
+            <p>We use the following third-party services:</p>
+            <ul>
+                <li><strong>Google Analytics:</strong> For website traffic analysis (ID: G-RS08PRH4N6)</li>
+                <li><strong>Cookie Consent by Osano:</strong> For managing cookie preferences</li>
+                <li><strong>X (Twitter):</strong> For social media integration</li>
+            </ul>
+            <p>These services have their own privacy policies and may collect information according to their terms of service.</p>
+        </div>
+
+        <div class="section">
+            <h2>Data Security</h2>
+            <p>We implement appropriate security measures to protect your personal information. However, no method of transmission over the internet is 100% secure, and we cannot guarantee absolute security.</p>
+        </div>
+
+        <div class="section">
+            <h2>Your Rights</h2>
+            <p>You have the right to:</p>
+            <ul>
+                <li>Access your personal information</li>
+                <li>Correct inaccurate data</li>
+                <li>Request deletion of your data</li>
+                <li>Opt-out of analytics tracking</li>
+                <li>Withdraw consent for data processing</li>
+            </ul>
+            <p>To exercise these rights, please contact us through the contact form on our website.</p>
+        </div>
+
+        <div class="section">
+            <h2>Changes to This Policy</h2>
+            <p>We may update this privacy policy from time to time. We will notify you of any changes by posting the new policy on this page and updating the "Last Updated" date.</p>
+        </div>
+
+        <div class="section">
+            <h2>Contact Us</h2>
+            <p>If you have any questions about this privacy policy or our data practices, please contact us through the contact form on our website.</p>
+        </div>
+    </main>
+
+    <!-- FOOTER START -->
+    <footer>
+        <div class="section-divider"></div>
+        <div class="footer-container">
+            <p>&copy; 2025 BitHeadOfficial. All rights reserved. | <a href="/privacy-policy.html" style="color: #4296d2;">Privacy Policy</a></p>
+            <ul class="social-links">
+                <li>
+                    <a href="https://x.com/BitHeadOfficial" target="_blank">X</a>
+                </li>
+            </ul>
+        </div>
+    </footer>
+    <!-- FOOTER END -->
+
+    <script src="/scripts/script.js"></script>
 </body>
 </html> 

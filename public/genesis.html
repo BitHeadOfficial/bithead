@@ -16,9 +16,6 @@
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
 
-    <!-- Environment Variables Script -->
-    <script src="/config.js"></script>
-
     <!-- Core Dependencies -->
     <script src="/scripts/web3.js"></script>
     <!-- <script src="/scripts/wallet-adapter-phantom.js"></script> -->
@@ -28,6 +25,9 @@
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+
+    <!-- Environment Variables Script -->
+    <script src="/config.js"></script>
 
     <!-- CookieConsent by Osano -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css" />
@@ -619,15 +619,22 @@ Each Genesis NFT will manifest as a singular being — a mosaic of art and algor
     </main>
 
     <!-- FOOTER START -->
-    <!-- FOOTER REMOVED: now loaded dynamically or handled elsewhere for consistency -->
+    <footer>
+      <div class="section-divider"></div>
+      <div class="footer-container">
+        <p>&copy; 2025 BitHeadOfficial. All rights reserved. | <a href="/privacy-policy.html" style="color: #4296d2;">Privacy Policy</a></p>
+        <ul class="social-links">
+          <li>
+            <a href="https://x.com/BitHeadOfficial" target="_blank">X</a>
+          </li>
+        </ul>
+      </div>
+    </footer>
     <!-- FOOTER END -->
 
     <!-- Load genesis.js last -->
     <script src="/scripts/genesis.js" defer></script>
     <script src="scripts/script.js"></script>
-    <div id="footer-container"></div>
-
-    <!-- Re-insert (or uncomment) the inline script block (for whitelist form and parallax effect) so that it runs after genesis.js is loaded (i.e. after the defer'd genesis.js). -->
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('whitelistForm');
@@ -668,12 +675,12 @@ Each Genesis NFT will manifest as a singular being — a mosaic of art and algor
               statusDiv.classList.add('error');
             }
           } catch (err) {
-             statusDiv.textContent = 'Server error. Please try again.';
-             statusDiv.classList.add('error');
+            statusDiv.textContent = 'Server error. Please try again.';
+            statusDiv.classList.add('error');
           }
         });
-        // Render whitelist bar and count –– only fetch if authenticated (using global getStoredToken)
-        const storedToken = window.getStoredToken(); // (Using global getStoredToken)
+        // Render whitelist bar and count - only fetch if authenticated
+        const storedToken = getStoredToken(); // Assuming getStoredToken is available in genesis.js and can be accessed globally or passed
         if (storedToken) {
           fetch(`${API_URL}/admin/whitelist`)
             .then(res => {
@@ -683,18 +690,18 @@ Each Genesis NFT will manifest as a singular being — a mosaic of art and algor
                 }
                 return res.json();
             })
-            .then(data => {
-              if (data && data.whitelist) {
-                const used = data.whitelist.length;
-                const total = 8000;
-                let percent = Math.min(100, Math.round((used / total) * 100));
-                // Ensure a minimum width for visibility if percent > 0
-                let barWidth = percent > 0 ? Math.max(percent, 2) : 0;
-                document.getElementById('whitelistSpotsBar').innerHTML = barWidth > 0 ? `<div class='bar-fill' style='width:${barWidth}%;'></div>` : "<div class='bar-fill' style='width:0;'></div>";
-                document.getElementById('whitelistSpotsCount').style.display = 'block';
-                document.getElementById('whitelistSpotsCount').textContent = `${used} / ${total} whitelisted`;
-              }
-            })
+          .then(data => {
+            if (data && data.whitelist) {
+              const used = data.whitelist.length;
+              const total = 8000;
+              let percent = Math.min(100, Math.round((used / total) * 100));
+              // Ensure a minimum width for visibility if percent > 0
+              let barWidth = percent > 0 ? Math.max(percent, 2) : 0;
+              document.getElementById('whitelistSpotsBar').innerHTML = barWidth > 0 ? `<div class='bar-fill' style='width:${barWidth}%;'></div>` : "<div class='bar-fill' style='width:0;'></div>";
+              document.getElementById('whitelistSpotsCount').style.display = 'block';
+              document.getElementById('whitelistSpotsCount').textContent = `${used} / ${total} whitelisted`;
+            }
+          })
             .catch(error => {
               console.error('Error fetching admin whitelist:', error);
               document.getElementById('whitelistSpotsBar').innerHTML = '<div style="color:#fff;padding:2px;">N/A</div>';
@@ -707,9 +714,8 @@ Each Genesis NFT will manifest as a singular being — a mosaic of art and algor
         }
       });
     </script>
-
-    <!-- Parallax effect for NFT image (inline script re-inserted) -->
     <script>
+      // Parallax effect for NFT image
       document.addEventListener('DOMContentLoaded', function() {
         const nftHero = document.querySelector('.nft-hero');
         const nftImage = document.querySelector('.nft-hero .nft-image');
