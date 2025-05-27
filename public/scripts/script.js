@@ -277,6 +277,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     let content = "";
     for (const key in components) {
+      // Skip footer if there's already a footer in the page
+      if (key === 'footer' && document.querySelector('footer')) {
+        continue;
+      }
       const html = await loadComponent(components[key]);
       content += html;
     }
