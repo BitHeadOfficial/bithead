@@ -725,6 +725,31 @@ const rateLimiter = rateLimit({
 // Apply rate limiting to all routes
 app.use(rateLimiter);
 
+// Serve founders wall page with environment variables
+app.get('/founders-wall', (req, res) => {
+    const htmlPath = path.join(__dirname, 'public', 'founders-wall.html');
+    fs.readFile(htmlPath, 'utf8', (err, html) => {
+        if (err) {
+            logger.error('Error reading founders wall page:', err);
+            return res.status(500).send('Error loading page');
+        }
+
+        // Inject environment variables
+        const injectedHtml = html.replace(
+            '</head>',
+            `<script>
+                window.env = {
+                    SOLANA_RPC_URL: '${process.env.SOLANA_RPC_URL}',
+                    FOUNDERS_WALLET_ADDRESS: '${process.env.RECIPIENT_WALLET}',
+                    API_URL: '${process.env.FRONTEND_URL || req.protocol + '://' + req.get('host')}'
+                };
+            </script></head>`
+        );
+
+        res.send(injectedHtml);
+    });
+});
+
 // Catch-all route for the genesis page
 app.get('/genesis', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'genesis.html'));

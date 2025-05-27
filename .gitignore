@@ -26,6 +26,10 @@ public/uploads/*
 .env.production
 *.env
 
+# Configuration
+public/scripts/config.js
+!public/scripts/config.template.js
+
 # Build output
 dist/
 build/
@@ -131,7 +135,7 @@ junit.xml
 # Misc
 .cache/
 .temp/
-.tmp/
+.tmp/ 
 *.zip
 *.tar.gz
 *.rar

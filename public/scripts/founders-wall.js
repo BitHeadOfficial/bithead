@@ -1,5 +1,5 @@
 // Initialize Solana connection
-const connection = new solanaWeb3.Connection(config.solanaRpcUrl);
+const connection = new solanaWeb3.Connection(window.env.SOLANA_RPC_URL);
 
 // Fibonacci sequence for pricing
 const getFibonacciPrice = (n) => {
@@ -135,7 +135,7 @@ async function submitLogo(event) {
         const transaction = new solanaWeb3.Transaction().add(
             solanaWeb3.SystemProgram.transfer({
                 fromPubkey: wallet,
-                toPubkey: new solanaWeb3.PublicKey(config.foundersWalletAddress),
+                toPubkey: new solanaWeb3.PublicKey(window.env.FOUNDERS_WALLET_ADDRESS),
                 lamports: price * solanaWeb3.LAMPORTS_PER_SOL
             })
         );
