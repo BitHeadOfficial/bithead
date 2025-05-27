@@ -304,12 +304,25 @@ document.addEventListener("DOMContentLoaded", async () => {
       // If header is static in HTML, attach after DOMContentLoaded
       setupBurgerMenu();
     }
+  }
 
-    // Only load footer if there's a footer container and no existing footer
-    if (footerContainer && !document.querySelector('footer')) {
-      const footerHtml = await loadComponent("components/footer.html");
+  // Load footer for both main page and subpages
+  if (footerContainer && !document.querySelector('footer')) {
+    console.log('[Footer] Loading footer component');
+    try {
+      const footerHtml = await loadComponent("/components/footer.html");
+      console.log('[Footer] Footer component loaded successfully');
       footerContainer.innerHTML = footerHtml;
+      console.log('[Footer] Footer HTML injected into container');
+    } catch (error) {
+      console.error('[Footer] Error loading footer:', error);
     }
+  } else {
+    console.log('[Footer] Footer container not found or footer already exists:', {
+      hasFooterContainer: !!footerContainer,
+      hasExistingFooter: !!document.querySelector('footer'),
+      footerContainerPath: footerContainer ? footerContainer.id : 'not found'
+    });
   }
 
   setupPortfolioCardFlip();
