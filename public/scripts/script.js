@@ -271,7 +271,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       "nft-mint": "components/nft-mint.html",
       shop: "components/shop.html",
       exclusive: "components/exclusive.html",
-      cta: "components/cta.html"
+      cta: "components/cta.html",
+      footer: "components/footer.html"
     };
 
     let content = "";
@@ -310,7 +311,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (footerContainer && !document.querySelector('footer')) {
     console.log('[Footer] Loading footer component');
     try {
-      const footerHtml = await loadComponent("/components/footer.html");
+      const footerHtml = await loadComponent("components/footer.html");
       console.log('[Footer] Footer component loaded successfully');
       footerContainer.innerHTML = footerHtml;
       console.log('[Footer] Footer HTML injected into container');
