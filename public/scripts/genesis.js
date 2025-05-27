@@ -1,4 +1,7 @@
 // genesis.js
+// API configuration
+// const API_URL = 'https://bithead.at/api'; // (Remove or comment out if duplicate.)
+
 // Initialize Solana connection with configurable RPC URL and commitment settings
 const SOLANA_RPC_URL = window.env.SOLANA_RPC_URL; // Read from global env object
 const connection = new solanaWeb3.Connection(SOLANA_RPC_URL, {
@@ -10,6 +13,38 @@ const { Transaction } = solanaWeb3;
 const LAMPORTS_PER_SOL = 1000000000;
 const PAYMENT_AMOUNT = 1; // 1 SOL
 const TRANSACTION_TIMEOUT = 180000; // 3 minutes timeout for transaction confirmation
+
+// Token management functions
+const TOKEN_KEYS = {
+    WALLET: 'bithead_wallet_token',
+    PASSWORD: 'bithead_password_token',
+    ACCESS_TYPE: 'bithead_access_type'
+};
+
+function storeToken(token, type) {
+    if (type === 'wallet') {
+        localStorage.setItem(TOKEN_KEYS.WALLET, token);
+    } else if (type === 'password') {
+        localStorage.setItem(TOKEN_KEYS.PASSWORD, token);
+    }
+    localStorage.setItem(TOKEN_KEYS.ACCESS_TYPE, type);
+}
+
+function getStoredToken() {
+    const type = localStorage.getItem(TOKEN_KEYS.ACCESS_TYPE);
+    if (type === 'wallet') {
+        return localStorage.getItem(TOKEN_KEYS.WALLET);
+    } else if (type === 'password') {
+        return localStorage.getItem(TOKEN_KEYS.PASSWORD);
+    }
+    return null;
+}
+
+function clearTokens() {
+    localStorage.removeItem(TOKEN_KEYS.WALLET);
+    localStorage.removeItem(TOKEN_KEYS.PASSWORD);
+    localStorage.removeItem(TOKEN_KEYS.ACCESS_TYPE);
+}
 
 // Initialize GSAP
 function initializeGSAP() {
@@ -108,7 +143,7 @@ function showStatus(message, type) {
 function updateWalletButtonState() {
     console.log('Updating wallet button state...');
     const solanaPayBtn = document.getElementById('solanaPayBtn');
-    const accessType = window.getStoredToken();
+    const accessType = localStorage.getItem(TOKEN_KEYS.ACCESS_TYPE);
 
     if (solanaPayBtn) {
         // Always show "Sacrifice 0.01 SOL" text
@@ -178,9 +213,9 @@ function setupWalletConnection() {
                             unlockStatus.className = 'status';
                         }
                         // Clear wallet token
-                        window.clearTokens();
-                        if (window.getStoredToken() === 'wallet') {
-                            window.clearTokens();
+                        localStorage.removeItem(TOKEN_KEYS.WALLET);
+                        if (localStorage.getItem(TOKEN_KEYS.ACCESS_TYPE) === 'wallet') {
+                            localStorage.removeItem(TOKEN_KEYS.ACCESS_TYPE);
                         }
                         // Scroll to top
                         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -271,7 +306,7 @@ async function checkWalletAccessOnConnect(publicKey) {
         // Check if user has already paid 0.01 SOL or more
         if (data.hasAccess || (data.totalSent && data.totalSent >= 0.01 * LAMPORTS_PER_SOL)) {
             if (data.token) {
-                window.storeToken(data.token, 'wallet');
+                storeToken(data.token, 'wallet');
             }
             showStatus('Wallet access verified! Unlocking content...', 'success');
             unlockContent();
@@ -498,12 +533,12 @@ function setupWhitelistForm() {
                     statusDiv.textContent = `Error: ${res.status} ${res.statusText}`; // Generic error for non-JSON responses
                 }
             } else { // Success
-            const data = await res.json();
-            if (data.success) {
-                form.style.display = 'none';
-                successDiv.style.display = 'block';
-                successDiv.classList.add('visible');
-                statusDiv.textContent = '';
+                const data = await res.json();
+                if (data.success) {
+                    form.style.display = 'none';
+                    successDiv.style.display = 'block';
+                    successDiv.classList.add('visible');
+                    statusDiv.textContent = '';
                     localStorage.setItem('whitelist_submitted', '1');
                     // No need to re-enable form or reset flag on success, form is hidden
                     return; // Exit after successful submission
@@ -512,8 +547,8 @@ function setupWhitelistForm() {
                     // but keep as a fallback for non-success data with 200 status
                     if (data.error && data.error.includes('UNIQUE constraint failed')) {
                         statusDiv.textContent = 'You are already whitelisted with this email or wallet address.';
-            } else {
-                statusDiv.textContent = data.error || 'Failed to join whitelist.';
+                    } else {
+                        statusDiv.textContent = data.error || 'Failed to join whitelist.';
                     }
                 }
             }
@@ -657,7 +692,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (data.success) {
           console.log('Unlock successful, storing token');
-          window.storeToken(data.token, 'password');
+                storeToken(data.token, 'password');
           if (unlockStatus) {
             unlockStatus.textContent = 'Access granted. Content Unlocked!';
           unlockStatus.className = 'status success';
@@ -702,7 +737,7 @@ document.addEventListener("DOMContentLoaded", () => {
             window.scrollTo({ top: 0, behavior: "smooth" });
           }
         });
-        window.clearTokens();
+            clearTokens();
         unlockStatus.textContent = '';
         unlockStatus.className = 'status';
         donationWarningContainer.style.display = 'none';
@@ -779,7 +814,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Check for existing access
-    const storedToken = window.getStoredToken();
+    const storedToken = getStoredToken();
     if (storedToken) {
         console.log('Found existing token, checking access...');
         loadProtectedContent();
@@ -853,7 +888,7 @@ async function loadProtectedContent() {
     try {
         console.log('Loading protected content...');
         
-        const token = window.getStoredToken();
+        const token = getStoredToken();
         if (!token) {
             console.log('No token found');
             throw new Error('No access token found');
@@ -868,7 +903,7 @@ async function loadProtectedContent() {
 
         if (!response.ok) {
             console.log('Access verification failed:', response.status);
-            window.clearTokens();
+            clearTokens();
             throw new Error('Failed to verify access');
         }
 
@@ -877,7 +912,7 @@ async function loadProtectedContent() {
 
         if (data.hasAccess) {
             // Store the token type for future reference
-            window.storeToken(token, data.accessType);
+            storeToken(token, data.accessType);
 
         // Call unlockContent for consistent animation behavior
         unlockContent();
@@ -900,7 +935,7 @@ async function loadProtectedContent() {
         console.log('Protected content loaded successfully');
         } else {
             console.log('Access denied by server');
-            window.clearTokens();
+            clearTokens();
             throw new Error('Access denied');
         }
     } catch (error) {
@@ -1262,7 +1297,7 @@ async function handleSolanaPayment() {
                 if (confirmationSuccess) {
                     // Store token and unlock content immediately after confirmation
                     console.log('Storing token and unlocking content...');
-                    window.storeToken(token, 'wallet');
+                    storeToken(token, 'wallet');
                     
                     // Force a check-access call to verify the token
                     try {
@@ -1299,7 +1334,7 @@ async function handleSolanaPayment() {
                 if (confirmationAttempts >= maxAttempts) {
                     // Even if confirmation fails, try to unlock content if we have the token
                     console.log('Attempting to unlock content despite confirmation failure...');
-                    window.storeToken(token, 'wallet');
+                    storeToken(token, 'wallet');
                     unlockContent();
                     updateWalletButtonState();
                     throw new Error('Transaction sent but confirmation status unclear. Content unlocked anyway - please check your wallet for status.');
@@ -1313,7 +1348,7 @@ async function handleSolanaPayment() {
         if (!confirmationSuccess) {
             // Try to unlock content anyway
             console.log('Attempting to unlock content despite confirmation failure...');
-            window.storeToken(token, 'wallet');
+            storeToken(token, 'wallet');
             unlockContent();
             updateWalletButtonState();
             throw new Error('Transaction sent but confirmation status unclear. Content unlocked anyway - please check your wallet for status.');
@@ -1470,4 +1505,14 @@ function setupPaymentSection() {
         };
     }
 }
+  
+// Ensure getStoredToken is globally available (e.g. via window) so that inline scripts can call it.
+window.getStoredToken = getStoredToken;
+
+// (Optional) Re-render or update the connect wallet button if it's missing.
+(function() {
+  // (Insert your wallet button update logic here, e.g. re-render or update a DOM element.)
+  // (For example, if you have a function updateWalletButton, call it.)
+  // updateWalletButton();
+})();
   
