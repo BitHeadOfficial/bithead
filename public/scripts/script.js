@@ -271,16 +271,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       "nft-mint": "components/nft-mint.html",
       shop: "components/shop.html",
       exclusive: "components/exclusive.html",
-      cta: "components/cta.html",
-      footer: "components/footer.html",
+      cta: "components/cta.html"
     };
 
     let content = "";
     for (const key in components) {
-      // Skip footer if there's already a footer in the page
-      if (key === 'footer' && document.querySelector('footer')) {
-        continue;
-      }
       const html = await loadComponent(components[key]);
       content += html;
     }
