@@ -1,4 +1,4 @@
-const API_URL = window.API_URL || 'https://bithead.at/api';
+const API_URL = 'https://bithead.at/api';
 
 // Load a file
 const loadComponent = async (path) => {
@@ -306,7 +306,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       setupBurgerMenu();
     }
 
-    if (footerContainer) {
+    // Only load footer if there's a footer container and no existing footer
+    if (footerContainer && !document.querySelector('footer')) {
       const footerHtml = await loadComponent("components/footer.html");
       footerContainer.innerHTML = footerHtml;
     }

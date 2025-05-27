@@ -1,21 +1,13 @@
 // genesis.js
 // API configuration
-if (!window.env || !window.env.API_URL) {
-    console.error('API_URL not configured in window.env');
-    throw new Error('API_URL not configured - check config.js and environment variables');
-}
+const API_URL = 'https://bithead.at/api'; // Use the custom domain for backend API calls
 
 // Initialize Solana connection with configurable RPC URL and commitment settings
-if (!window.env.SOLANA_RPC_URL) {
-    console.error('SOLANA_RPC_URL not configured in window.env');
-    throw new Error('SOLANA_RPC_URL not configured - check config.js and environment variables');
-}
-
-const SOLANA_RPC_URL = window.env.SOLANA_RPC_URL;
+const SOLANA_RPC_URL = window.env.SOLANA_RPC_URL; // Read from global env object
 const connection = new solanaWeb3.Connection(SOLANA_RPC_URL, {
     commitment: 'confirmed',
-    confirmTransactionInitialTimeout: 60000,
-    wsEndpoint: SOLANA_RPC_URL.replace('https', 'wss')
+    confirmTransactionInitialTimeout: 60000, // 60 seconds initial timeout
+    wsEndpoint: SOLANA_RPC_URL.replace('https', 'wss') // Enable WebSocket for better transaction monitoring
 });
 const { Transaction } = solanaWeb3;
 const LAMPORTS_PER_SOL = 1000000000;
@@ -294,11 +286,7 @@ async function checkWalletAccessOnConnect(publicKey) {
     console.log('Checking wallet access for:', publicKey);
     
     try {
-        if (!window.env.API_URL) {
-            throw new Error('API_URL not configured');
-        }
-
-        const response = await fetch(`${window.env.API_URL}/check-access-wallet`, {
+        const response = await fetch(`${API_URL}/check-access-wallet`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ publicKey })
@@ -342,11 +330,8 @@ async function checkWalletAccessOnConnect(publicKey) {
 // Update API endpoint paths
 async function checkWhitelistStatus(walletAddress) {
     try {
-        if (!window.env.API_URL) {
-            throw new Error('API_URL not configured');
-        }
-
-        const response = await fetch(`${window.env.API_URL}/whitelist/check?walletAddress=${encodeURIComponent(walletAddress)}`, {
+        // Changed to GET and passing walletAddress as a query parameter
+        const response = await fetch(`${API_URL}/whitelist/check?walletAddress=${encodeURIComponent(walletAddress)}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }, // Still include for consistency, though less critical for GET with query params
             // No body for GET request
@@ -529,7 +514,7 @@ function setupWhitelistForm() {
         const wallet = window.solana.publicKey.toString();
 
         try {
-            const res = await fetch(`${window.env.API_URL}/whitelist`, {
+            const res = await fetch(`${API_URL}/whitelist`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, email, walletAddress: wallet })
@@ -548,12 +533,12 @@ function setupWhitelistForm() {
                     statusDiv.textContent = `Error: ${res.status} ${res.statusText}`; // Generic error for non-JSON responses
                 }
             } else { // Success
-                const data = await res.json();
-                if (data.success) {
-                    form.style.display = 'none';
-                    successDiv.style.display = 'block';
-                    successDiv.classList.add('visible');
-                    statusDiv.textContent = '';
+            const data = await res.json();
+            if (data.success) {
+                form.style.display = 'none';
+                successDiv.style.display = 'block';
+                successDiv.classList.add('visible');
+                statusDiv.textContent = '';
                     localStorage.setItem('whitelist_submitted', '1');
                     // No need to re-enable form or reset flag on success, form is hidden
                     return; // Exit after successful submission
@@ -562,8 +547,8 @@ function setupWhitelistForm() {
                     // but keep as a fallback for non-success data with 200 status
                     if (data.error && data.error.includes('UNIQUE constraint failed')) {
                         statusDiv.textContent = 'You are already whitelisted with this email or wallet address.';
-                    } else {
-                        statusDiv.textContent = data.error || 'Failed to join whitelist.';
+            } else {
+                statusDiv.textContent = data.error || 'Failed to join whitelist.';
                     }
                 }
             }
@@ -692,8 +677,8 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log('Unlock button clicked with password:', password);
       
       try {
-        console.log('Sending unlock request to:', `${window.env.API_URL}/unlock`);
-        const response = await fetch(`${window.env.API_URL}/unlock`, {
+        console.log('Sending unlock request to:', `${API_URL}/unlock`);
+        const response = await fetch(`${API_URL}/unlock`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -910,7 +895,7 @@ async function loadProtectedContent() {
         }
 
         console.log('Verifying access with token...');
-        const response = await fetch(`${window.env.API_URL}/check-access`, {
+        const response = await fetch(`${API_URL}/check-access`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -1214,10 +1199,6 @@ async function handleSolanaPayment() {
     }
 
     try {
-        if (!window.env.API_URL) {
-            throw new Error('API_URL not configured');
-        }
-
         // Check if Phantom wallet is installed
         if (!window.solana || !window.solana.isPhantom) {
             console.error('Phantom wallet not detected');
@@ -1239,7 +1220,7 @@ async function handleSolanaPayment() {
         solanaPayBtn.disabled = true;
 
         console.log('Sending payment request to server...');
-        const response = await fetch(`${window.env.API_URL}/payment`, {
+        const response = await fetch(`${API_URL}/payment`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ publicKey, amount: PAYMENT_AMOUNT })
@@ -1320,7 +1301,7 @@ async function handleSolanaPayment() {
                     
                     // Force a check-access call to verify the token
                     try {
-                        const verifyResponse = await fetch(`${window.env.API_URL}/check-access`, {
+                        const verifyResponse = await fetch(`${API_URL}/check-access`, {
                             headers: {
                                 'Authorization': `Bearer ${token}`
                             }
@@ -1524,14 +1505,4 @@ function setupPaymentSection() {
         };
     }
 }
-  
-// Ensure getStoredToken is globally available (e.g. via window) so that inline scripts can call it.
-window.getStoredToken = getStoredToken;
-
-// (Optional) Re-render or update the connect wallet button if it's missing.
-(function() {
-  // (Insert your wallet button update logic here, e.g. re-render or update a DOM element.)
-  // (For example, if you have a function updateWalletButton, call it.)
-  // updateWalletButton();
-})();
   
