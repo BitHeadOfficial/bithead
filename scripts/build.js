@@ -5,7 +5,7 @@ const path = require('path');
 const configPath = path.join(__dirname, '../public/config.js');
 let configContent = fs.readFileSync(configPath, 'utf8');
 
-// Replace environment variables
+// Get environment variables with fallbacks
 const envVars = {
     BACKEND_URL: process.env.BACKEND_URL || 'https://api.bithead.at',
     FRONTEND_URL: process.env.FRONTEND_URL || 'https://bithead.at',
@@ -13,14 +13,15 @@ const envVars = {
     SOLANA_NETWORK: process.env.SOLANA_NETWORK || 'mainnet-beta'
 };
 
-// Replace each environment variable
-Object.entries(envVars).forEach(([key, value]) => {
-    configContent = configContent.replace(
-        new RegExp(`process\\.env\\.${key}`, 'g'),
-        `'${value}'`
-    );
-});
+// Create the final config content
+const finalConfig = `// Generated config file - DO NOT EDIT DIRECTLY
+window.env = {
+    API_URL: '${envVars.BACKEND_URL}',
+    FRONTEND_URL: '${envVars.FRONTEND_URL}',
+    SOLANA_RPC_URL: '${envVars.SOLANA_RPC_URL}',
+    SOLANA_NETWORK: '${envVars.SOLANA_NETWORK}'
+};`;
 
 // Write the processed config
-fs.writeFileSync(configPath, configContent);
-console.log('Config file processed successfully'); 
+fs.writeFileSync(configPath, finalConfig);
+console.log('Config file generated successfully with values:', envVars); 

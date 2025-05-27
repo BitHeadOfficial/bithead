@@ -1,3 +1,5 @@
+const API_URL = window.API_URL || 'https://bithead.at/api';
+
 // Load a file
 const loadComponent = async (path) => {
   try {
@@ -203,8 +205,8 @@ function initializeContactForm() {
         
         try {
             // Submit to our proxy endpoint
-            console.log('[Contact Form] Sending request to ' + window.API_URL + '/contact');
-            const response = await fetch(window.API_URL + '/contact', {
+            console.log('[Contact Form] Sending request to ' + API_URL + '/contact');
+            const response = await fetch(API_URL + '/contact', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
