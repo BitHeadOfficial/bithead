@@ -32,6 +32,11 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// Add basic console logging at the very start
+console.log('Starting server...');
+console.log('Current working directory:', process.cwd());
+console.log('Node version:', process.version);
+
 // Verify environment variables
 console.log('Checking environment variables...');
 console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
@@ -808,107 +813,46 @@ const dbRun = (query, params = []) => {
     });
 };
 
-// Initialize database tables
-async function initializeDatabase() {
-    try {
-        // Check if settings table exists and has correct structure
-        let tableExists = await dbGet("SELECT name FROM sqlite_master WHERE type='table' AND name='settings'");
-        if (tableExists) {
-            const columns = await dbAll("PRAGMA table_info(settings)");
-            const requiredColumns = ['id', 'site_name', 'maintenance_mode', 'whitelist_enabled', 'max_users', 'created_at', 'updated_at'];
-            const hasAllColumns = requiredColumns.every(col => columns.some(c => c.name === col));
-            
-            if (!hasAllColumns) {
-                console.log("Settings table exists but has incorrect structure. Dropping and recreating...");
-                await dbRun("DROP TABLE settings");
-                tableExists = null; // Force recreation
-            }
-        }
-
-        // Create settings table if it doesn't exist or was dropped
-        if (!tableExists) {
-            console.log("Creating settings table...");
-            await dbRun(`
-                CREATE TABLE settings (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                site_name TEXT,
-                maintenance_mode BOOLEAN DEFAULT 0,
-                whitelist_enabled BOOLEAN DEFAULT 1,
-                max_users INTEGER DEFAULT 1000,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-            
-            // Insert default settings
-            await dbRun(`
-                INSERT INTO settings (site_name, maintenance_mode, whitelist_enabled, max_users)
-                VALUES (?, ?, ?, ?)
-            `, ['BitHeadz', 0, 1, 1000]);
-            console.log("Default settings inserted.");
-        }
-
-        // Activity logs table
-        await dbRun(`
-            CREATE TABLE IF NOT EXISTS activity_logs (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER,
-                type TEXT,
-                message TEXT,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-
-        // Admin users table
-        await dbRun(`
-            CREATE TABLE IF NOT EXISTS admin_users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT UNIQUE NOT NULL,
-                password_hash TEXT NOT NULL,
-                role TEXT DEFAULT 'admin',
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
-
-        // Insert default admin user if table is empty
-        const adminUser = await dbGet('SELECT * FROM admin_users LIMIT 1');
-        if (!adminUser) {
-            if (!process.env.ADMIN_PASSWORD) {
-                console.error('ADMIN_PASSWORD environment variable is not set. Cannot create default admin user.');
+// Add database connection verification
+async function verifyDatabaseConnection() {
+    return new Promise((resolve, reject) => {
+        console.log('Verifying database connection...');
+        db.get('SELECT 1', (err, row) => {
+            if (err) {
+                console.error('Database connection error:', err);
+                reject(err);
             } else {
-                const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
-                await dbRun('INSERT INTO admin_users (username, password_hash) VALUES (?, ?)', ['admin', hashedPassword]);
-                console.log("Default admin user 'admin' created.");
+                console.log('Database connection verified');
+                resolve();
             }
-        }
-
-        console.log('Database initialized successfully');
-    } catch (error) {
-        console.error('Error initializing database:', error);
-        // Do not exit here, let the startServer catch handle it
-        throw error; // Re-throw to be caught by startServer
-    }
+        });
+    });
 }
 
-// Move server start into an async function that awaits database initialization
+// Modify startServer function
 async function startServer() {
     try {
-        logger.info('Starting server initialization...');
+        console.log('Starting server initialization...');
         
         // Log environment info
-        logger.info('Environment:', {
+        console.log('Environment:', {
             NODE_ENV: process.env.NODE_ENV,
             PORT: process.env.PORT,
             DATABASE_PATH: process.env.DATABASE_PATH
         });
 
         // Initialize database
-        logger.info('Initializing database...');
+        console.log('Initializing database...');
         await initializeDatabase();
-        logger.info('Database initialization complete');
+        console.log('Database initialization complete');
+
+        // Verify database connection
+        console.log('Verifying database connection...');
+        await verifyDatabaseConnection();
+        console.log('Database connection verified');
 
         // Verify directories
-        logger.info('Verifying required directories...');
+        console.log('Verifying required directories...');
         const requiredDirs = [
             path.join(__dirname, 'logs'),
             path.join(__dirname, 'data', 'secure')
@@ -916,18 +860,20 @@ async function startServer() {
         
         for (const dir of requiredDirs) {
             if (!fs.existsSync(dir)) {
-                logger.info(`Creating directory: ${dir}`);
+                console.log(`Creating directory: ${dir}`);
                 fs.mkdirSync(dir, { recursive: true });
             }
         }
-        logger.info('Directory verification complete');
+        console.log('Directory verification complete');
 
         // Start server
         const PORT = process.env.PORT || 3000;
-        logger.info(`Attempting to start server on port ${PORT}...`);
+        console.log(`Attempting to start server on port ${PORT}...`);
         
         const server = app.listen(PORT, '0.0.0.0', () => {
-            logger.info(`Server successfully started on port ${PORT}`);
+            console.log(`Server successfully started on port ${PORT}`);
+            // Now that server is running, switch to logger
+            logger.info('Server startup complete');
             logger.info('Admin routes registered:');
             logger.info('- POST /api/admin/login');
             logger.info('- GET /api/admin/verify');
@@ -936,15 +882,15 @@ async function startServer() {
 
         // Add error handler for the server
         server.on('error', (error) => {
-            logger.error('Server error:', error);
-            logger.error('Stack trace:', error.stack);
+            console.error('Server error:', error);
+            console.error('Stack trace:', error.stack);
             process.exit(1);
         });
 
     } catch (error) {
-        logger.error('Failed to start server:', error);
-        logger.error('Stack trace:', error.stack);
-        // Give logger time to write before exiting
+        console.error('Failed to start server:', error);
+        console.error('Stack trace:', error.stack);
+        // Give time for logs to be written
         setTimeout(() => process.exit(1), 1000);
     }
 }
