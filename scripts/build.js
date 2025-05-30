@@ -20,6 +20,75 @@ window.env = ${JSON.stringify(env, null, 2)};
 </script>
 `;
 
+// Create config.js content
+const configContent = `
+// Shared configuration and utilities
+export const API_URL = window.env.BACKEND_URL;
+export const SOLANA_RPC_URL = window.env.SOLANA_RPC_URL;
+export const SOLANA_NETWORK = window.env.SOLANA_NETWORK;
+
+// Utility functions
+export function setupSmoothScrolling() {
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+}
+
+export function setupScrollSpy() {
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('nav a[href^="#"]');
+
+    window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            const sectionHeight = section.clientHeight;
+            if (window.scrollY >= sectionTop - 200) {
+                current = section.getAttribute('id');
+            }
+        });
+
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href').slice(1) === current) {
+                link.classList.add('active');
+            }
+        });
+    });
+}
+
+// Common API function
+export async function fetchAPI(endpoint, options = {}) {
+    try {
+        const response = await fetch(\`\${API_URL}\${endpoint}\`, {
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(\`HTTP error! status: \${response.status}\`);
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('API request failed:', error);
+        throw error;
+    }
+}
+`;
+
 // Function to inject environment variables into HTML files
 function injectEnvIntoHtml(filePath) {
     const content = fs.readFileSync(filePath, 'utf8');
@@ -66,12 +135,9 @@ if (!fs.existsSync(distScriptsDir)) {
     fs.mkdirSync(distScriptsDir, { recursive: true });
 }
 
-// Copy config.js to dist/scripts
-console.log('Copying config.js to dist/scripts...');
-fs.copyFileSync(
-    path.join(__dirname, '..', 'public', 'scripts', 'config.js'),
-    path.join(distScriptsDir, 'config.js')
-);
+// Create config.js in dist/scripts
+console.log('Creating config.js in dist/scripts...');
+fs.writeFileSync(path.join(distScriptsDir, 'config.js'), configContent);
 
 // Inject environment variables into HTML files
 console.log('Injecting environment variables into HTML files...');
