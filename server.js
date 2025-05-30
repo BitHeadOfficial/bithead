@@ -24,6 +24,7 @@ import { updateMetrics } from './utils/logger.js';
 import rateLimit from 'express-rate-limit';
 import contactRoutes from './routes/contact.js';
 import whitelistRoutes from './routes/whitelist.js';
+import { errorLogger, requestLogger, logWalletConnection, logTransaction } from './utils/logger.js';
 
 // Load environment variables
 dotenv.config();
@@ -99,7 +100,8 @@ app.use(helmet({
 }));
 app.use(cors());
 app.use(express.json());
-app.use(morgan('dev'));
+app.use(requestLogger);
+app.use(morgan('combined', { stream }));
 
 // Trust proxy for rate limiting behind reverse proxy
 app.set('trust proxy', 1);
@@ -151,11 +153,13 @@ const protectedContent = {
 };
 
 // Whitelist storage
-const WHITELIST_FILE = path.join(__dirname, 'whitelist.json');
+const WHITELIST_FILE = path.join(__dirname, 'data', 'secure', 'whitelist.json');
 
 // Initialize whitelist file if it doesn't exist
 if (!fs.existsSync(WHITELIST_FILE)) {
+    fs.mkdirSync(path.dirname(WHITELIST_FILE), { recursive: true });
     fs.writeFileSync(WHITELIST_FILE, JSON.stringify([]));
+    fs.chmodSync(WHITELIST_FILE, 0o600); // Set secure permissions
 }
 
 // Initialize Solana connection
@@ -340,6 +344,7 @@ app.get('/api/check-access', verifyToken, async (req, res) => {
 app.post('/api/check-access-wallet', async (req, res) => {
     try {
         const { publicKey } = req.body;
+        logWalletConnection(publicKey, true);
         console.log('[WalletCheck] Checking access for publicKey:', publicKey);
         if (!publicKey) {
             console.log('[WalletCheck] No public key provided');
@@ -441,6 +446,7 @@ app.post('/api/check-access-wallet', async (req, res) => {
             return res.json({ hasAccess: false, totalSent: totalLamports });
         }
     } catch (error) {
+        logWalletConnection(req.body.publicKey, false);
         updateMetrics.error('WalletCheckError');
         console.error('Error in /api/check-access-wallet:', error);
         if (error && error.stack) console.error(error.stack);
@@ -529,7 +535,10 @@ app.post('/api/payment', async (req, res) => {
                 message: 'Please sign the transaction in your wallet'
             });
 
+            logTransaction(transaction.signature, amount, true);
+
         } catch (error) {
+            logTransaction(req.body.transactionId, req.body.amount, false);
             updateMetrics.transaction('failed');
             updateMetrics.error('PaymentError');
             console.error('Transaction creation error:', error);
@@ -698,13 +707,14 @@ app.delete('/api/leaderboard', async (req, res) => {
     }
 });
 
-// Update error handling to use metrics
+// Add error handling middleware at the end
+app.use(errorLogger);
 app.use((err, req, res, next) => {
-    updateMetrics.error(err.name || 'UnknownError');
-    logger.error('Unhandled error:', err);
-    res.status(500).json({ 
-        error: 'Internal server error',
-        message: process.env.NODE_ENV === 'development' ? err.message : undefined
+    res.status(err.status || 500).json({
+        success: false,
+        error: process.env.NODE_ENV === 'production' 
+            ? 'An error occurred' 
+            : err.message
     });
 });
 

@@ -48,3 +48,28 @@ footer p {
 .social-links a:hover {
   color: #ccc;
 }
+
+.footer-container {
+    padding: 2rem;
+    text-align: center;
+    color: #fff;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+}
+
+.footer-links a {
+    color: #4296d2;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+    color: #fff;
+}
