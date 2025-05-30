@@ -1,37 +1,70 @@
 // server.js
+// Core Node.js modules
+import path from 'path';
+import fs from 'fs';
+import http from 'http';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// NPM dependencies
 import express from 'express';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import path from 'path';
-import fs from 'fs';
 import sqlite3 from 'sqlite3';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import rateLimit from 'express-rate-limit';
+import { Connection, PublicKey, Transaction, SystemProgram } from '@solana/web3.js';
+
+// Local modules
 import { errorHandler } from './middleware/index.js';
 import { config } from './config/index.js';
 import logger from './utils/logger.js';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
 import userRoutes from './routes/user.js';
 import paymentRoutes from './routes/payment.js';
 import adminRouter from './routes/admin.js';
 import db from './db/index.js';
-import { Connection, PublicKey, Transaction, SystemProgram } from '@solana/web3.js';
 import monitoringRoutes from './routes/monitoring.js';
 import { updateMetrics } from './utils/logger.js';
-import rateLimit from 'express-rate-limit';
 import contactRoutes from './routes/contact.js';
 import whitelistRoutes from './routes/whitelist.js';
 import { errorLogger, requestLogger, logWalletConnection, logTransaction } from './utils/logger.js';
-import http from 'http';
 
-// Load environment variables
-dotenv.config();
+// Initialize error handling
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+    console.error('Stack trace:', error.stack);
+    process.exit(1);
+});
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    console.error('Stack trace:', reason?.stack);
+    process.exit(1);
+});
+
+// Initialize environment
+console.log('Loading environment variables...');
+try {
+    dotenv.config();
+    console.log('Environment variables loaded');
+} catch (error) {
+    console.error('Failed to load environment variables:', error);
+    process.exit(1);
+}
+
+// Setup __dirname equivalent for ES modules
+console.log('Setting up module paths...');
+try {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = dirname(__filename);
+    console.log('Module paths configured');
+} catch (error) {
+    console.error('Failed to setup module paths:', error);
+    process.exit(1);
+}
 
 // Add basic console logging at the start
 console.log('Starting server initialization...');
@@ -91,7 +124,7 @@ app.use(morgan('combined', { stream }));
 app.set('trust proxy', 1);
 
 // Serve static files from the public directory
-app.use(express.static(join(__dirname, 'public'), {
+app.use(express.static(path.join(__dirname, 'public'), {
   setHeaders: (res, path) => {
     if (path.endsWith('.css')) {
       res.setHeader('Content-Type', 'text/css');
@@ -841,18 +874,6 @@ async function startServer() {
             if (error.code === 'EADDRINUSE') {
                 console.error(`Port ${port} is already in use`);
             }
-        });
-
-        process.on('uncaughtException', (error) => {
-            console.error('Uncaught Exception:', error);
-            console.error('Stack trace:', error.stack);
-            process.exit(1);
-        });
-
-        process.on('unhandledRejection', (reason, promise) => {
-            console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-            console.error('Stack trace:', reason?.stack);
-            process.exit(1);
         });
 
     } catch (error) {
