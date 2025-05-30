@@ -155,9 +155,14 @@ const protectedContent = {
 // Whitelist storage
 const WHITELIST_FILE = path.join(__dirname, 'data', 'secure', 'whitelist.json');
 
+// Ensure data/secure directory exists
+const secureDir = path.join(__dirname, 'data', 'secure');
+if (!fs.existsSync(secureDir)) {
+    fs.mkdirSync(secureDir, { recursive: true });
+}
+
 // Initialize whitelist file if it doesn't exist
 if (!fs.existsSync(WHITELIST_FILE)) {
-    fs.mkdirSync(path.dirname(WHITELIST_FILE), { recursive: true });
     fs.writeFileSync(WHITELIST_FILE, JSON.stringify([]));
     fs.chmodSync(WHITELIST_FILE, 0o600); // Set secure permissions
 }
@@ -888,16 +893,16 @@ async function startServer() {
 
         // Start server
         const PORT = process.env.PORT || 3000;
-        app.listen(PORT, () => {
-            console.log(`Server running on port ${PORT}`);
-            console.log('Admin routes registered:');
-            console.log('- POST /api/admin/login');
-            console.log('- GET /api/admin/verify');
-            console.log('- GET /api/admin/whitelist');
+        app.listen(PORT, '0.0.0.0', () => {
+            logger.info(`Server running on port ${PORT}`);
+            logger.info('Admin routes registered:');
+            logger.info('- POST /api/admin/login');
+            logger.info('- GET /api/admin/verify');
+            logger.info('- GET /api/admin/whitelist');
         });
 
     } catch (error) {
-        console.error('Failed to start server after database initialization:', error);
+        logger.error('Failed to start server after database initialization:', error);
         process.exit(1);
     }
 }
