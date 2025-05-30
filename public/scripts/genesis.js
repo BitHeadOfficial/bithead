@@ -2,12 +2,13 @@
 // API configuration
 const API_URL = window.API_URL || 'https://bithead.onrender.com/api';
 
-// Use global solanaWeb3 object
-const { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } = window.solanaWeb3 || {};
-
 // Constants
 const PAYMENT_AMOUNT = 0.01; // 0.01 SOL
 const RECIPIENT_ADDRESS = '5Zd2EiC7S2DaT5mQyC1etYmusNPyEQtHDgojdf5oLHLE'; // Production recipient wallet
+const TRANSACTION_TIMEOUT = 30000; // 30 seconds timeout for transaction confirmation
+
+// Use global solanaWeb3 object
+const { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } = window.solanaWeb3 || {};
 
 // Initialize Solana connection
 let connection;
@@ -601,10 +602,20 @@ function setupWhitelistForm() {
     updateWhitelistForm();
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     // Initialize GSAP
-    const gsapInitialized = initializeGSAP();
-    
+    const gsapInitialized = await initializeGSAP();
+    if (!gsapInitialized) {
+        console.error('Failed to initialize GSAP, some animations may not work');
+    }
+
+    // Initialize other components
+    initSolana();
+    setupWalletConnection();
+    setupWhitelistForm();
+    setupPaymentSection();
+    initCountdown();
+
     // DOM Elements
     const secretPassword = document.getElementById('secretPassword');
     const unlockBtn = document.getElementById('unlockBtn');
@@ -846,15 +857,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (localStorage.getItem('genesisUnlocked')) {
         unlockContent();
     }
-
-    // Setup wallet connection
-    setupWalletConnection();
-
-    // Setup payment section
-    setupPaymentSection();
-
-    // Setup whitelist form
-    setupWhitelistForm();
 
     // Milestone panel interaction
     const milestonePanel = document.getElementById('milestone-panel');
@@ -1527,31 +1529,4 @@ function setupPaymentSection() {
         };
     }
 }
-
-// Wait for libraries to load
-window.addEventListener('load', async function() {
-    // Initialize GSAP first
-    const gsapInitialized = await initializeGSAP();
-    if (!gsapInitialized) {
-        console.error('Failed to initialize GSAP, some animations may not work');
-    }
-
-    // Then initialize other components
-    initSolana();
-    setupWalletConnection();
-    setupWhitelistForm();
-    initCountdown(); // Initialize countdown after GSAP is ready
-    
-    if (window.solana) {
-        console.log('Phantom wallet detected');
-        window.solana.on('connect', () => {
-            console.log('Connected to wallet');
-        });
-        window.solana.on('disconnect', () => {
-            console.log('Wallet disconnected');
-        });
-    } else {
-        console.error('Phantom wallet not detected');
-    }
-});
   
