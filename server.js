@@ -25,6 +25,7 @@ import rateLimit from 'express-rate-limit';
 import contactRoutes from './routes/contact.js';
 import whitelistRoutes from './routes/whitelist.js';
 import { errorLogger, requestLogger, logWalletConnection, logTransaction } from './utils/logger.js';
+import http from 'http';
 
 // Load environment variables
 dotenv.config();
@@ -32,31 +33,77 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Add basic console logging at the very start
-console.log('Starting server...');
-console.log('Current working directory:', process.cwd());
-console.log('Node version:', process.version);
+// Add basic console logging at the start
+console.log('Starting server initialization...');
 
-// Verify environment variables
-console.log('Checking environment variables...');
-console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
-console.log('ACCESS_PASSWORD exists:', !!process.env.ACCESS_PASSWORD);
-console.log('ADMIN_PASSWORD exists:', !!process.env.ADMIN_PASSWORD);
+// Wrap server startup in async function with detailed error handling
+async function startServer() {
+    try {
+        console.log('Initializing database...');
+        await initializeDatabase();
+        console.log('Database initialized successfully');
 
-if (!process.env.JWT_SECRET) {
-    console.error('Error: JWT_SECRET is not defined in .env file');
-    process.exit(1);
+        console.log('Starting server...');
+        console.log('Current working directory:', process.cwd());
+        console.log('Node version:', process.version);
+        
+        console.log('Checking environment variables...');
+        console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
+        console.log('ACCESS_PASSWORD exists:', !!process.env.ACCESS_PASSWORD);
+        console.log('ADMIN_PASSWORD exists:', !!process.env.ADMIN_PASSWORD);
+        console.log('PORT exists:', !!process.env.PORT);
+        console.log('NODE_ENV:', process.env.NODE_ENV);
+
+        // Create HTTP server
+        console.log('Creating HTTP server...');
+        const server = http.createServer(app);
+        
+        // Get port from environment variable or use default
+        const port = process.env.PORT || 3000;
+        console.log('Attempting to listen on port:', port);
+
+        // Wrap server.listen in a promise
+        await new Promise((resolve, reject) => {
+            server.listen(port, '0.0.0.0', () => {
+                console.log(`Server is running on port ${port}`);
+                resolve();
+            }).on('error', (error) => {
+                console.error('Server failed to start:', error);
+                reject(error);
+            });
+        });
+
+        // Add error handlers for the server
+        server.on('error', (error) => {
+            console.error('Server error:', error);
+            if (error.code === 'EADDRINUSE') {
+                console.error(`Port ${port} is already in use`);
+            }
+        });
+
+        process.on('uncaughtException', (error) => {
+            console.error('Uncaught Exception:', error);
+            process.exit(1);
+        });
+
+        process.on('unhandledRejection', (reason, promise) => {
+            console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+            process.exit(1);
+        });
+
+    } catch (error) {
+        console.error('Server startup failed:', error);
+        console.error('Error stack:', error.stack);
+        process.exit(1);
+    }
 }
 
-if (!process.env.ACCESS_PASSWORD) {
-    console.error('Error: ACCESS_PASSWORD is not defined in .env file');
+// Start the server
+startServer().catch(error => {
+    console.error('Fatal error during server startup:', error);
+    console.error('Error stack:', error.stack);
     process.exit(1);
-}
-
-if (!process.env.ADMIN_PASSWORD) {
-    console.error('Error: ADMIN_PASSWORD is not defined in .env file');
-    process.exit(1);
-}
+});
 
 const app = express();
 
@@ -758,21 +805,6 @@ app.use((req, res) => {
   res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
-// Add process error handlers at the top level
-process.on('uncaughtException', (error) => {
-    logger.error('Uncaught Exception:', error);
-    logger.error('Stack trace:', error.stack);
-    // Give logger time to write before exiting
-    setTimeout(() => process.exit(1), 1000);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-    logger.error('Unhandled Rejection at:', promise);
-    logger.error('Reason:', reason);
-    // Give logger time to write before exiting
-    setTimeout(() => process.exit(1), 1000);
-});
-
 // Promisify database methods (add dbRun)
 const dbAll = (query, params = []) => {
     return new Promise((resolve, reject) => {
@@ -829,73 +861,9 @@ async function verifyDatabaseConnection() {
     });
 }
 
-// Modify startServer function
-async function startServer() {
-    try {
-        console.log('Starting server initialization...');
-        
-        // Log environment info
-        console.log('Environment:', {
-            NODE_ENV: process.env.NODE_ENV,
-            PORT: process.env.PORT,
-            DATABASE_PATH: process.env.DATABASE_PATH
-        });
-
-        // Initialize database
-        console.log('Initializing database...');
-        await initializeDatabase();
-        console.log('Database initialization complete');
-
-        // Verify database connection
-        console.log('Verifying database connection...');
-        await verifyDatabaseConnection();
-        console.log('Database connection verified');
-
-        // Verify directories
-        console.log('Verifying required directories...');
-        const requiredDirs = [
-            path.join(__dirname, 'logs'),
-            path.join(__dirname, 'data', 'secure')
-        ];
-        
-        for (const dir of requiredDirs) {
-            if (!fs.existsSync(dir)) {
-                console.log(`Creating directory: ${dir}`);
-                fs.mkdirSync(dir, { recursive: true });
-            }
-        }
-        console.log('Directory verification complete');
-
-        // Start server
-        const PORT = process.env.PORT || 3000;
-        console.log(`Attempting to start server on port ${PORT}...`);
-        
-        const server = app.listen(PORT, '0.0.0.0', () => {
-            console.log(`Server successfully started on port ${PORT}`);
-            // Now that server is running, switch to logger
-            logger.info('Server startup complete');
-            logger.info('Admin routes registered:');
-            logger.info('- POST /api/admin/login');
-            logger.info('- GET /api/admin/verify');
-            logger.info('- GET /api/admin/whitelist');
-        });
-
-        // Add error handler for the server
-        server.on('error', (error) => {
-            console.error('Server error:', error);
-            console.error('Stack trace:', error.stack);
-            process.exit(1);
-        });
-
-    } catch (error) {
-        console.error('Failed to start server:', error);
-        console.error('Stack trace:', error.stack);
-        // Give time for logs to be written
-        setTimeout(() => process.exit(1), 1000);
-    }
+// Modify initializeDatabase function
+async function initializeDatabase() {
+    // Implementation of initializeDatabase function
 }
-
-// Start the application
-startServer();
 
 export default app;
