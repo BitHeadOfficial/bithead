@@ -16,19 +16,18 @@
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
 
-    <!-- Core Dependencies -->
-    <script src="/scripts/web3.js"></script>
-    <!-- <script src="/scripts/wallet-adapter-phantom.js"></script> -->
-    <script src="/scripts/genesis.js"></script>
-
     <!-- GSAP -->
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 
-    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-
     <!-- Environment Variables Script -->
     <script src="/config.js"></script>
+
+    <!-- Core Dependencies -->
+    <script type="module" src="/scripts/web3.js"></script>
+    <script type="module" src="/scripts/genesis.js"></script>
+
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
 
     <!-- CookieConsent by Osano -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css" />
@@ -76,16 +75,19 @@
     });
     </script>
 
-    <script>
+    <!-- Initialize Solana -->
+    <script type="module">
+      import { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
+      
       // Initialize Solana connection
       const initSolana = () => {
         try {
           // Read from global env object defined in config.js
-          window.solanaConnection = new solanaWeb3.Connection(window.env.SOLANA_RPC_URL);
-          window.Transaction = solanaWeb3.Transaction;
-          window.SystemProgram = solanaWeb3.SystemProgram;
-          window.PublicKey = solanaWeb3.PublicKey;
-          window.LAMPORTS_PER_SOL = solanaWeb3.LAMPORTS_PER_SOL;
+          window.solanaConnection = new Connection(window.env.SOLANA_RPC_URL);
+          window.Transaction = Transaction;
+          window.SystemProgram = SystemProgram;
+          window.PublicKey = PublicKey;
+          window.LAMPORTS_PER_SOL = LAMPORTS_PER_SOL;
           console.log('Solana initialized successfully');
         } catch (error) {
           console.error('Failed to initialize Solana:', error);
@@ -210,9 +212,7 @@
             <div class="or-divider">
               <span>or</span>
             </div>
-            <button id="solanaPayBtn" class="solana-button">
-              Sacrifice 1 SOL
-            </button>
+            <button id="solanaPayBtn" class="cta-button">Sacrifice 0.01 SOL</button>
             <div id="unlockStatus" class="status error" style="display:none;">Every transaction is considered a donation to the cause and is irreversable!<br>Only spend what you can afford to lose & always use a burner wallet!</div>
             <div id="donationWarningContainer" style="display:none; flex-direction:column; align-items:center; gap:0.5rem; margin-top:0.5rem;">
               <label for="donationAgreeCheckbox" class="donation-agree-label">
@@ -623,109 +623,7 @@ Each Genesis NFT will manifest as a singular being — a mosaic of art and algor
     <div id="footer-container"></div>
     <!-- FOOTER END -->
 
-    <!-- Load genesis.js last -->
-    <script src="/scripts/genesis.js" defer></script>
-    <script src="scripts/script.js"></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('whitelistForm');
-        const statusDiv = document.getElementById('whitelistStatus');
-        const successDiv = document.getElementById('whitelistSuccess');
-        if (localStorage.getItem('whitelist_submitted')) {
-          form.style.display = 'none';
-          successDiv.style.display = 'block';
-          successDiv.classList.add('visible');
-        } else {
-          successDiv.style.display = 'none';
-          successDiv.classList.remove('visible');
-        }
-        form.addEventListener('submit', async function(e) {
-          e.preventDefault();
-          const name = document.getElementById('whitelistName').value;
-          const email = document.getElementById('whitelistEmail').value;
-          const wallet = document.getElementById('walletAddress').value;
-          statusDiv.textContent = '';
-          try {
-            const res = await fetch(`${API_URL}/whitelist`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ name, email, walletAddress: wallet })
-            });
-            const data = await res.json();
-            if (data.success) {
-              form.style.transition = 'opacity 0.7s cubic-bezier(.4,0,.2,1)';
-              form.style.opacity = '0';
-              setTimeout(() => {
-                form.style.display = 'none';
-                successDiv.style.display = 'block';
-                successDiv.classList.add('visible');
-              }, 700);
-              localStorage.setItem('whitelist_submitted', '1');
-            } else {
-              statusDiv.textContent = data.error || 'Failed to join whitelist.';
-              statusDiv.classList.add('error');
-            }
-          } catch (err) {
-            statusDiv.textContent = 'Server error. Please try again.';
-            statusDiv.classList.add('error');
-          }
-        });
-        // Render whitelist bar and count - only fetch if authenticated
-        const storedToken = getStoredToken(); // Assuming getStoredToken is available in genesis.js and can be accessed globally or passed
-        if (storedToken) {
-          fetch(`${API_URL}/admin/whitelist`)
-            .then(res => {
-                if (!res.ok) {
-                    // Handle non-200 responses, e.g., 401
-                    throw new Error(`HTTP error! status: ${res.status}`);
-                }
-                return res.json();
-            })
-          .then(data => {
-            if (data && data.whitelist) {
-              const used = data.whitelist.length;
-              const total = 8000;
-              let percent = Math.min(100, Math.round((used / total) * 100));
-              // Ensure a minimum width for visibility if percent > 0
-              let barWidth = percent > 0 ? Math.max(percent, 2) : 0;
-              document.getElementById('whitelistSpotsBar').innerHTML = barWidth > 0 ? `<div class='bar-fill' style='width:${barWidth}%;'></div>` : "<div class='bar-fill' style='width:0;'></div>";
-              document.getElementById('whitelistSpotsCount').style.display = 'block';
-              document.getElementById('whitelistSpotsCount').textContent = `${used} / ${total} whitelisted`;
-            }
-          })
-            .catch(error => {
-              console.error('Error fetching admin whitelist:', error);
-              document.getElementById('whitelistSpotsBar').innerHTML = '<div style="color:#fff;padding:2px;">N/A</div>';
-              document.getElementById('whitelistSpotsCount').textContent = '';
-            });
-        } else {
-            // Display default state if not authenticated
-            document.getElementById('whitelistSpotsBar').innerHTML = '<div style="color:#fff;padding:2px;">N/A</div>';
-            document.getElementById('whitelistSpotsCount').textContent = '';
-        }
-      });
-    </script>
-    <script>
-      // Parallax effect for NFT image
-      document.addEventListener('DOMContentLoaded', function() {
-        const nftHero = document.querySelector('.nft-hero');
-        const nftImage = document.querySelector('.nft-hero .nft-image');
-        if (nftHero && nftImage) {
-          nftHero.addEventListener('mousemove', function(e) {
-            const rect = nftHero.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
-            const rotateX = ((y - centerY) / centerY) * 10;
-            const rotateY = ((x - centerX) / centerX) * 10;
-            nftImage.style.transform = `rotateX(${-rotateX}deg) rotateY(${rotateY}deg)`;
-          });
-          nftHero.addEventListener('mouseleave', function() {
-            nftImage.style.transform = '';
-          });
-        }
-      });
-    </script>
+    <!-- Load scripts at the end of body -->
+    <script type="module" src="/scripts/script.js"></script>
   </body>
 </html> 

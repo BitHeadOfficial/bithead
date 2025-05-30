@@ -327,7 +327,7 @@ app.get('/api/check-access', verifyToken, async (req, res) => {
 
         const recipient = new PublicKey(process.env.RECIPIENT_WALLET);
         const userPubkey = new PublicKey(publicKey);
-        const ACCESS_THRESHOLD_LAMPORTS = 1 * 1e9; // 1 SOL
+        const ACCESS_THRESHOLD_LAMPORTS = 0.01 * 1e9; // 0.01 SOL
         
         const sigs = await connection.getSignaturesForAddress(userPubkey, { limit: 1000 });
         let totalLamports = 0;
@@ -397,7 +397,7 @@ app.post('/api/check-access-wallet', async (req, res) => {
         const recipient = new PublicKey(process.env.RECIPIENT_WALLET);
         console.log('[WalletCheck] Recipient address:', recipient.toBase58());
         const userPubkey = new PublicKey(publicKey);
-        const ACCESS_THRESHOLD_LAMPORTS = 1 * 1e9; // 1 SOL
+        const ACCESS_THRESHOLD_LAMPORTS = 0.01 * 1e9; // 0.01 SOL
         
         // Get signatures with a smaller limit to avoid rate limiting
         const sigs = await connection.getSignaturesForAddress(userPubkey, { limit: 10 });

@@ -82,7 +82,7 @@ window.initSnakeGame = function () {
   // Fetch leaderboard from backend
   async function fetchLeaderboard() {
     try {
-      const response = await fetchAPI('/leaderboard');
+      const response = await fetchAPI('/api/leaderboard');
       return response.leaderboard || [];
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
@@ -129,12 +129,12 @@ window.initSnakeGame = function () {
       }
       errorDiv.textContent = '';
       try {
-        const res = await fetch(`${API_URL}/leaderboard`, {
+        const res = await fetchAPI('/api/leaderboard', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ displayName, twitterHandle, profilePic, score: currentStreak })
         });
-        const data = await res.json();
+        const data = res;
         if (data.success && Array.isArray(data.leaderboard)) {
           leaderboardData = data.leaderboard.map((entry, i) => ({
             displayName: entry.display_name,

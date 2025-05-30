@@ -11,7 +11,7 @@ const connection = new solanaWeb3.Connection(SOLANA_RPC_URL, {
 });
 const { Transaction } = solanaWeb3;
 const LAMPORTS_PER_SOL = 1000000000;
-const PAYMENT_AMOUNT = 1; // 1 SOL
+const PAYMENT_AMOUNT = 0.01; // 0.01 SOL
 const TRANSACTION_TIMEOUT = 180000; // 3 minutes timeout for transaction confirmation
 
 // Token management functions
@@ -48,14 +48,30 @@ function clearTokens() {
 
 // Initialize GSAP
 function initializeGSAP() {
-    if (typeof gsap !== 'undefined') {
-        gsap.registerPlugin(ScrollTrigger);
-        console.log('GSAP initialized successfully');
-        return true;
-    } else {
-        console.error('GSAP not loaded. Please check if the script is properly included.');
-        return false;
-    }
+    return new Promise((resolve) => {
+        if (typeof gsap !== 'undefined') {
+            gsap.registerPlugin(ScrollTrigger);
+            console.log('GSAP initialized successfully');
+            resolve(true);
+        } else {
+            // Wait for GSAP to load
+            const checkGSAP = setInterval(() => {
+                if (typeof gsap !== 'undefined') {
+                    clearInterval(checkGSAP);
+                    gsap.registerPlugin(ScrollTrigger);
+                    console.log('GSAP initialized successfully after waiting');
+                    resolve(true);
+                }
+            }, 100);
+
+            // Timeout after 5 seconds
+            setTimeout(() => {
+                clearInterval(checkGSAP);
+                console.error('GSAP failed to load after timeout');
+                resolve(false);
+            }, 5000);
+        }
+    });
 }
 
 // Helper function to unlock content - moved outside DOMContentLoaded
@@ -1505,4 +1521,31 @@ function setupPaymentSection() {
         };
     }
 }
+
+// Wait for libraries to load
+window.addEventListener('load', async function() {
+    // Initialize GSAP first
+    const gsapInitialized = await initializeGSAP();
+    if (!gsapInitialized) {
+        console.error('Failed to initialize GSAP, some animations may not work');
+    }
+
+    // Then initialize other components
+    initSolana();
+    setupWalletConnection();
+    setupWhitelistForm();
+    initCountdown(); // Initialize countdown after GSAP is ready
+    
+    if (window.solana) {
+        console.log('Phantom wallet detected');
+        window.solana.on('connect', () => {
+            console.log('Connected to wallet');
+        });
+        window.solana.on('disconnect', () => {
+            console.log('Wallet disconnected');
+        });
+    } else {
+        console.error('Phantom wallet not detected');
+    }
+});
   
