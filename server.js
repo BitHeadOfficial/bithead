@@ -36,75 +36,7 @@ const __dirname = dirname(__filename);
 // Add basic console logging at the start
 console.log('Starting server initialization...');
 
-// Wrap server startup in async function with detailed error handling
-async function startServer() {
-    try {
-        console.log('Initializing database...');
-        await initializeDatabase();
-        console.log('Database initialized successfully');
-
-        console.log('Starting server...');
-        console.log('Current working directory:', process.cwd());
-        console.log('Node version:', process.version);
-        
-        console.log('Checking environment variables...');
-        console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
-        console.log('ACCESS_PASSWORD exists:', !!process.env.ACCESS_PASSWORD);
-        console.log('ADMIN_PASSWORD exists:', !!process.env.ADMIN_PASSWORD);
-        console.log('PORT exists:', !!process.env.PORT);
-        console.log('NODE_ENV:', process.env.NODE_ENV);
-
-        // Create HTTP server
-        console.log('Creating HTTP server...');
-        const server = http.createServer(app);
-        
-        // Get port from environment variable or use default
-        const port = process.env.PORT || 3000;
-        console.log('Attempting to listen on port:', port);
-
-        // Wrap server.listen in a promise
-        await new Promise((resolve, reject) => {
-            server.listen(port, '0.0.0.0', () => {
-                console.log(`Server is running on port ${port}`);
-                resolve();
-            }).on('error', (error) => {
-                console.error('Server failed to start:', error);
-                reject(error);
-            });
-        });
-
-        // Add error handlers for the server
-        server.on('error', (error) => {
-            console.error('Server error:', error);
-            if (error.code === 'EADDRINUSE') {
-                console.error(`Port ${port} is already in use`);
-            }
-        });
-
-        process.on('uncaughtException', (error) => {
-            console.error('Uncaught Exception:', error);
-            process.exit(1);
-        });
-
-        process.on('unhandledRejection', (reason, promise) => {
-            console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-            process.exit(1);
-        });
-
-    } catch (error) {
-        console.error('Server startup failed:', error);
-        console.error('Error stack:', error.stack);
-        process.exit(1);
-    }
-}
-
-// Start the server
-startServer().catch(error => {
-    console.error('Fatal error during server startup:', error);
-    console.error('Error stack:', error.stack);
-    process.exit(1);
-});
-
+// Move app configuration before server creation
 const app = express();
 
 // Middleware
@@ -865,5 +797,76 @@ async function verifyDatabaseConnection() {
 async function initializeDatabase() {
     // Implementation of initializeDatabase function
 }
+
+// Wrap server startup in async function with detailed error handling
+async function startServer() {
+    try {
+        console.log('Initializing database...');
+        await initializeDatabase();
+        console.log('Database initialized successfully');
+
+        console.log('Starting server...');
+        console.log('Current working directory:', process.cwd());
+        console.log('Node version:', process.version);
+        
+        console.log('Checking environment variables...');
+        console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
+        console.log('ACCESS_PASSWORD exists:', !!process.env.ACCESS_PASSWORD);
+        console.log('ADMIN_PASSWORD exists:', !!process.env.ADMIN_PASSWORD);
+        console.log('PORT exists:', !!process.env.PORT);
+        console.log('NODE_ENV:', process.env.NODE_ENV);
+
+        // Create HTTP server after app is fully configured
+        console.log('Creating HTTP server...');
+        const server = http.createServer(app);
+        
+        // Get port from environment variable or use default
+        const port = process.env.PORT || 3000;
+        console.log('Attempting to listen on port:', port);
+
+        // Wrap server.listen in a promise
+        await new Promise((resolve, reject) => {
+            server.listen(port, '0.0.0.0', () => {
+                console.log(`Server is running on port ${port}`);
+                resolve();
+            }).on('error', (error) => {
+                console.error('Server failed to start:', error);
+                reject(error);
+            });
+        });
+
+        // Add error handlers for the server
+        server.on('error', (error) => {
+            console.error('Server error:', error);
+            if (error.code === 'EADDRINUSE') {
+                console.error(`Port ${port} is already in use`);
+            }
+        });
+
+        process.on('uncaughtException', (error) => {
+            console.error('Uncaught Exception:', error);
+            console.error('Stack trace:', error.stack);
+            process.exit(1);
+        });
+
+        process.on('unhandledRejection', (reason, promise) => {
+            console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+            console.error('Stack trace:', reason?.stack);
+            process.exit(1);
+        });
+
+    } catch (error) {
+        console.error('Server startup failed:', error);
+        console.error('Error stack:', error.stack);
+        process.exit(1);
+    }
+}
+
+// Start the server
+startServer().catch(error => {
+    console.error('Fatal error during server startup:', error);
+    console.error('Error stack:', error.stack);
+    process.exit(1);
+});
 
 export default app;
