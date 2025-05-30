@@ -1,4 +1,4 @@
-const API_URL = window.env?.BACKEND_URL ? `${window.env.BACKEND_URL}/api` : 'https://bithead.onrender.com/api';
+import { API_URL, fetchAPI } from './config.js';
 
 // Load a file
 const loadComponent = async (path) => {
@@ -332,3 +332,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     initSnakeGame();
   }
 });
+
+async function checkWalletAccess(walletAddress) {
+    try {
+        const response = await fetchAPI('/check-access-wallet', {
+            method: 'POST',
+            body: JSON.stringify({ publicKey: walletAddress })
+        });
+        return response;
+    } catch (error) {
+        console.error('Error checking wallet access:', error);
+        throw error;
+    }
+}

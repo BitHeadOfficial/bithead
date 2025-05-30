@@ -74,20 +74,26 @@
       <div id="footer-container"></div>
     </div>
 
-    <!-- If you have snake logic (scripts/snake.js) -->
-    <script src="scripts/snake.js"></script>
+    <!-- Load shared configuration first -->
+    <script type="module">
+      import { setupSmoothScrolling, setupScrollSpy } from './scripts/config.js';
+      
+      // Initialize utilities after DOM is loaded
+      document.addEventListener('DOMContentLoaded', () => {
+        setupSmoothScrolling();
+        setupScrollSpy();
+      });
+    </script>
 
-    <!-- Main script that fetches & renders all components -->
-    <script src="scripts/script.js"></script>
+    <!-- Load game script -->
+    <script type="module" src="scripts/snake.js"></script>
+
+    <!-- Load main application script -->
+    <script type="module" src="scripts/script.js"></script>
 
     <script>
       document.querySelector('.hamburger')
       document.querySelector('.nav-links')
-    </script>
-
-    <script>
-      setupSmoothScrolling();
-      setupScrollSpy();
     </script>
   </body>
 </html>

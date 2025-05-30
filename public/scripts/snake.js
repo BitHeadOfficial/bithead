@@ -1,7 +1,6 @@
 // scripts/snake.js
 
-// Snake game configuration
-const API_URL = window.env?.BACKEND_URL ? `${window.env.BACKEND_URL}/api` : 'https://bithead.onrender.com/api';
+import { API_URL, fetchAPI } from './config.js';
 
 // We expose our main function on window so script.js can call it
 window.initSnakeGame = function () {
@@ -83,21 +82,11 @@ window.initSnakeGame = function () {
   // Fetch leaderboard from backend
   async function fetchLeaderboard() {
     try {
-      const res = await fetch(`${API_URL}/leaderboard`);
-      const data = await res.json();
-      if (data.success && Array.isArray(data.leaderboard)) {
-        leaderboardData = data.leaderboard.map((entry, i) => ({
-          displayName: entry.display_name,
-          twitterHandle: entry.twitter_handle,
-          profilePic: entry.profile_pic || profilePics[i % profilePics.length],
-          score: entry.score
-        }));
-        updateLeaderboardUI();
-      }
-    } catch (err) {
-      // fallback: clear leaderboard
-      leaderboardData = [];
-      updateLeaderboardUI();
+      const response = await fetchAPI('/leaderboard');
+      return response.leaderboard || [];
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
+      return [];
     }
   }
 
