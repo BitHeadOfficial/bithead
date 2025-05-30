@@ -72,53 +72,73 @@ console.log('Starting server initialization...');
 // Move app configuration before server creation
 const app = express();
 
-// Middleware
-app.use(helmet({
-    contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 
-                       "https://cdn.jsdelivr.net", 
-                       "https://unpkg.com", 
-                       "https://cdnjs.cloudflare.com",
-                       "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/",
-                       "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"],
-            styleSrc: ["'self'", "'unsafe-inline'", 
-                      "https://cdn.jsdelivr.net", 
-                      "https://fonts.googleapis.com", 
-                      "https://cdnjs.cloudflare.com",
-                      "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/"],
-            imgSrc: ["'self'", "data:", 
-                    "https://cdn.jsdelivr.net", 
-                    "https://unpkg.com",
-                    "https://cdnjs.cloudflare.com",
-                    "https://abs.twimg.com",
-                    "https://pbs.twimg.com",
-                    "https://unavatar.io"],
-            connectSrc: ["'self'", 
-                        "https://fragrant-icy-general.solana-mainnet.quiknode.pro",
-                        "wss://fragrant-icy-general.solana-mainnet.quiknode.pro",
-                        "https://cdnjs.cloudflare.com",
-                        "https://unpkg.com"],
-            fontSrc: ["'self'", 
-                     "https://fonts.gstatic.com", 
-                     "https://cdnjs.cloudflare.com",
-                     "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/"],
-            objectSrc: ["'none'"],
-            mediaSrc: ["'self'"],
-            frameSrc: ["'none'"],
-            workerSrc: ["'self'", "blob:"],
-            childSrc: ["'self'"],
-            formAction: ["'self'"],
-            scriptSrcAttr: ["'unsafe-inline'"],
-            upgradeInsecureRequests: []
-        }
+// Create a write stream for morgan logging
+console.log('Setting up logging...');
+try {
+    // Create logs directory if it doesn't exist
+    const logsDir = path.join(__dirname, 'logs');
+    if (!fs.existsSync(logsDir)) {
+        fs.mkdirSync(logsDir, { recursive: true });
     }
-}));
-app.use(cors());
-app.use(express.json());
-app.use(requestLogger);
-app.use(morgan('combined', { stream }));
+
+    // Create a write stream for morgan
+    const accessLogStream = fs.createWriteStream(
+        path.join(logsDir, 'access.log'),
+        { flags: 'a' }
+    );
+
+    // Middleware
+    app.use(helmet({
+        contentSecurityPolicy: {
+            directives: {
+                defaultSrc: ["'self'"],
+                scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 
+                           "https://cdn.jsdelivr.net", 
+                           "https://unpkg.com", 
+                           "https://cdnjs.cloudflare.com",
+                           "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/",
+                           "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"],
+                styleSrc: ["'self'", "'unsafe-inline'", 
+                          "https://cdn.jsdelivr.net", 
+                          "https://fonts.googleapis.com", 
+                          "https://cdnjs.cloudflare.com",
+                          "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/"],
+                imgSrc: ["'self'", "data:", 
+                        "https://cdn.jsdelivr.net", 
+                        "https://unpkg.com",
+                        "https://cdnjs.cloudflare.com",
+                        "https://abs.twimg.com",
+                        "https://pbs.twimg.com",
+                        "https://unavatar.io"],
+                connectSrc: ["'self'", 
+                            "https://fragrant-icy-general.solana-mainnet.quiknode.pro",
+                            "wss://fragrant-icy-general.solana-mainnet.quiknode.pro",
+                            "https://cdnjs.cloudflare.com",
+                            "https://unpkg.com"],
+                fontSrc: ["'self'", 
+                         "https://fonts.gstatic.com", 
+                         "https://cdnjs.cloudflare.com",
+                         "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/"],
+                objectSrc: ["'none'"],
+                mediaSrc: ["'self'"],
+                frameSrc: ["'none'"],
+                workerSrc: ["'self'", "blob:"],
+                childSrc: ["'self'"],
+                formAction: ["'self'"],
+                scriptSrcAttr: ["'unsafe-inline'"],
+                upgradeInsecureRequests: []
+            }
+        }
+    }));
+    app.use(cors());
+    app.use(express.json());
+    app.use(requestLogger);
+    app.use(morgan('combined', { stream: accessLogStream }));
+    console.log('Logging setup complete');
+} catch (error) {
+    console.error('Failed to setup logging:', error);
+    process.exit(1);
+}
 
 // Trust proxy for rate limiting behind reverse proxy
 app.set('trust proxy', 1);
