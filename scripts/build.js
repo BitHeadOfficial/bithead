@@ -36,7 +36,7 @@ if (!fs.existsSync(distDir)) {
     fs.mkdirSync(distDir, { recursive: true });
 }
 
-// Copy public directory to dist
+// Copy directory recursively
 function copyDir(src, dest) {
     if (!fs.existsSync(dest)) {
         fs.mkdirSync(dest, { recursive: true });
@@ -56,10 +56,25 @@ function copyDir(src, dest) {
     }
 }
 
-// Copy public directory to dist
+// First, copy the entire public directory to dist
+console.log('Copying public directory to dist...');
 copyDir(path.join(__dirname, '..', 'public'), distDir);
 
+// Create scripts directory in dist if it doesn't exist
+const distScriptsDir = path.join(distDir, 'scripts');
+if (!fs.existsSync(distScriptsDir)) {
+    fs.mkdirSync(distScriptsDir, { recursive: true });
+}
+
+// Copy config.js to dist/scripts
+console.log('Copying config.js to dist/scripts...');
+fs.copyFileSync(
+    path.join(__dirname, '..', 'public', 'scripts', 'config.js'),
+    path.join(distScriptsDir, 'config.js')
+);
+
 // Inject environment variables into HTML files
+console.log('Injecting environment variables into HTML files...');
 const htmlFiles = [
     'index.html',
     'genesis.html',
@@ -72,6 +87,7 @@ const htmlFiles = [
 htmlFiles.forEach(file => {
     const filePath = path.join(distDir, file);
     if (fs.existsSync(filePath)) {
+        console.log(`Injecting env into ${file}...`);
         injectEnvIntoHtml(filePath);
     }
 });
