@@ -1,4 +1,4 @@
-const API_URL = 'https://bithead.at/api';
+const API_URL = window.env?.BACKEND_URL ? `${window.env.BACKEND_URL}/api` : 'https://bithead.onrender.com/api';
 
 // Load a file
 const loadComponent = async (path) => {

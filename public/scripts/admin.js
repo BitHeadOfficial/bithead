@@ -1,6 +1,6 @@
 // Admin Panel JavaScript
 
-const API_URL = 'https://bithead.at/api'; // Use the custom domain for backend API calls
+const API_URL = window.env?.BACKEND_URL ? `${window.env.BACKEND_URL}/api` : 'https://bithead.onrender.com/api';
 const TOKEN_KEY = 'admin_token';
 
 // Remove hardcoded JWT token

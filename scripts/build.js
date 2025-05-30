@@ -5,27 +5,75 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Read the config template
-const configPath = path.join(__dirname, '../public/config.js');
-let configContent = fs.readFileSync(configPath, 'utf8');
-
-// Get environment variables with fallbacks
-const envVars = {
-    BACKEND_URL: process.env.BACKEND_URL || 'https://api.bithead.at',
+// Read environment variables
+const env = {
+    BACKEND_URL: process.env.BACKEND_URL || 'https://bithead.onrender.com',
     FRONTEND_URL: process.env.FRONTEND_URL || 'https://bithead.at',
-    SOLANA_RPC_URL: process.env.SOLANA_RPC_URL || 'https://fragrant-icy-general.solana-mainnet.quiknode.pro/71ce468fd28dbbcf7e3a1b2e404bfacac9f60a55/',
-    SOLANA_NETWORK: process.env.SOLANA_NETWORK || 'mainnet-beta'
+    SOLANA_RPC_URL: process.env.SOLANA_RPC_URL,
+    SOLANA_NETWORK: process.env.SOLANA_NETWORK
 };
 
-// Create the final config content
-const finalConfig = `// Generated config file - DO NOT EDIT DIRECTLY
-window.env = {
-    API_URL: '${envVars.BACKEND_URL}',
-    FRONTEND_URL: '${envVars.FRONTEND_URL}',
-    SOLANA_RPC_URL: '${envVars.SOLANA_RPC_URL}',
-    SOLANA_NETWORK: '${envVars.SOLANA_NETWORK}'
-};`;
+// Create a script to inject environment variables
+const envScript = `
+<script>
+window.env = ${JSON.stringify(env, null, 2)};
+</script>
+`;
 
-// Write the processed config
-fs.writeFileSync(configPath, finalConfig);
-console.log('Config file generated successfully with values:', envVars); 
+// Function to inject environment variables into HTML files
+function injectEnvIntoHtml(filePath) {
+    const content = fs.readFileSync(filePath, 'utf8');
+    const updatedContent = content.replace(
+        /<head>/,
+        `<head>${envScript}`
+    );
+    fs.writeFileSync(filePath, updatedContent);
+}
+
+// Create dist directory if it doesn't exist
+const distDir = path.join(__dirname, '..', 'dist');
+if (!fs.existsSync(distDir)) {
+    fs.mkdirSync(distDir, { recursive: true });
+}
+
+// Copy public directory to dist
+function copyDir(src, dest) {
+    if (!fs.existsSync(dest)) {
+        fs.mkdirSync(dest, { recursive: true });
+    }
+
+    const entries = fs.readdirSync(src, { withFileTypes: true });
+
+    for (const entry of entries) {
+        const srcPath = path.join(src, entry.name);
+        const destPath = path.join(dest, entry.name);
+
+        if (entry.isDirectory()) {
+            copyDir(srcPath, destPath);
+        } else {
+            fs.copyFileSync(srcPath, destPath);
+        }
+    }
+}
+
+// Copy public directory to dist
+copyDir(path.join(__dirname, '..', 'public'), distDir);
+
+// Inject environment variables into HTML files
+const htmlFiles = [
+    'index.html',
+    'genesis.html',
+    'admin.html',
+    '404.html',
+    'terms-of-service.html',
+    'privacy-policy.html'
+];
+
+htmlFiles.forEach(file => {
+    const filePath = path.join(distDir, file);
+    if (fs.existsSync(filePath)) {
+        injectEnvIntoHtml(filePath);
+    }
+});
+
+console.log('Build completed successfully!'); 

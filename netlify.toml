@@ -3,8 +3,14 @@
   publish = "dist"
 
 [build.environment]
-  NODE_VERSION = "18"
-  BACKEND_URL = "https://api.bithead.at"
+  NODE_VERSION = "20"
+  BACKEND_URL = "https://bithead.onrender.com"
   FRONTEND_URL = "https://bithead.at"
   SOLANA_RPC_URL = "https://fragrant-icy-general.solana-mainnet.quiknode.pro/71ce468fd28dbbcf7e3a1b2e404bfacac9f60a55/"
-  SOLANA_NETWORK = "mainnet-beta" 
+  SOLANA_NETWORK = "mainnet-beta"
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://bithead.onrender.com/api/:splat"
+  status = 200
+  force = true 
