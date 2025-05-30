@@ -78,16 +78,19 @@
     <!-- Initialize Solana -->
     <script type="module">
       import { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
+      import { API_URL, BACKEND_URL, SOLANA_RPC_URL } from '/config.js';
       
       // Initialize Solana connection
       const initSolana = () => {
         try {
-          // Read from global env object defined in config.js
-          window.solanaConnection = new Connection(window.env.SOLANA_RPC_URL);
+          // Use imported SOLANA_RPC_URL
+          window.solanaConnection = new Connection(SOLANA_RPC_URL);
           window.Transaction = Transaction;
           window.SystemProgram = SystemProgram;
           window.PublicKey = PublicKey;
           window.LAMPORTS_PER_SOL = LAMPORTS_PER_SOL;
+          window.API_URL = API_URL;
+          window.BACKEND_URL = BACKEND_URL;
           console.log('Solana initialized successfully');
         } catch (error) {
           console.error('Failed to initialize Solana:', error);

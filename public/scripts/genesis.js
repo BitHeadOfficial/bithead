@@ -2,17 +2,21 @@
 // API configuration
 const API_URL = window.env?.BACKEND_URL ? `${window.env.BACKEND_URL}/api` : 'https://bithead.onrender.com/api';
 
-// Initialize Solana connection with configurable RPC URL and commitment settings
-const SOLANA_RPC_URL = window.env.SOLANA_RPC_URL; // Read from global env object
-const connection = new solanaWeb3.Connection(SOLANA_RPC_URL, {
-    commitment: 'confirmed',
-    confirmTransactionInitialTimeout: 60000, // 60 seconds initial timeout
-    wsEndpoint: SOLANA_RPC_URL.replace('https', 'wss') // Enable WebSocket for better transaction monitoring
-});
-const { Transaction } = solanaWeb3;
-const LAMPORTS_PER_SOL = 1000000000;
+// Import Solana web3.js
+import { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { API_URL, BACKEND_URL } from '/config.js';
+
+// Constants
 const PAYMENT_AMOUNT = 0.01; // 0.01 SOL
-const TRANSACTION_TIMEOUT = 180000; // 3 minutes timeout for transaction confirmation
+const RECIPIENT_ADDRESS = '5Zd2EiC7S2DaT5mQyC1etYmusNPyEQtHDgojdf5oLHLE'; // Production recipient wallet
+
+// Initialize Solana connection
+let connection;
+try {
+    connection = new Connection(window.solanaConnection.rpcEndpoint);
+} catch (error) {
+    console.error('Failed to initialize Solana connection:', error);
+}
 
 // Token management functions
 const TOKEN_KEYS = {
