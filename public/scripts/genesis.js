@@ -1,10 +1,9 @@
 // genesis.js
 // API configuration
-const API_URL = window.env?.BACKEND_URL ? `${window.env.BACKEND_URL}/api` : 'https://bithead.onrender.com/api';
+const API_URL = window.API_URL || 'https://bithead.onrender.com/api';
 
 // Import Solana web3.js
 import { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
-import { API_URL, BACKEND_URL } from '/config.js';
 
 // Constants
 const PAYMENT_AMOUNT = 0.01; // 0.01 SOL
@@ -13,7 +12,7 @@ const RECIPIENT_ADDRESS = '5Zd2EiC7S2DaT5mQyC1etYmusNPyEQtHDgojdf5oLHLE'; // Pro
 // Initialize Solana connection
 let connection;
 try {
-    connection = new Connection(window.solanaConnection.rpcEndpoint);
+    connection = new Connection(window.SOLANA_RPC_URL);
 } catch (error) {
     console.error('Failed to initialize Solana connection:', error);
 }
