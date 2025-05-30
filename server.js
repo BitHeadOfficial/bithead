@@ -753,15 +753,19 @@ app.use((req, res) => {
   res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err) => {
-  console.error('Unhandled Promise Rejection:', err);
+// Add process error handlers at the top level
+process.on('uncaughtException', (error) => {
+    logger.error('Uncaught Exception:', error);
+    logger.error('Stack trace:', error.stack);
+    // Give logger time to write before exiting
+    setTimeout(() => process.exit(1), 1000);
 });
 
-// Handle uncaught exceptions
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err);
-  process.exit(1);
+process.on('unhandledRejection', (reason, promise) => {
+    logger.error('Unhandled Rejection at:', promise);
+    logger.error('Reason:', reason);
+    // Give logger time to write before exiting
+    setTimeout(() => process.exit(1), 1000);
 });
 
 // Promisify database methods (add dbRun)
@@ -889,21 +893,59 @@ async function initializeDatabase() {
 // Move server start into an async function that awaits database initialization
 async function startServer() {
     try {
+        logger.info('Starting server initialization...');
+        
+        // Log environment info
+        logger.info('Environment:', {
+            NODE_ENV: process.env.NODE_ENV,
+            PORT: process.env.PORT,
+            DATABASE_PATH: process.env.DATABASE_PATH
+        });
+
+        // Initialize database
+        logger.info('Initializing database...');
         await initializeDatabase();
+        logger.info('Database initialization complete');
+
+        // Verify directories
+        logger.info('Verifying required directories...');
+        const requiredDirs = [
+            path.join(__dirname, 'logs'),
+            path.join(__dirname, 'data', 'secure')
+        ];
+        
+        for (const dir of requiredDirs) {
+            if (!fs.existsSync(dir)) {
+                logger.info(`Creating directory: ${dir}`);
+                fs.mkdirSync(dir, { recursive: true });
+            }
+        }
+        logger.info('Directory verification complete');
 
         // Start server
         const PORT = process.env.PORT || 3000;
-        app.listen(PORT, '0.0.0.0', () => {
-            logger.info(`Server running on port ${PORT}`);
+        logger.info(`Attempting to start server on port ${PORT}...`);
+        
+        const server = app.listen(PORT, '0.0.0.0', () => {
+            logger.info(`Server successfully started on port ${PORT}`);
             logger.info('Admin routes registered:');
             logger.info('- POST /api/admin/login');
             logger.info('- GET /api/admin/verify');
             logger.info('- GET /api/admin/whitelist');
         });
 
+        // Add error handler for the server
+        server.on('error', (error) => {
+            logger.error('Server error:', error);
+            logger.error('Stack trace:', error.stack);
+            process.exit(1);
+        });
+
     } catch (error) {
-        logger.error('Failed to start server after database initialization:', error);
-        process.exit(1);
+        logger.error('Failed to start server:', error);
+        logger.error('Stack trace:', error.stack);
+        // Give logger time to write before exiting
+        setTimeout(() => process.exit(1), 1000);
     }
 }
 
