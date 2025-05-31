@@ -107,59 +107,116 @@ let metrics = {
         failed: 0,
         pending: 0
     },
-    lastUpdated: new Date(),
+    rateLimits: {
+        hits: 0,
+        blocked: 0
+    },
+    uptime: {
+        startTime: Date.now(),
+        uptimeSeconds: 0,
+        lastCheckSeconds: 0
+    },
+    lastUpdated: new Date()
+};
+
+// Initialize metrics
+const initializeMetrics = () => {
+    metrics.uptime.startTime = Date.now();
+    metrics.uptime.uptimeSeconds = 0;
+    metrics.uptime.lastCheckSeconds = 0;
+    metrics.lastUpdated = new Date();
 };
 
 // Update metrics
 export const updateMetrics = {
     request: (type) => {
-        metrics.requests++;
-        metrics.lastUpdated = new Date();
+        try {
+            metrics.requests++;
+            metrics.lastUpdated = new Date();
+            metrics.uptime.lastCheckSeconds = Math.floor((Date.now() - metrics.uptime.startTime) / 1000);
+            metrics.uptime.uptimeSeconds = metrics.uptime.lastCheckSeconds;
+        } catch (error) {
+            logger.error('Error updating request metrics:', error);
+        }
     },
     error: (type) => {
-        metrics.errors++;
-        metrics.lastUpdated = new Date();
+        try {
+            metrics.errors++;
+            metrics.lastUpdated = new Date();
+        } catch (error) {
+            logger.error('Error updating error metrics:', error);
+        }
     },
     walletConnection: () => {
-        metrics.walletConnections++;
-        metrics.lastUpdated = new Date();
+        try {
+            metrics.walletConnections++;
+            metrics.lastUpdated = new Date();
+        } catch (error) {
+            logger.error('Error updating wallet connection metrics:', error);
+        }
     },
     transaction: (status) => {
-        metrics.transactions.total++;
-        if (status === 'successful') metrics.transactions.successful++;
-        else if (status === 'failed') metrics.transactions.failed++;
-        else if (status === 'pending') metrics.transactions.pending++;
-        metrics.lastUpdated = new Date();
+        try {
+            metrics.transactions.total++;
+            if (status === 'successful') metrics.transactions.successful++;
+            else if (status === 'failed') metrics.transactions.failed++;
+            else if (status === 'pending') metrics.transactions.pending++;
+            metrics.lastUpdated = new Date();
+        } catch (error) {
+            logger.error('Error updating transaction metrics:', error);
+        }
     },
     rateLimit: (blocked) => {
-        if (blocked) metrics.rateLimits.blocked++;
-        metrics.rateLimits.hits++;
-        metrics.lastUpdated = new Date();
+        try {
+            if (blocked) metrics.rateLimits.blocked++;
+            metrics.rateLimits.hits++;
+            metrics.lastUpdated = new Date();
+        } catch (error) {
+            logger.error('Error updating rate limit metrics:', error);
+        }
+    },
+    uptime: () => {
+        try {
+            metrics.uptime.lastCheckSeconds = Math.floor((Date.now() - metrics.uptime.startTime) / 1000);
+            metrics.uptime.uptimeSeconds = metrics.uptime.lastCheckSeconds;
+            metrics.lastUpdated = new Date();
+        } catch (error) {
+            logger.error('Error updating uptime metrics:', error);
+        }
     }
 };
 
+// Initialize metrics on module load
+initializeMetrics();
+
 // Log metrics every hour
 const logMetrics = () => {
-    const now = new Date();
-    if (now - metrics.lastUpdated > 3600000) { // 1 hour
-        logger.info('Metrics Update:', metrics);
-        // Reset metrics
-        metrics = {
-            requests: 0,
-            errors: 0,
-            walletConnections: 0,
-            transactions: {
-                total: 0,
-                successful: 0,
-                failed: 0,
-                pending: 0
-            },
-            rateLimits: {
-                hits: 0,
-                blocked: 0
-            },
-            lastUpdated: now,
-        };
+    try {
+        const now = new Date();
+        if (now - metrics.lastUpdated > 3600000) { // 1 hour
+            logger.info('Metrics Update:', metrics);
+            // Reset metrics but keep uptime
+            const uptime = metrics.uptime;
+            metrics = {
+                requests: 0,
+                errors: 0,
+                walletConnections: 0,
+                transactions: {
+                    total: 0,
+                    successful: 0,
+                    failed: 0,
+                    pending: 0
+                },
+                rateLimits: {
+                    hits: 0,
+                    blocked: 0
+                },
+                uptime,
+                lastUpdated: now
+            };
+        }
+    } catch (error) {
+        logger.error('Error logging metrics:', error);
     }
 };
 
@@ -167,39 +224,70 @@ const logMetrics = () => {
 setInterval(logMetrics, 3600000); // Log every hour
 
 // Get current metrics
-export const getMetrics = () => ({ ...metrics });
+export const getMetrics = () => {
+    try {
+        // Update uptime before returning
+        updateMetrics.uptime();
+        return { ...metrics };
+    } catch (error) {
+        logger.error('Error getting metrics:', error);
+        return {
+            error: 'Failed to get metrics',
+            timestamp: new Date().toISOString()
+        };
+    }
+};
 
 // Error logging middleware
 export const errorLogger = (err, req, res, next) => {
-    logger.error(`${err.status || 500} - ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
-    updateMetrics('errors');
-    next(err);
+    try {
+        logger.error(`${err.status || 500} - ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
+        updateMetrics.error('request');
+        next(err);
+    } catch (error) {
+        logger.error('Error in errorLogger middleware:', error);
+        next(err);
+    }
 };
 
 // Request logging middleware
 export const requestLogger = (req, res, next) => {
-    logger.http(`${req.method} ${req.originalUrl} - ${req.ip}`);
-    updateMetrics('requests');
-    next();
+    try {
+        logger.http(`${req.method} ${req.originalUrl} - ${req.ip}`);
+        updateMetrics.request(req.path);
+        next();
+    } catch (error) {
+        logger.error('Error in requestLogger middleware:', error);
+        next();
+    }
 };
 
 // Wallet connection logger
 export const logWalletConnection = (publicKey, success) => {
-    if (success) {
-        logger.info(`Wallet connected: ${publicKey}`);
-        updateMetrics('walletConnections');
-    } else {
-        logger.warn(`Failed wallet connection attempt: ${publicKey}`);
+    try {
+        if (success) {
+            logger.info(`Wallet connected: ${publicKey}`);
+            updateMetrics.walletConnection();
+        } else {
+            logger.warn(`Failed wallet connection attempt: ${publicKey}`);
+        }
+    } catch (error) {
+        logger.error('Error in logWalletConnection:', error);
     }
 };
 
 // Transaction logger
 export const logTransaction = (txHash, amount, success) => {
-    if (success) {
-        logger.info(`Transaction successful: ${txHash} - Amount: ${amount} SOL`);
-        updateMetrics('transactions');
-    } else {
-        logger.error(`Transaction failed: ${txHash} - Amount: ${amount} SOL`);
+    try {
+        if (success) {
+            logger.info(`Transaction successful: ${txHash} - Amount: ${amount} SOL`);
+            updateMetrics.transaction('successful');
+        } else {
+            logger.error(`Transaction failed: ${txHash} - Amount: ${amount} SOL`);
+            updateMetrics.transaction('failed');
+        }
+    } catch (error) {
+        logger.error('Error in logTransaction:', error);
     }
 };
 

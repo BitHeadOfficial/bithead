@@ -36,12 +36,17 @@ import { errorLogger, requestLogger, logWalletConnection, logTransaction } from 
 process.on('uncaughtException', (error) => {
     console.error('Uncaught Exception:', error);
     console.error('Stack trace:', error.stack);
+    logger.error('Uncaught Exception:', { error: error.message, stack: error.stack });
     process.exit(1);
 });
 
 process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
     console.error('Stack trace:', reason?.stack);
+    logger.error('Unhandled Rejection:', { 
+        reason: reason?.message || reason, 
+        stack: reason?.stack 
+    });
     process.exit(1);
 });
 
@@ -52,7 +57,18 @@ try {
     console.log('Environment variables loaded');
 } catch (error) {
     console.error('Failed to load environment variables:', error);
+    logger.error('Failed to load environment variables:', { error: error.message });
     process.exit(1);
+}
+
+// Initialize metrics
+try {
+    updateMetrics.uptime();
+    logger.info('Metrics system initialized');
+} catch (error) {
+    console.error('Failed to initialize metrics:', error);
+    logger.error('Failed to initialize metrics:', { error: error.message });
+    // Don't exit here, as metrics are not critical for server operation
 }
 
 // Setup __dirname equivalent for ES modules
@@ -779,12 +795,34 @@ app.delete('/api/leaderboard', async (req, res) => {
 // Add error handling middleware at the end
 app.use(errorLogger);
 app.use((err, req, res, next) => {
-    res.status(err.status || 500).json({
-        success: false,
-        error: process.env.NODE_ENV === 'production' 
-            ? 'An error occurred' 
-            : err.message
-    });
+    try {
+        logger.error('Server error:', { 
+            error: err.message, 
+            stack: err.stack,
+            path: req.path,
+            method: req.method
+        });
+        
+        // Update error metrics
+        updateMetrics.error('server_error');
+        
+        // Send error response
+        res.status(err.status || 500).json({
+            success: false,
+            error: process.env.NODE_ENV === 'production' 
+                ? 'An error occurred' 
+                : err.message,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        // If error handling itself fails, send a basic error
+        console.error('Error in error handler:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Internal server error',
+            timestamp: new Date().toISOString()
+        });
+    }
 });
 
 // Apply rate limiting to all routes
