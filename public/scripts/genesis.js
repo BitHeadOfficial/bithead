@@ -301,7 +301,7 @@ async function checkWalletAccessOnConnect(publicKey) {
     console.log('Checking wallet access for:', publicKey);
     
     try {
-        const response = await fetch(`${API_URL}/check-access-wallet`, {
+        const response = await fetch(`${API_URL}/api/check-access-wallet`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ publicKey })
@@ -345,11 +345,9 @@ async function checkWalletAccessOnConnect(publicKey) {
 // Update API endpoint paths
 async function checkWhitelistStatus(walletAddress) {
     try {
-        // Changed to GET and passing walletAddress as a query parameter
-        const response = await fetch(`${API_URL}/whitelist/check?walletAddress=${encodeURIComponent(walletAddress)}`, {
+        const response = await fetch(`${API_URL}/api/whitelist/check?walletAddress=${encodeURIComponent(walletAddress)}`, {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json' }, // Still include for consistency, though less critical for GET with query params
-            // No body for GET request
+            headers: { 'Content-Type': 'application/json' }
         });
         const data = await response.json();
         return data.isWhitelisted;
@@ -529,7 +527,7 @@ function setupWhitelistForm() {
         const wallet = window.solana.publicKey.toString();
 
         try {
-            const res = await fetch(`${API_URL}/whitelist`, {
+            const res = await fetch(`${API_URL}/api/whitelist`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, email, walletAddress: wallet })
@@ -739,8 +737,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.log('Unlock button clicked with password:', password);
       
       try {
-        console.log('Sending unlock request to:', `${API_URL}/unlock`);
-        const response = await fetch(`${API_URL}/unlock`, {
+        console.log('Sending unlock request to:', `${API_URL}/api/unlock`);
+        const response = await fetch(`${API_URL}/api/unlock`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -951,7 +949,7 @@ async function loadProtectedContent() {
         }
 
         console.log('Verifying access with token...');
-        const response = await fetch(`${API_URL}/check-access`, {
+        const response = await fetch(`${API_URL}/api/check-access`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -1276,7 +1274,7 @@ async function handleSolanaPayment() {
         solanaPayBtn.disabled = true;
 
         console.log('Sending payment request to server...');
-        const response = await fetch(`${API_URL}/payment`, {
+        const response = await fetch(`${API_URL}/api/payment`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ publicKey, amount: PAYMENT_AMOUNT })
@@ -1357,7 +1355,7 @@ async function handleSolanaPayment() {
                     
                     // Force a check-access call to verify the token
                     try {
-                        const verifyResponse = await fetch(`${API_URL}/check-access`, {
+                        const verifyResponse = await fetch(`${API_URL}/api/check-access`, {
                             headers: {
                                 'Authorization': `Bearer ${token}`
                             }
@@ -1584,7 +1582,7 @@ async function handlePasswordUnlock() {
             unlockBtn.disabled = true;
             showStatus('Verifying...', 'info');
             
-            const response = await fetch(`${API_URL}/check-access-password`, {
+            const response = await fetch(`${API_URL}/api/check-access-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ password })
