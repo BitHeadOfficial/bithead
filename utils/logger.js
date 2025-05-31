@@ -101,16 +101,45 @@ let metrics = {
     requests: 0,
     errors: 0,
     walletConnections: 0,
-    transactions: 0,
+    transactions: {
+        total: 0,
+        successful: 0,
+        failed: 0,
+        pending: 0
+    },
     lastUpdated: new Date(),
 };
 
 // Update metrics
-export const updateMetrics = (type) => {
-    metrics[type]++;
-    metrics.lastUpdated = new Date();
-    
-    // Log metrics every hour
+export const updateMetrics = {
+    request: (type) => {
+        metrics.requests++;
+        metrics.lastUpdated = new Date();
+    },
+    error: (type) => {
+        metrics.errors++;
+        metrics.lastUpdated = new Date();
+    },
+    walletConnection: () => {
+        metrics.walletConnections++;
+        metrics.lastUpdated = new Date();
+    },
+    transaction: (status) => {
+        metrics.transactions.total++;
+        if (status === 'successful') metrics.transactions.successful++;
+        else if (status === 'failed') metrics.transactions.failed++;
+        else if (status === 'pending') metrics.transactions.pending++;
+        metrics.lastUpdated = new Date();
+    },
+    rateLimit: (blocked) => {
+        if (blocked) metrics.rateLimits.blocked++;
+        metrics.rateLimits.hits++;
+        metrics.lastUpdated = new Date();
+    }
+};
+
+// Log metrics every hour
+const logMetrics = () => {
     const now = new Date();
     if (now - metrics.lastUpdated > 3600000) { // 1 hour
         logger.info('Metrics Update:', metrics);
@@ -119,11 +148,23 @@ export const updateMetrics = (type) => {
             requests: 0,
             errors: 0,
             walletConnections: 0,
-            transactions: 0,
+            transactions: {
+                total: 0,
+                successful: 0,
+                failed: 0,
+                pending: 0
+            },
+            rateLimits: {
+                hits: 0,
+                blocked: 0
+            },
             lastUpdated: now,
         };
     }
 };
+
+// Start metrics logging interval
+setInterval(logMetrics, 3600000); // Log every hour
 
 // Get current metrics
 export const getMetrics = () => ({ ...metrics });

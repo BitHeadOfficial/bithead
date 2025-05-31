@@ -137,7 +137,12 @@ app.use(helmet({
         }
     }
 }));
-app.use(cors());
+app.use(cors({
+    origin: ['https://www.bithead.at', 'https://bithead.at'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+}));
 app.use(express.json());
 app.use(requestLogger);
 app.use(morgan('combined', { stream: accessLogStream }));
@@ -510,6 +515,24 @@ app.use('/api/monitoring', monitoringRoutes);
 // Register routes
 app.use('/api/contact', contactRoutes);
 
+// Update rate limit handling to use metrics
+const rateLimiter = rateLimit({
+    windowMs: config.rateLimitWindow,
+    max: config.rateLimitMax,
+    handler: (req, res) => {
+        updateMetrics.rateLimit(true);
+        res.status(429).json({ 
+            error: 'Too many requests, please try again later' 
+        });
+    }
+});
+
+// Request logging middleware
+app.use((req, res, next) => {
+    updateMetrics.request(req.path);
+    next();
+});
+
 // Payment endpoint
 app.post('/api/payment', async (req, res) => {
     try {
@@ -519,6 +542,7 @@ app.post('/api/payment', async (req, res) => {
         
         if (!publicKey || !amount) {
             console.log('Missing parameters:', { publicKey, amount });
+            updateMetrics.error('InvalidPaymentRequest');
             return res.status(400).json({ error: 'Missing required parameters' });
         }
 
@@ -596,8 +620,9 @@ app.post('/api/payment', async (req, res) => {
     } catch (error) {
         console.error('Payment error:', error);
         console.error('Error stack:', error.stack);
+        updateMetrics.error('PaymentError');
         res.status(500).json({ 
-            error: 'Server error. Please try again later.',
+            error: 'Failed to process payment request',
             details: error.message
         });
     }
@@ -760,18 +785,6 @@ app.use((err, req, res, next) => {
             ? 'An error occurred' 
             : err.message
     });
-});
-
-// Update rate limit handling to use metrics
-const rateLimiter = rateLimit({
-    windowMs: config.rateLimitWindow,
-    max: config.rateLimitMax,
-    handler: (req, res) => {
-        updateMetrics.rateLimit(true);
-        res.status(429).json({ 
-            error: 'Too many requests, please try again later' 
-        });
-    }
 });
 
 // Apply rate limiting to all routes

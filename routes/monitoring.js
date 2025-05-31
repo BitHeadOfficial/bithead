@@ -79,14 +79,14 @@ router.get('/status', (req, res) => {
             successRate: metrics.transactions.total > 0 
                 ? (metrics.transactions.successful / metrics.transactions.total * 100).toFixed(2) 
                 : 0,
-            lastHour: metrics.transactions.total // You might want to implement time-based filtering
+            lastHour: metrics.transactions.total
         },
         errors: {
             total: metrics.errors.total,
             rate: metrics.requests.total > 0 
                 ? (metrics.errors.total / metrics.requests.total * 100).toFixed(2) 
                 : 0,
-            lastHour: metrics.errors.total // You might want to implement time-based filtering
+            lastHour: metrics.errors.total
         },
         rateLimits: {
             hits: metrics.rateLimits.hits,
@@ -152,6 +152,7 @@ router.get('/metrics', authenticate, (req, res) => {
 router.post('/simulate-error', authenticate, (req, res) => {
     const { type } = req.body;
     if (!type) {
+        updateMetrics.error('InvalidErrorSimulation');
         return res.status(400).json({ error: 'Error type required' });
     }
     
