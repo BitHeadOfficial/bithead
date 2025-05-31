@@ -12,14 +12,6 @@ const { Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL } = 
 
 // Initialize Solana connection
 let connection;
-try {
-    if (typeof solanaWeb3 === 'undefined') {
-        throw new Error('Solana web3.js not loaded');
-    }
-    connection = new Connection(window.SOLANA_RPC_URL);
-} catch (error) {
-    console.error('Failed to initialize Solana connection:', error);
-}
 
 // Token management functions
 const TOKEN_KEYS = {
@@ -602,6 +594,38 @@ function setupWhitelistForm() {
     updateWhitelistForm();
 }
 
+// Initialize Solana
+async function initSolana() {
+    console.log('Initializing Solana...');
+    try {
+        if (typeof solanaWeb3 === 'undefined') {
+            throw new Error('Solana web3.js not loaded');
+        }
+        
+        // Initialize connection
+        connection = new Connection(window.SOLANA_RPC_URL);
+        console.log('Solana connection initialized');
+        
+        // Check if Phantom is installed
+        if (window.solana && window.solana.isPhantom) {
+            console.log('Phantom wallet detected');
+            
+            // Check if already connected
+            if (window.solana.isConnected) {
+                console.log('Wallet already connected:', window.solana.publicKey.toString());
+                await checkWalletAccessOnConnect(window.solana.publicKey.toString());
+            }
+        } else {
+            console.warn('Phantom wallet not detected');
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Failed to initialize Solana:', error);
+        return false;
+    }
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
     // Initialize GSAP
     const gsapInitialized = await initializeGSAP();
@@ -609,8 +633,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         console.error('Failed to initialize GSAP, some animations may not work');
     }
 
+    // Initialize Solana first
+    const solanaInitialized = await initSolana();
+    if (!solanaInitialized) {
+        console.error('Failed to initialize Solana, wallet features will not work');
+    }
+
     // Initialize other components
-    initSolana();
     setupWalletConnection();
     setupWhitelistForm();
     setupPaymentSection();
@@ -905,6 +934,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             milestonePanel.style.display = 'none';
         }
     });
+
+    // Initialize password unlock
+    handlePasswordUnlock();
 });
   
 // Load protected content
@@ -1528,5 +1560,53 @@ function setupPaymentSection() {
             }
         };
     }
+}
+
+// Handle password unlock
+async function handlePasswordUnlock() {
+    const secretPassword = document.getElementById('secretPassword');
+    const unlockBtn = document.getElementById('unlockBtn');
+    const unlockStatus = document.getElementById('unlockStatus');
+    
+    if (!secretPassword || !unlockBtn || !unlockStatus) {
+        console.error('Required elements not found for password unlock');
+        return;
+    }
+    
+    unlockBtn.onclick = async () => {
+        const password = secretPassword.value.trim();
+        if (!password) {
+            showStatus('Please enter the secret word', 'error');
+            return;
+        }
+        
+        try {
+            unlockBtn.disabled = true;
+            showStatus('Verifying...', 'info');
+            
+            const response = await fetch(`${API_URL}/check-access-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok && data.hasAccess) {
+                if (data.token) {
+                    storeToken(data.token, 'password');
+                }
+                showStatus('Access granted! Unlocking content...', 'success');
+                unlockContent();
+            } else {
+                showStatus(data.error || 'Invalid secret word', 'error');
+            }
+        } catch (error) {
+            console.error('Password unlock error:', error);
+            showStatus('Failed to verify access', 'error');
+        } finally {
+            unlockBtn.disabled = false;
+        }
+    };
 }
   

@@ -14,26 +14,44 @@ const loadComponent = async (path) => {
   }
 };
 
-// Smooth scrolling with offset for hero section
-const setupSmoothScrolling = () => {
-  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-    anchor.addEventListener("click", function (e) {
-      const targetId = this.getAttribute("href");
-      if (targetId.length > 1 && targetId.startsWith("#")) {
-        const target = document.querySelector(targetId);
-        if (target) {
-          e.preventDefault();
-          const offset = 70; // header height offset
-          const targetPosition = target.getBoundingClientRect().top + window.pageYOffset;
-          window.scrollTo({
-            top: targetPosition - offset,
-            behavior: "smooth",
-          });
-        }
-      }
+// Update smooth scrolling to work with hash links from subpages
+function setupSmoothScrolling() {
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').slice(1);
+            const target = document.getElementById(targetId);
+            
+            if (target) {
+                // If we're on a subpage, first navigate to index
+                if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
+                    window.location.href = `/${this.getAttribute('href')}`;
+                    return;
+                }
+                
+                // Otherwise, scroll smoothly
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
     });
-  });
-};
+    
+    // Handle hash links on page load
+    if (window.location.hash) {
+        const targetId = window.location.hash.slice(1);
+        const target = document.getElementById(targetId);
+        if (target) {
+            setTimeout(() => {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }, 100); // Small delay to ensure DOM is ready
+        }
+    }
+}
 
 // Scrollspy: highlight nav link for section in view
 const setupScrollSpy = () => {
@@ -205,8 +223,8 @@ function initializeContactForm() {
         
         try {
             // Submit to our proxy endpoint
-            console.log('[Contact Form] Sending request to ' + API_URL + '/contact');
-            const response = await fetch(API_URL + '/contact', {
+            console.log('[Contact Form] Sending request to ' + API_URL + '/api/contact');
+            const response = await fetch(API_URL + '/api/contact', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
