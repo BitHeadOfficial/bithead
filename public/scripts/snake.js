@@ -240,11 +240,15 @@ window.initSnakeGame = function () {
         pos.style.textAlign = "right";
         pos.style.fontWeight = "bold";
         li.appendChild(pos);
-        // Profile pic (always use unavatar.io/twitter/handle, fallback to unavatar.io/x/handle, then local)
+        
+        // Profile pic (handle both camelCase and snake_case from backend)
         const img = document.createElement("img");
-        const handle = entry.twitterHandle.replace(/^@/, "");
+        const twitterHandle = entry.twitterHandle || entry.twitter_handle || '';
+        const handle = twitterHandle.replace(/^@/, "");
+        const displayName = entry.displayName || entry.display_name || 'Anonymous';
+        
         img.src = `https://unavatar.io/twitter/${handle}`;
-        img.alt = entry.displayName;
+        img.alt = displayName;
         img.width = 32;
         img.height = 32;
         img.style.borderRadius = "50%";
@@ -258,14 +262,17 @@ window.initSnakeGame = function () {
           }
         };
         li.appendChild(img);
+        
         // Twitter handle with link
         const link = document.createElement("a");
         link.href = `https://twitter.com/${handle}`;
         link.target = "_blank";
-        link.textContent = entry.displayName;
+        link.textContent = displayName;
+        
         // Score
         const score = document.createElement("span");
-        score.textContent = entry.score;
+        score.textContent = entry.score || 0;
+        
         // Assemble
         li.appendChild(link);
         li.appendChild(document.createTextNode(" - "));
