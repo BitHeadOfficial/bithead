@@ -64,6 +64,17 @@ async function initDb() {
       `);
 
       db.run(`
+        CREATE TABLE IF NOT EXISTS admin_users (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          username TEXT UNIQUE NOT NULL,
+          password_hash TEXT NOT NULL,
+          is_active BOOLEAN DEFAULT TRUE,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+
+      db.run(`
         CREATE TABLE IF NOT EXISTS leaderboard (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           display_name TEXT NOT NULL,
