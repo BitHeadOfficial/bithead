@@ -222,7 +222,7 @@ window.initSnakeGame = async function () {
 
   async function updateLeaderboardUI() {
     console.log('Updating leaderboard UI...');
-    const leaderboardContainer = document.getElementById('leaderboard-entries');
+    const leaderboardContainer = document.getElementById('leaderboard');
     if (!leaderboardContainer) {
         console.error('Leaderboard container not found');
         return;

@@ -275,7 +275,7 @@ function setupWalletConnection() {
 }
 
 // Update automatic wallet access check with rate limiting
-async function checkWalletAccessOnConnect(publicKey) {
+async function checkWalletAccess(publicKey) {
     console.log('Checking wallet access for:', publicKey);
     
     try {
@@ -288,7 +288,7 @@ async function checkWalletAccessOnConnect(publicKey) {
         if (!response.ok) {
             if (response.status === 429) {
                 console.log('Rate limited, skipping wallet check');
-                return;
+                return { hasAccess: false, totalSent: 0 }; // Return a default structure
             }
             throw new Error('Failed to check wallet access');
         }
@@ -301,22 +301,16 @@ async function checkWalletAccessOnConnect(publicKey) {
             if (data.token) {
                 storeToken(data.token, 'wallet');
             }
-            showStatus('Wallet access verified! Unlocking content...', 'success');
-            unlockContent();
-            // Clear success message after 2 seconds
-            setTimeout(() => {
-                const unlockStatus = document.getElementById('unlockStatus');
-                if (unlockStatus && unlockStatus.className.includes('success')) {
-                    unlockStatus.textContent = '';
-                    unlockStatus.className = 'status';
-                }
-            }, 2000);
+            // Note: We don't unlock content here, handle in calling function
+            return { hasAccess: true, totalSent: data.totalSent, accessType: 'wallet' };
         } else {
             console.log('No wallet access found or insufficient payment');
+            return { hasAccess: false, totalSent: data.totalSent || 0 };
         }
     } catch (error) {
         console.error('Wallet access check error:', error);
         // Don't show error status for automatic checks
+        return { hasAccess: false, totalSent: 0, error: error.message };
     }
 }
 
@@ -1338,6 +1332,13 @@ async function handleSolanaPayment() {
         storeToken(token, 'wallet');
         
         // Immediately check wallet access and update UI
+        if (typeof checkWalletAccess !== 'function') {
+            console.error('checkWalletAccess is not defined');
+            showStatus('Internal error: Access check function not found. Please refresh.', 'error');
+            // Still attempt to unlock visually if confirmation was successful
+            unlockContent();
+            return; // Stop execution here if function is missing
+        }
         const accessResponse = await checkWalletAccess(publicKey);
         if (accessResponse.hasAccess) {
             console.log('Access granted, unlocking content...');

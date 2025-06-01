@@ -329,6 +329,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     setupSmoothScrolling();
     setupScrollSpy();
     initializeContactForm(); // Initialize the contact form
+    
+    // Initialize Snake game after its component is loaded
+    if (typeof window.initSnakeGame === 'function') {
+        window.initSnakeGame();
+    }
   } else {
     // We're on a subpage
     if (headerContainer) {
@@ -366,10 +371,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   setupPortfolioCardFlip();
-
-  if (typeof initSnakeGame === "function") {
-    initSnakeGame();
-  }
 });
 
 async function checkWalletAccess(walletAddress) {
