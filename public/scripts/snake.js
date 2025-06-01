@@ -265,10 +265,9 @@ window.initSnakeGame = async function () {
         // Clear existing entries
         leaderboardContainer.innerHTML = '';
 
-        // If no entries, display nothing
+        // If no entries, display the empty state message
         if (sortedData.length === 0) {
             console.log('No leaderboard entries to display. Showing empty state.');
-            // Optionally, add a message here if you want, but user requested empty
              leaderboardContainer.innerHTML = `
                 <div class="leaderboard-empty">
                     <p>Be the first to play and claim your spot on the leaderboard!</p>
@@ -283,13 +282,15 @@ window.initSnakeGame = async function () {
         sortedData.forEach((entry, index) => {
             const entryElement = document.createElement('div');
             entryElement.className = 'leaderboard-entry';
+            // Use entry.profilePic or entry.profile_pic and entry.displayName or entry.display_name
+            // Ensure profile picture has correct class for styling
             entryElement.innerHTML = `
                 <div class="rank">${index + 1}</div>
                 <div class="player-info">
                     <img src="${entry.profilePic || entry.profile_pic || 'https://unavatar.io/twitter/bithead'}" 
                          alt="${entry.displayName || entry.display_name || 'Anonymous'}" 
                          onerror="this.src='https://unavatar.io/twitter/bithead'"
-                         class="profile-picture">
+                         class="profile-picture-small-circle">
                     <span class="username">${entry.displayName || entry.display_name || 'Anonymous'}</span>
                 </div>
                 <div class="score">${(entry.score || 0).toLocaleString()}</div>
@@ -791,15 +792,26 @@ window.initSnakeGame = async function () {
         const winningSnake =
           !moveA && moveB ? "A" : !moveB && moveA ? "B" : "Tie";
 
-        // Betting
+        // Betting logic
         if (currentBet) {
           if (currentBet === winningSnake) {
             currentStreak++;
           } else {
-            showModal();
+            // Streak lost, show modal/share
+            lastScore = currentStreak;
+            lastSnapshot = canvas.toDataURL('image/png'); // Capture snapshot before restart
+            streakJustKilled = true;
+            showModal(); // This will handle resetting streak and showing share button after modal closes
           }
-          currentBet = null;
         }
+
+        // Always reset betting buttons at the start of a new round
+        if (betAButton) betAButton.disabled = false;
+        if (betBButton) betBButton.disabled = false;
+        if (betAButton) betAButton.classList.remove('selected-bet');
+        if (betBButton) betBButton.classList.remove('selected-bet');
+        currentBet = null; // Reset bet
+
         if (streakDisplay) {
           streakDisplay.textContent = `Your current streak: ${currentStreak}`;
         }
@@ -814,11 +826,6 @@ window.initSnakeGame = async function () {
         if (scoreBEl) scoreBEl.textContent = snakeBWins;
         if (roundTimerEl) {
           roundTimerEl.textContent = `Last Round Time: ${roundDuration}s`;
-        }
-        if (currentBet && currentBet !== winningSnake) {
-          lastScore = currentStreak;
-          lastSnapshot = canvas.toDataURL('image/png');
-          streakJustKilled = true;
         }
         setTimeout(restartRound, 500);
       }

@@ -361,3 +361,82 @@
 .cancel-btn:hover {
   background: rgba(255, 255, 255, 0.1);
 }
+
+/* Add or update styling for the small circular profile pictures in the leaderboard */
+.leaderboard-entry .profile-picture-small-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover; /* Ensures image covers the area without distortion */
+    margin-right: 10px; /* Space between image and username */
+    border: 2px solid #4296d2; /* Optional border matching theme */
+}
+
+/* Styling for the empty leaderboard message */
+.leaderboard-empty {
+    text-align: center;
+    padding: 20px;
+    color: #ccc; /* Lighter color for empty state */
+    font-style: italic;
+}
+
+.leaderboard-empty p {
+    margin: 0;
+}
+
+/* Styling for the leaderboard entries */
+#leaderboard .leaderboard-entry {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 1em;
+}
+
+#leaderboard .leaderboard-entry:last-child {
+    border-bottom: none;
+}
+
+#leaderboard .leaderboard-entry .rank {
+    font-weight: bold;
+    width: 20px; /* Fixed width for rank */
+    text-align: right;
+    margin-right: 10px;
+    color: #4296d2; /* Match theme color */
+}
+
+#leaderboard .leaderboard-entry .player-info {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+}
+
+#leaderboard .leaderboard-entry .username {
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Add ellipsis for long names */
+}
+
+#leaderboard .leaderboard-entry .score {
+    font-weight: bold;
+    color: #00ff88; /* Score color */
+    margin-left: 10px;
+}
+
+/* Styles for betting buttons */
+.betting-controls button {
+    /* Existing button styles from base.css or snake.css */
+    transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.betting-controls button.selected-bet {
+    border: 2px solid #4296d2; /* Highlight selected bet */
+    /* Adjust background/color as needed */
+}
+
+.betting-controls button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

@@ -277,41 +277,49 @@ function setupWalletConnection() {
 // Update automatic wallet access check with rate limiting
 async function checkWalletAccess(publicKey) {
     console.log('Checking wallet access for:', publicKey);
-    
+
     try {
-        const response = await fetch(`${API_URL}/api/check-access-wallet`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ publicKey })
+      const response = await fetch(`${API_URL}/api/check-access-wallet`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ publicKey })
+      });
+
+      if (!response.ok) {
+        if (response.status === 429) {
+          console.log('Rate limited, skipping wallet check');
+          return { hasAccess: false, totalSent: 0 }; // Return a default structure
+        }
+        throw new Error(`Failed to check wallet access: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log('Wallet access check response:', data);
+
+      // Check if user has already paid 0.01 SOL or more
+      if (data.hasAccess || (data.totalSent && data.totalSent >= 0.01 * LAMPORTS_PER_SOL)) {
+        if (data.token) {
+          storeToken(data.token, 'wallet');
+        }
+        console.log('Wallet access granted in checkWalletAccess, attempting to unlock...');
+        unlockContent(); // Explicitly unlock here
+        return { hasAccess: true, totalSent: data.totalSent, accessType: 'wallet' };
+      } else {
+        console.log('No wallet access found or insufficient payment in checkWalletAccess');
+        // If wallet is connected but no access, ensure content is hidden
+        const protectedContent = document.querySelectorAll('.protected-content');
+        protectedContent.forEach(content => {
+            content.style.display = 'none';
+            content.classList.add('hidden', 'secret');
         });
-
-        if (!response.ok) {
-            if (response.status === 429) {
-                console.log('Rate limited, skipping wallet check');
-                return { hasAccess: false, totalSent: 0 }; // Return a default structure
-            }
-            throw new Error('Failed to check wallet access');
-        }
-
-        const data = await response.json();
-        console.log('Wallet access check response:', data);
-
-        // Check if user has already paid 0.01 SOL or more
-        if (data.hasAccess || (data.totalSent && data.totalSent >= 0.01 * LAMPORTS_PER_SOL)) {
-            if (data.token) {
-                storeToken(data.token, 'wallet');
-            }
-            console.log('Wallet access granted in checkWalletAccess, attempting to unlock...');
-            unlockContent(); // Explicitly unlock here
-            return { hasAccess: true, totalSent: data.totalSent, accessType: 'wallet' };
-        } else {
-            console.log('No wallet access found or insufficient payment in checkWalletAccess');
-            return { hasAccess: false, totalSent: data.totalSent || 0 };
-        }
+        const unlockPanel = document.getElementById('unlockPanel');
+        if (unlockPanel) unlockPanel.style.display = 'block';
+        return { hasAccess: false, totalSent: data.totalSent || 0 };
+      }
     } catch (error) {
-        console.error('Wallet access check error:', error);
-        // Don't show error status for automatic checks
-        return { hasAccess: false, totalSent: 0, error: error.message };
+      console.error('Wallet access check error:', error);
+      // Don't show error status for automatic checks on wallet connect
+      return { hasAccess: false, totalSent: 0, error: error.message };
     }
 }
 
