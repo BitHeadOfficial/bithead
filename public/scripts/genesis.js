@@ -1260,42 +1260,42 @@ async function handleSolanaPayment() {
 
         // Show loading state
         showStatus('Initiating payment...', 'info');
-        const paymentButton = document.getElementById('solanaPaymentButton');
+        const paymentButton = document.getElementById('solanaPayBtn');
         if (paymentButton) {
             paymentButton.disabled = true;
             paymentButton.textContent = 'Processing...';
         }
 
-        // Get payment token from server
+        // Get payment transaction from server
         console.log('Sending payment request to server...');
-        const response = await fetch(`${window.API_URL}/api/payment/token`, {
+        const response = await fetch(`${API_URL}/api/payment`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ publicKey })
+            body: JSON.stringify({ 
+                publicKey,
+                amount: PAYMENT_AMOUNT
+            })
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
         }
 
-        const { token } = await response.json();
-        console.log('Payment request successful, token received');
+        const { transaction: serializedTransaction, token, message } = await response.json();
+        console.log('Payment request successful:', message);
 
+        // Deserialize and sign transaction
+        console.log('Deserializing and signing transaction...');
+        const transaction = Transaction.from(Buffer.from(serializedTransaction, 'base64'));
+        
         // Sign and send transaction
         console.log('Signing and sending transaction...');
-        const transaction = new Transaction().add(
-            SystemProgram.transfer({
-                fromPubkey: wallet.publicKey,
-                toPubkey: new PublicKey(window.RECIPIENT_WALLET),
-                lamports: window.PAYMENT_AMOUNT
-            })
-        );
-
         const { signature } = await wallet.signAndSendTransaction(transaction);
         console.log('Transaction signed and sent:', signature);
 
         // Wait for confirmation
-        console.log('Waiting for transaction confirmation with timeout:', window.TRANSACTION_TIMEOUT, 'ms');
+        console.log('Waiting for transaction confirmation with timeout:', TRANSACTION_TIMEOUT, 'ms');
         let confirmed = false;
         let attempts = 0;
         const maxAttempts = 3;
@@ -1310,7 +1310,7 @@ async function handleSolanaPayment() {
                 if (status?.value?.confirmationStatus === 'confirmed' || 
                     status?.value?.confirmationStatus === 'finalized') {
                     confirmed = true;
-                    console.log('Transaction already confirmed!');
+                    console.log('Transaction confirmed!');
                     break;
                 }
                 
@@ -1330,31 +1330,28 @@ async function handleSolanaPayment() {
 
         // Store token and unlock content
         console.log('Storing token and unlocking content...');
-        localStorage.setItem('accessToken', token);
+        storeToken(token, 'wallet');
         
         // Immediately check wallet access and update UI
         const accessResponse = await checkWalletAccess(publicKey);
         if (accessResponse.hasAccess) {
-            showStatus('Payment successful! Unlocking content...', 'success');
+            console.log('Access granted, unlocking content...');
             unlockContent();
-            // Update wallet button state
-            updateWalletButtonState();
-            // Refresh the page after a short delay to ensure all states are updated
-            setTimeout(() => {
-                window.location.reload();
-            }, 2000);
+            showStatus('Payment successful! Content unlocked.', 'success');
         } else {
-            throw new Error('Payment successful but access not granted');
+            console.log('Access check failed:', accessResponse);
+            showStatus('Payment successful but access check failed. Please refresh the page.', 'warning');
         }
+
     } catch (error) {
         console.error('Payment failed:', error);
-        showStatus('Payment failed: ' + error.message, 'error');
+        showStatus(error.message || 'Payment failed. Please try again.', 'error');
         
         // Reset button state
-        const paymentButton = document.getElementById('solanaPaymentButton');
+        const paymentButton = document.getElementById('solanaPayBtn');
         if (paymentButton) {
             paymentButton.disabled = false;
-            paymentButton.textContent = 'Buy Access';
+            paymentButton.textContent = 'Sacrifice 0.01 SOL';
         }
     }
 }

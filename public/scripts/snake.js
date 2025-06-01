@@ -17,18 +17,30 @@ window.initSnakeGame = async function () {
 
   // Fetch leaderboard immediately on initialization
   try {
+    console.log('Fetching initial leaderboard...');
     const response = await fetchAPI('/api/leaderboard');
-    if (response.success && Array.isArray(response.leaderboard)) {
+    console.log('Leaderboard response:', response);
+    
+    if (response && response.success && Array.isArray(response.leaderboard)) {
       leaderboardData = response.leaderboard.map(entry => ({
-        displayName: entry.display_name,
-        twitterHandle: entry.twitter_handle,
-        profilePic: entry.profile_pic || profilePics[Math.floor(Math.random() * profilePics.length)],
-        score: entry.score
+        displayName: entry.display_name || 'Anonymous',
+        twitterHandle: entry.twitter_handle || '@anonymous',
+        profilePic: entry.profile_pic || `https://unavatar.io/twitter/${(entry.twitter_handle || 'anonymous').replace('@', '')}`,
+        score: entry.score || 0
       }));
+      console.log('Processed leaderboard data:', leaderboardData);
+      updateLeaderboardUI();
+    } else {
+      console.error('Invalid leaderboard response:', response);
+      // Initialize with empty data if response is invalid
+      leaderboardData = [];
       updateLeaderboardUI();
     }
   } catch (error) {
     console.error('Error fetching initial leaderboard:', error);
+    // Initialize with empty data on error
+    leaderboardData = [];
+    updateLeaderboardUI();
   }
 
   const ctx = canvas.getContext("2d");
@@ -102,10 +114,10 @@ window.initSnakeGame = async function () {
       const response = await fetchAPI('/api/leaderboard');
       if (response.success && Array.isArray(response.leaderboard)) {
         leaderboardData = response.leaderboard.map(entry => ({
-          displayName: entry.display_name,
-          twitterHandle: entry.twitter_handle,
-          profilePic: entry.profile_pic || profilePics[Math.floor(Math.random() * profilePics.length)],
-          score: entry.score
+          displayName: entry.display_name || 'Anonymous',
+          twitterHandle: entry.twitter_handle || '@anonymous',
+          profilePic: entry.profile_pic || `https://unavatar.io/twitter/${(entry.twitter_handle || 'anonymous').replace('@', '')}`,
+          score: entry.score || 0
         }));
         updateLeaderboardUI();
         return leaderboardData;
@@ -164,10 +176,10 @@ window.initSnakeGame = async function () {
         const data = res;
         if (data.success && Array.isArray(data.leaderboard)) {
           leaderboardData = data.leaderboard.map((entry, i) => ({
-            displayName: entry.display_name,
-            twitterHandle: entry.twitter_handle,
-            profilePic: entry.profile_pic || profilePics[i % profilePics.length],
-            score: entry.score
+            displayName: entry.display_name || 'Anonymous',
+            twitterHandle: entry.twitter_handle || '@anonymous',
+            profilePic: entry.profile_pic || `https://unavatar.io/twitter/${(entry.twitter_handle || 'anonymous').replace('@', '')}`,
+            score: entry.score || 0
           }));
           updateLeaderboardUI();
         } else if (data.success) {
@@ -209,17 +221,29 @@ window.initSnakeGame = async function () {
   }
 
   function updateLeaderboardUI() {
+    console.log('Updating leaderboard UI...');
     const leaderboardEl = document.getElementById("leaderboard");
-    if (!leaderboardEl) return;
+    if (!leaderboardEl) {
+      console.error('Leaderboard element not found!');
+      return;
+    }
+
     // Sort by score desc (should already be sorted from backend)
     leaderboardData.sort((a, b) => b.score - a.score);
+    console.log('Sorted leaderboard data:', leaderboardData);
+
     // Take top 10
     const topTen = leaderboardData.slice(0, 10);
+    console.log('Top 10 entries:', topTen);
+
     // Show only 5 by default, allow toggling
     let showCount = updateLeaderboardUI.showCount || 5;
     let expanded = showCount > 5;
+
+    // Create or update show more button
     let showMoreBtn = document.getElementById("showMoreLeaderboard");
     if (!showMoreBtn) {
+      console.log('Creating show more button...');
       showMoreBtn = document.createElement("button");
       showMoreBtn.id = "showMoreLeaderboard";
       showMoreBtn.type = "button";
@@ -253,10 +277,26 @@ window.initSnakeGame = async function () {
       });
       leaderboardEl.parentNode.appendChild(showMoreBtn);
     }
+
     function renderLeaderboard() {
+      console.log('Rendering leaderboard entries...');
       leaderboardEl.innerHTML = "";
-      (topTen.slice(0, showCount)).forEach((entry, index) => {
+      
+      if (topTen.length === 0) {
+        console.log('No leaderboard entries to display');
+        const emptyMessage = document.createElement('li');
+        emptyMessage.textContent = 'No scores yet. Be the first!';
+        emptyMessage.style.textAlign = 'center';
+        emptyMessage.style.padding = '1rem';
+        emptyMessage.style.color = '#666';
+        leaderboardEl.appendChild(emptyMessage);
+        return;
+      }
+
+      topTen.slice(0, showCount).forEach((entry, index) => {
+        console.log(`Rendering entry ${index + 1}:`, entry);
         const li = document.createElement("li");
+        
         // Position number
         const pos = document.createElement("span");
         pos.textContent = (index + 1) + ".";
@@ -265,38 +305,47 @@ window.initSnakeGame = async function () {
         pos.style.textAlign = "right";
         pos.style.fontWeight = "bold";
         li.appendChild(pos);
-        // Profile pic (always use unavatar.io/twitter/handle, fallback to unavatar.io/x/handle, then local)
+
+        // Profile pic
         const img = document.createElement("img");
-        const handle = entry.twitterHandle.replace(/^@/, "");
-        img.src = `https://unavatar.io/twitter/${handle}`;
-        img.alt = entry.displayName;
+        const handle = (entry.twitterHandle || '@anonymous').replace(/^@/, "");
+        img.src = entry.profilePic || `https://unavatar.io/twitter/${handle}`;
+        img.alt = entry.displayName || 'Anonymous';
         img.width = 32;
         img.height = 32;
         img.style.borderRadius = "50%";
         img.onerror = function() {
-          // Try X as a fallback if Twitter fails
+          console.log(`Profile pic failed for ${handle}, trying fallback...`);
           if (!this._triedX) {
             this._triedX = true;
             this.src = `https://unavatar.io/x/${handle}`;
           } else {
+            console.log('Using default profile pic');
             this.src = 'assets/images/placeholder1.png';
           }
         };
         li.appendChild(img);
+
         // Twitter handle with link
         const link = document.createElement("a");
         link.href = `https://twitter.com/${handle}`;
         link.target = "_blank";
-        link.textContent = entry.displayName;
+        link.textContent = entry.displayName || 'Anonymous';
+        link.title = entry.twitterHandle || '@anonymous';
+
         // Score
         const score = document.createElement("span");
-        score.textContent = entry.score;
+        score.textContent = entry.score || 0;
+        score.style.marginLeft = 'auto';
+        score.style.paddingLeft = '0.5rem';
+
         // Assemble
         li.appendChild(link);
-        li.appendChild(document.createTextNode(" - "));
         li.appendChild(score);
         leaderboardEl.appendChild(li);
       });
+
+      // Update show more button visibility
       if (topTen.length > 5) {
         showMoreBtn.style.display = "block";
         showMoreBtn.textContent = expanded ? "Show Less" : "Show More";
@@ -304,6 +353,7 @@ window.initSnakeGame = async function () {
         showMoreBtn.style.display = "none";
       }
     }
+
     renderLeaderboard();
   }
 
