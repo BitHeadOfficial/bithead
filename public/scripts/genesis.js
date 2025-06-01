@@ -1261,12 +1261,30 @@ function updateWhitelistTable(whitelist) {
     `).join('');
 }
 
-// Update handleSolanaPayment to include more logging
+// handleSolanaPayment: initiates and confirms Solana payments
 async function handleSolanaPayment() {
     console.log('handleSolanaPayment called');
     const solanaPayBtn = document.getElementById('solanaPayBtn');
     if (!solanaPayBtn) {
         console.error('Solana pay button not found');
+        return;
+    }
+
+    // Check if donation checkbox is checked
+    const donationAgreeCheckbox = document.getElementById('donationAgreeCheckbox');
+    if (!donationAgreeCheckbox) {
+        console.error('Donation agreement checkbox not found.');
+        showStatus('Error: Donation checkbox not found. Please refresh.', 'error');
+        return;
+    }
+    const donationWarningContainer = document.getElementById('donationWarningContainer');
+    if (donationWarningContainer && donationWarningContainer.style.display === 'none') {
+         // Ensure container is visible
+         donationWarningContainer.style.display = 'flex'; // Assuming it's a flex container based on previous code
+    }
+
+    if (!donationAgreeCheckbox.checked) {
+        showStatus('Please confirm you understand this is a donation.', 'error');
         return;
     }
 
@@ -1370,94 +1388,98 @@ async function handleSolanaPayment() {
                     // Store token immediately after confirmation
                     console.log('Storing token after confirmation...');
                     storeToken(token, 'wallet');
-                    
+
                     // Force a fresh check-access call with the new token
                     console.log('Verifying access with new token...');
+                    // Removed retry loop here, relying on the fallback unlock logic below
                     const verifyResponse = await fetch(`${API_URL}/api/check-access`, {
                         headers: {
                             'Authorization': `Bearer ${token}`
                         }
                     });
-                    
+
                     if (!verifyResponse.ok) {
                         throw new Error('Failed to verify access after payment');
                     }
-                    
+
                     const verifyData = await verifyResponse.json();
                     console.log('Access verification response:', verifyData);
-                    
+
                     if (verifyData.hasAccess) {
-                        console.log('Access verified, unlocking content...');
-                        showStatus('Payment successful! Unlocking content...', 'success');
-                        unlockContent();
-                        updateWalletButtonState();
-                        break;
-                    } else {
-                        // If access check fails, try one more time after a short delay
-                        console.log('Access not immediately available, retrying after delay...');
-                        await new Promise(resolve => setTimeout(resolve, 2000));
-                        
-                        const retryResponse = await fetch(`${API_URL}/api/check-access`, {
-                            headers: {
-                                'Authorization': `Bearer ${token}`
-                            }
-                        });
-                        
-                        if (retryResponse.ok) {
-                            const retryData = await retryResponse.json();
-                            if (retryData.hasAccess) {
-                                console.log('Access verified on retry, unlocking content...');
-                                showStatus('Payment successful! Unlocking content...', 'success');
-                                unlockContent();
-                                updateWalletButtonState();
-                                break;
-                            }
-                        }
-                        
-                        // If we still don't have access, unlock anyway since we have the token
-                        console.log('Unlocking content despite access check...');
-                        unlockContent();
-                        updateWalletButtonState();
-                        break;
+                        console.log('Access verified immediately.');
                     }
+                    // --- UNLOCK LOGIC --- //
+                    console.log('Attempting to unlock content after access check...');
+                    unlockContent(); // Always attempt to unlock here
+                    console.log('unlockContent() called.');
+                    updateWalletButtonState();
+                    // --- END UNLOCK LOGIC --- //
+                    break; // Exit confirmation attempts loop if confirmed
+
                 }
-                
+
             } catch (error) {
                 confirmationAttempts++;
                 console.log(`Confirmation attempt ${confirmationAttempts} failed:`, error.message);
-                
+
                 if (confirmationAttempts >= maxAttempts) {
-                    // Even if confirmation fails, try to unlock content if we have the token
+                    console.error('Max confirmation attempts reached.');
+                    // --- UNLOCK LOGIC (Fallback on Confirmation Failure) --- //
                     console.log('Attempting to unlock content despite confirmation failure...');
-                    storeToken(token, 'wallet');
-                    unlockContent();
+                     if (getStoredToken() && localStorage.getItem(TOKEN_KEYS.ACCESS_TYPE) === 'wallet') {
+                         console.log('Wallet token found, unlocking content despite confirmation failure.');
+                         storeToken(token, 'wallet'); // Ensure token is stored
+                         unlockContent();
+                         console.log('unlockContent() called after confirmation failure.');
+                     } else {
+                         console.log('No wallet token found after confirmation failure.');
+                         showStatus('Transaction sent but confirmation status unclear. Please check your wallet for status and refresh.', 'warning');
+                     }
                     updateWalletButtonState();
-                    throw new Error('Transaction sent but confirmation status unclear. Content unlocked anyway - please check your wallet for status.');
+                    throw new Error('Transaction sent but confirmation status unclear. Please check your wallet for status.');
                 }
-                
+
                 // Wait before retrying
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }
 
-        if (!confirmationSuccess) {
-            // Try to unlock content anyway
-            console.log('Attempting to unlock content despite confirmation failure...');
-            storeToken(token, 'wallet');
-            unlockContent();
-            updateWalletButtonState();
-            throw new Error('Transaction sent but confirmation status unclear. Content unlocked anyway - please check your wallet for status.');
-        }
+         // --- UNLOCK LOGIC (Final Fallback) --- //
+         // If loop finishes without confirmationSuccess, still attempt unlock
+         if (!confirmationSuccess) {
+             console.log('Confirmation loop finished without success.');
+             console.log('Attempting final unlock fallback...');
+             if (getStoredToken() && localStorage.getItem(TOKEN_KEYS.ACCESS_TYPE) === 'wallet') {
+                  console.log('Wallet token found, attempting final unlock.');
+                  // Token should already be stored from inside the loop, but ensure here
+                  storeToken(token, 'wallet'); 
+                  unlockContent();
+                  console.log('unlockContent() called in final fallback.');
+              } else {
+                 console.log('No wallet token found for final fallback.');
+                 showStatus('Transaction sent but confirmation status unclear. Please check your wallet for status and refresh.', 'warning');
+              }
+             updateWalletButtonState();
+         }
+         // --- END UNLOCK LOGIC (Final Fallback) --- //
 
     } catch (error) {
         console.error('Transaction error:', error);
-        if (error.message.includes('timeout') || error.message.includes('confirmation status unclear')) {
-            showStatus('Transaction sent but taking longer than expected to confirm. Content unlocked anyway - please check your wallet for status.', 'warning');
+        // Error handling for transaction failure before confirmation attempts
+        solanaPayBtn.disabled = false; // Re-enable button on error
+        if (error.message.includes('timeout') || error.message.includes('confirmation status unclear') || error.message.includes('Failed to verify access')) {
+            // These errors are handled by fallback unlock logic if token is present
+            // Ensure status message is still shown if unlock wasn't possible
+             if (!getStoredToken() || localStorage.getItem(TOKEN_KEYS.ACCESS_TYPE) !== 'wallet') {
+                showStatus('Transaction sent but status unclear. Please check your wallet and refresh.', 'warning');
+             }
+        } else if (error.message.includes('User rejected the request')) {
+             showStatus('Transaction rejected by user.', 'error');
         } else {
             showStatus('Transaction failed: ' + error.message, 'error');
         }
     } finally {
-        solanaPayBtn.disabled = false;
+        solanaPayBtn.disabled = false; // Ensure button is enabled after process ends (success or failure)
     }
 }
 
