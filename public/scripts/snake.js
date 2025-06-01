@@ -2,6 +2,9 @@
 
 import { API_URL, fetchAPI } from './config.js';
 
+// Initialize leaderboard data at the top level
+let leaderboardData = [];
+
 // We expose our main function on window so script.js can call it
 window.initSnakeGame = async function () {
   console.log("initSnakeGame called!"); // Debug to confirm it's invoked
@@ -92,8 +95,6 @@ window.initSnakeGame = async function () {
     'assets/images/placeholder3.png',
     'assets/images/The_American_Dream.png'
   ];
-
-  let leaderboardData = [];
 
   // Fetch leaderboard on load
   async function fetchLeaderboard() {

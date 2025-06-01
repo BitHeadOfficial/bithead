@@ -1,9 +1,9 @@
 # Redirect from apex domain to www
-https://bithead.at/* https://www.bithead.at/:splat 301!
-http://bithead.at/* https://www.bithead.at/:splat 301!
-
-# Handle 404s
-/* /404.html 404
+https://bithead.at https://www.bithead.at 301!
+http://bithead.at https://www.bithead.at 301!
 
 # Handle API requests
-/api/* https://bithead.onrender.com/api/:splat 200 
+/api/* https://bithead.onrender.com/api/:splat 200
+
+# Handle 404s
+/* /404.html 404 
