@@ -1353,7 +1353,7 @@ async function handleSolanaPayment() {
                             maxRetries: 5
                         }),
                         new Promise((_, reject) => 
-                            setTimeout(() => reject(new Error('Transaction confirmation timeout - please check your wallet for status')), TRANSACTION_TIMEOUT)
+                            setTimeout(() => reject(new Error('Transaction confirmation timeout')), TRANSACTION_TIMEOUT)
                         )
                     ]);
 
@@ -1367,35 +1367,58 @@ async function handleSolanaPayment() {
                 }
 
                 if (confirmationSuccess) {
-                    // Store token and unlock content immediately after confirmation
-                    console.log('Storing token and unlocking content...');
+                    // Store token immediately after confirmation
+                    console.log('Storing token after confirmation...');
                     storeToken(token, 'wallet');
                     
-                    // Force a check-access call to verify the token
-                    try {
-                        const verifyResponse = await fetch(`${API_URL}/api/check-access`, {
+                    // Force a fresh check-access call with the new token
+                    console.log('Verifying access with new token...');
+                    const verifyResponse = await fetch(`${API_URL}/api/check-access`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    if (!verifyResponse.ok) {
+                        throw new Error('Failed to verify access after payment');
+                    }
+                    
+                    const verifyData = await verifyResponse.json();
+                    console.log('Access verification response:', verifyData);
+                    
+                    if (verifyData.hasAccess) {
+                        console.log('Access verified, unlocking content...');
+                        showStatus('Payment successful! Unlocking content...', 'success');
+                        unlockContent();
+                        updateWalletButtonState();
+                        break;
+                    } else {
+                        // If access check fails, try one more time after a short delay
+                        console.log('Access not immediately available, retrying after delay...');
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        
+                        const retryResponse = await fetch(`${API_URL}/api/check-access`, {
                             headers: {
                                 'Authorization': `Bearer ${token}`
                             }
                         });
                         
-                        if (verifyResponse.ok) {
-                            const verifyData = await verifyResponse.json();
-                            if (verifyData.hasAccess) {
-                                console.log('Access verified, unlocking content...');
+                        if (retryResponse.ok) {
+                            const retryData = await retryResponse.json();
+                            if (retryData.hasAccess) {
+                                console.log('Access verified on retry, unlocking content...');
                                 showStatus('Payment successful! Unlocking content...', 'success');
                                 unlockContent();
-                                // Update wallet button state
                                 updateWalletButtonState();
                                 break;
                             }
                         }
-                    } catch (verifyError) {
-                        console.error('Error verifying access:', verifyError);
-                        // Continue with unlock anyway since we have the token
-                        showStatus('Payment successful! Unlocking content...', 'success');
+                        
+                        // If we still don't have access, unlock anyway since we have the token
+                        console.log('Unlocking content despite access check...');
                         unlockContent();
                         updateWalletButtonState();
+                        break;
                     }
                 }
                 
