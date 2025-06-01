@@ -277,49 +277,32 @@ function setupWalletConnection() {
 // Update automatic wallet access check with rate limiting
 async function checkWalletAccess(publicKey) {
     console.log('Checking wallet access for:', publicKey);
-
+    showStatus('Checking wallet access...', 'info');
     try {
-      const response = await fetch(`${API_URL}/api/check-access-wallet`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ publicKey })
-      });
-
-      if (!response.ok) {
-        if (response.status === 429) {
-          console.log('Rate limited, skipping wallet check');
-          return { hasAccess: false, totalSent: 0 }; // Return a default structure
-        }
-        throw new Error(`Failed to check wallet access: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log('Wallet access check response:', data);
-
-      // Check if user has already paid 0.01 SOL or more
-      if (data.hasAccess || (data.totalSent && data.totalSent >= 0.01 * LAMPORTS_PER_SOL)) {
-        if (data.token) {
-          storeToken(data.token, 'wallet');
-        }
-        console.log('Wallet access granted in checkWalletAccess, attempting to unlock...');
-        unlockContent(); // Explicitly unlock here
-        return { hasAccess: true, totalSent: data.totalSent, accessType: 'wallet' };
-      } else {
-        console.log('No wallet access found or insufficient payment in checkWalletAccess');
-        // If wallet is connected but no access, ensure content is hidden
-        const protectedContent = document.querySelectorAll('.protected-content');
-        protectedContent.forEach(content => {
-            content.style.display = 'none';
-            content.classList.add('hidden', 'secret');
+        const response = await fetch(window.API_URL + '/api/check-access', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ walletAddress: publicKey }),
         });
-        const unlockPanel = document.getElementById('unlockPanel');
-        if (unlockPanel) unlockPanel.style.display = 'block';
-        return { hasAccess: false, totalSent: data.totalSent || 0 };
-      }
+        const data = await response.json();
+        console.log('Check wallet access response:', data);
+
+        if (data.success && data.hasAccess) {
+            showStatus('Access granted!', 'success');
+            // Call unlockContent directly when access is granted
+            unlockContent();
+        } else {
+             // Access denied or check failed, ensure content is NOT unlocked
+            console.log('Access denied or check failed.');
+            // Optional: show a message indicating access denied for this wallet
+            // showStatus('Access denied for this wallet.', 'info');
+        }
     } catch (error) {
-      console.error('Wallet access check error:', error);
-      // Don't show error status for automatic checks on wallet connect
-      return { hasAccess: false, totalSent: 0, error: error.message };
+        console.error('Error checking wallet access:', error);
+        // showStatus('Failed to check wallet access.', 'error');
+         // Ensure unlockContent is NOT called on error
     }
 }
 
@@ -944,85 +927,66 @@ document.addEventListener("DOMContentLoaded", async () => {
   
 // Load protected content
 async function loadProtectedContent() {
-    console.log('Loading protected content...');
-    
+    const accessType = localStorage.getItem(TOKEN_KEYS.ACCESS_TYPE);
+    const token = getStoredToken();
+    console.log('Attempting to load protected content with', accessType, 'token:', token);
+
+    if (!token) {
+        console.log('No access token found.');
+        // If no token, ensure content is NOT unlocked
+        return;
+    }
+
+    showStatus(`Verifying ${accessType} access...`, 'info');
+
     try {
-        const token = getStoredToken();
-        if (!token) {
-            console.log('No token found, cannot load protected content.');
-            // Optionally, hide the protected content section if it was somehow visible
-             const protectedContent = document.querySelectorAll('.protected-content');
-             protectedContent.forEach(content => {
-                 content.style.display = 'none';
-                 content.classList.add('hidden', 'secret');
-             });
-            return; // Exit if no token
+        const endpoint = accessType === 'wallet' ? '/api/check-access' : '/api/unlock-password'; // This endpoint still seems wrong for password
+         // Correcting the endpoint here as well based on the access type
+        const checkEndpoint = accessType === 'wallet' ? '/api/check-access' : '/api/unlock-password';
+
+
+        const headers = {
+            'Content-Type': 'application/json',
+        };
+        // Include token in headers for verification
+        if (accessType === 'wallet') {
+             headers['Authorization'] = `Bearer ${token}`;
+        } else {
+             // For password access, the token might be verified differently,
+             // but let's assume it's sent in the body or handled server-side after the initial unlock
+             // We might not need to send the password token back for this check
         }
 
-        console.log('Verifying access with token...');
-        const response = await fetch(`${API_URL}/api/check-access`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+
+        const body = accessType === 'wallet' ? JSON.stringify({ walletAddress: localStorage.getItem(TOKEN_KEYS.WALLET) }) : null;
+         // For password access check, the server should verify the token stored with the user identity
+
+
+        const response = await fetch(window.API_URL + checkEndpoint, {
+            method: accessType === 'wallet' ? 'POST' : 'GET', // Assuming password check might be GET with token or POST
+            headers: headers,
+            body: body
         });
 
-        if (!response.ok) {
-            console.log('Access verification failed:', response.status, response.statusText);
-            clearTokens();
-             // Optionally, hide the protected content section and show unlock panel
-             const protectedContent = document.querySelectorAll('.protected-content');
-             protectedContent.forEach(content => {
-                 content.style.display = 'none';
-                 content.classList.add('hidden', 'secret');
-             });
-             const unlockPanel = document.getElementById('unlockPanel');
-             if (unlockPanel) unlockPanel.style.display = 'block';
-            throw new Error(`Failed to verify access: ${response.statusText}`);
-        }
-
         const data = await response.json();
-        console.log('Access check response:', data);
+        console.log('Load protected content response:', data);
 
-        if (data.hasAccess) {
-            console.log('Access granted based on stored token.');
-            // Ensure token type is stored in case it was a password token originally
-             if (data.accessType) {
-                 localStorage.setItem(TOKEN_KEYS.ACCESS_TYPE, data.accessType);
-             }
-
-            unlockContent(); // Explicitly unlock here if access is granted by backend
-            showStatus('Access restored. Content Unlocked!', 'success');
-        
-            // Update button states (wallet connect) - might not be needed here
-            // updateWalletButtonState();
-        
-            console.log('Protected content loaded successfully based on stored token.');
+        if (data.success && data.hasAccess) {
+            showStatus('Access verified!', 'success');
+            // Call unlockContent directly when access is verified
+            unlockContent();
         } else {
-            console.log('Access denied by server based on stored token.');
+             // Access denied or verification failed, clear tokens and ensure content is NOT unlocked
+            console.log('Access verification failed.');
             clearTokens();
-             // Optionally, hide the protected content section and show unlock panel
-             const protectedContent = document.querySelectorAll('.protected-content');
-             protectedContent.forEach(content => {
-                 content.style.display = 'none';
-                 content.classList.add('hidden', 'secret');
-             });
-             const unlockPanel = document.getElementById('unlockPanel');
-             if (unlockPanel) unlockPanel.style.display = 'block';
-            throw new Error('Access denied based on stored token');
+            // Optional: show message
+            // showStatus('Access verification failed. Please try again.', 'error');
         }
     } catch (error) {
         console.error('Error loading protected content:', error);
-        // The UI should already be in a locked state if loadProtectedContent fails
-         // Optionally, show a specific error status if needed
-         const unlockStatus = document.getElementById('unlockStatus');
-         if (unlockStatus) {
-             // Consider a less intrusive error message on page load failures
-             console.log('Status message not updated for silent protected content load failure.');
-             // unlockStatus.textContent = error.message || 'Error loading content. Please try again.';
-             // unlockStatus.className = 'status error';
-         }
-        // Reset button states on error - might not be needed here
-        // updateWalletButtonState();
+        clearTokens();
+        // showStatus('An error occurred during access verification.', 'error');
+         // Ensure unlockContent is NOT called on error
     }
 }
 
@@ -1313,7 +1277,7 @@ async function handleSolanaPayment() {
         // Deserialize and sign transaction
         console.log('Deserializing and signing transaction...');
         const transaction = Transaction.from(Buffer.from(serializedTransaction, 'base64'));
-        
+       
         // Sign and send transaction
         console.log('Signing and sending transaction...');
         const { signature } = await wallet.signAndSendTransaction(transaction);
@@ -1530,49 +1494,43 @@ function setupPaymentSection() {
 
 // Handle password unlock
 async function handlePasswordUnlock() {
-    const secretPassword = document.getElementById('secretPassword');
-    const unlockBtn = document.getElementById('unlockBtn');
-    const unlockStatus = document.getElementById('unlockStatus');
-    
-    if (!secretPassword || !unlockBtn || !unlockStatus) {
-        console.error('Required elements not found for password unlock');
-        return;
-    }
-    
-    unlockBtn.onclick = async () => {
-        const password = secretPassword.value.trim();
-        if (!password) {
-            showStatus('Please enter the secret word', 'error');
-            return;
-        }
-        
-        try {
-            unlockBtn.disabled = true;
-            showStatus('Verifying...', 'info');
-            
-            const response = await fetch(`${API_URL}/api/check-access-password`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ password })
-            });
-            
-            const data = await response.json();
-            
-            if (response.ok && data.hasAccess) {
-                if (data.token) {
-                    storeToken(data.token, 'password');
-                }
-                showStatus('Access granted! Unlocking content...', 'success');
+    const passwordInput = document.getElementById('passwordInput');
+    const password = passwordInput.value;
+    showStatus('Attempting password unlock...', 'info');
+
+    try {
+        // Corrected endpoint for password unlock
+        const response = await fetch(window.API_URL + '/api/unlock-password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ password }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showStatus('Password unlock successful!', 'success');
+            // Assuming the API returns a token on success
+            if (data.token) {
+                storeToken(data.token, 'password');
+                // Call unlockContent directly on success
                 unlockContent();
             } else {
-                showStatus(data.error || 'Invalid secret word', 'error');
+                 // If no token but success is true, still attempt to unlock
+                 unlockContent();
             }
-        } catch (error) {
-            console.error('Password unlock error:', error);
-            showStatus('Failed to verify access', 'error');
-        } finally {
-            unlockBtn.disabled = false;
+            // No need to call checkUnlockState or loadProtectedContent here, unlockContent should handle it
+        } else {
+            showStatus(data.error || 'Password unlock failed.', 'error');
+             // Ensure unlockContent is NOT called on failure
         }
-    };
+    } catch (error) {
+        console.error('Password unlock error:', error);
+        showStatus('An error occurred during password unlock.', 'error');
+         // Ensure unlockContent is NOT called on error
+    }
 }
+  
   

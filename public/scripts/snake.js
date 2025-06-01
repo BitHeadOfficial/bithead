@@ -680,18 +680,22 @@ window.initSnakeGame = async function () {
     obstacles = [];
     roundStartTime = Date.now();
     roundActive = true;
-    currentBet = null;
-    if (betAButton) {
-      betAButton.disabled = false;
-      betAButton.classList.remove("selected-bet");
-    }
-    if (betBButton) {
-      betBButton.disabled = false;
-      betBButton.classList.remove("selected-bet");
-    }
-    if (tweetButton) tweetButton.style.display = "none";
+    // Reset betting UI state for the new round
+     if (betAButton) {
+         betAButton.disabled = false;
+         betAButton.classList.remove("selected-bet");
+         betAButton.classList.add("filled-button"); // Ensure correct styling is reapplied
+     }
+     if (betBButton) {
+         betBButton.disabled = false;
+         betBButton.classList.remove("selected-bet");
+         betBButton.classList.add("outline-button"); // Ensure correct styling is reapplied
+     }
+     currentBet = null; // Reset the current bet
+
+    if (tweetButton) tweetButton.style.display = "none"; // Hide tweet button at start of new round
     lastUpdate = 0;
-    hideShareButton();
+    hideShareButton(); // Hide the share container
   }
 
   let lastUpdate = 0;
@@ -789,28 +793,33 @@ window.initSnakeGame = async function () {
           snakeA.accuracy = Math.max(0.3, snakeA.accuracy - 0.05);
           snakeB.accuracy = Math.max(0.3, snakeB.accuracy - 0.05);
         }
-        const winningSnake =
-          !moveA && moveB ? "A" : !moveB && moveA ? "B" : "Tie";
+        const winningSnake = !moveA && moveB ? "A" : !moveB && moveA ? "B" : "Tie";
 
         // Betting logic
         if (currentBet) {
           if (currentBet === winningSnake) {
             currentStreak++;
+            console.log(`Correct bet! Streak increased to ${currentStreak}`);
           } else {
+            console.log(`Incorrect bet. Streak lost. Final streak: ${currentStreak}`);
             // Streak lost, show modal/share
-            lastScore = currentStreak;
+            lastScore = currentStreak; // Store streak BEFORE resetting for modal
             lastSnapshot = canvas.toDataURL('image/png'); // Capture snapshot before restart
             streakJustKilled = true;
-            showModal(); // This will handle resetting streak and showing share button after modal closes
+            // showModal() will handle resetting streak and showing share button after modal closes
+            showModal(); 
+            // Do NOT reset currentStreak here, it's done in modal submission/cancel
           }
+          // Disable buttons after bet is processed for the round
+           if (betAButton) betAButton.disabled = true;
+           if (betBButton) betBButton.disabled = true;
+        } else {
+            // If no bet was placed, streak is not affected by win/loss
+            console.log('No bet placed this round.');
         }
 
-        // Always reset betting buttons at the start of a new round
-        if (betAButton) betAButton.disabled = false;
-        if (betBButton) betBButton.disabled = false;
-        if (betAButton) betAButton.classList.remove('selected-bet');
-        if (betBButton) betBButton.classList.remove('selected-bet');
-        currentBet = null; // Reset bet
+        // Always reset betting buttons state at the start of a new round (when restartRound is called)
+        // This logic is handled in restartRound now
 
         if (streakDisplay) {
           streakDisplay.textContent = `Your current streak: ${currentStreak}`;
