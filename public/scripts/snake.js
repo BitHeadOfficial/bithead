@@ -3,13 +3,29 @@
 import { API_URL, fetchAPI } from './config.js';
 
 // We expose our main function on window so script.js can call it
-window.initSnakeGame = function () {
+window.initSnakeGame = async function () {
   console.log("initSnakeGame called!"); // Debug to confirm it's invoked
 
   const canvas = document.getElementById("snakeCanvas");
   if (!canvas) {
     console.error("Snake canvas not found!");
     return;
+  }
+
+  // Fetch leaderboard immediately on initialization
+  try {
+    const response = await fetchAPI('/api/leaderboard');
+    if (response.success && Array.isArray(response.leaderboard)) {
+      leaderboardData = response.leaderboard.map(entry => ({
+        displayName: entry.display_name,
+        twitterHandle: entry.twitter_handle,
+        profilePic: entry.profile_pic || profilePics[Math.floor(Math.random() * profilePics.length)],
+        score: entry.score
+      }));
+      updateLeaderboardUI();
+    }
+  } catch (error) {
+    console.error('Error fetching initial leaderboard:', error);
   }
 
   const ctx = canvas.getContext("2d");
@@ -79,11 +95,21 @@ window.initSnakeGame = function () {
 
   let leaderboardData = [];
 
-  // Fetch leaderboard from backend
+  // Fetch leaderboard on load
   async function fetchLeaderboard() {
     try {
       const response = await fetchAPI('/api/leaderboard');
-      return response.leaderboard || [];
+      if (response.success && Array.isArray(response.leaderboard)) {
+        leaderboardData = response.leaderboard.map(entry => ({
+          displayName: entry.display_name,
+          twitterHandle: entry.twitter_handle,
+          profilePic: entry.profile_pic || profilePics[Math.floor(Math.random() * profilePics.length)],
+          score: entry.score
+        }));
+        updateLeaderboardUI();
+        return leaderboardData;
+      }
+      return [];
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
       return [];

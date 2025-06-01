@@ -183,8 +183,9 @@ function setupWalletConnection() {
 
     // Update button state based on connection status
     function updateWalletButtonState() {
-        if (window.solana && window.solana.isConnected) {
-            const publicKey = window.solana.publicKey.toString();
+        const wallet = window.phantom?.solana || window.solana;
+        if (wallet?.isConnected) {
+            const publicKey = wallet.publicKey.toString();
             walletConnectBtn.innerHTML = `<i class="fas fa-wallet"></i> ${publicKey.slice(0, 4)}...${publicKey.slice(-4)}`;
             walletConnectBtn.classList.add('connected');
             
@@ -202,55 +203,21 @@ function setupWalletConnection() {
         } else {
             walletConnectBtn.innerHTML = '<i class="fas fa-wallet"></i> Connect Wallet';
             walletConnectBtn.classList.remove('connected');
-            
-            // Close hidden section when wallet is disconnected
-            const secretSection = document.getElementById('secretSection');
-            const protectedContent = document.querySelectorAll('.protected-content');
-            const unlockStatus = document.getElementById('unlockStatus');
-            
-            if (secretSection) {
-                // Animate the closing
-                gsap.to(secretSection, {
-                    opacity: 0,
-                    y: 20,
-                    duration: 0.4,
-                    ease: "power2.in",
-                    onComplete: () => {
-                        secretSection.classList.add('secret', 'hidden');
-                        // Hide protected content
-                        protectedContent.forEach(content => {
-                            content.style.display = 'none';
-                            content.classList.add('hidden', 'secret');
-                        });
-                        // Clear status
-                        if (unlockStatus) {
-                            unlockStatus.textContent = '';
-                            unlockStatus.className = 'status';
-                        }
-                        // Clear wallet token
-                        localStorage.removeItem(TOKEN_KEYS.WALLET);
-                        if (localStorage.getItem(TOKEN_KEYS.ACCESS_TYPE) === 'wallet') {
-                            localStorage.removeItem(TOKEN_KEYS.ACCESS_TYPE);
-                        }
-                        // Scroll to top
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                    }
-                });
-            }
         }
     }
 
     // Add click handler
     walletConnectBtn.addEventListener('click', async () => {
         try {
-            if (!window.solana || !window.solana.isPhantom) {
+            const wallet = window.phantom?.solana || window.solana;
+            if (!wallet?.isPhantom) {
                 showStatus('Please install Phantom wallet to proceed', 'error');
                 return;
             }
 
-            if (!window.solana.isConnected) {
+            if (!wallet.isConnected) {
                 showStatus('Connecting to wallet...', 'info');
-                await window.solana.connect();
+                await wallet.connect();
                 showStatus('Wallet connected successfully', 'success');
                 // Clear success message after 2 seconds
                 setTimeout(() => {
@@ -261,7 +228,7 @@ function setupWalletConnection() {
                     }
                 }, 2000);
             } else {
-                await window.solana.disconnect();
+                await wallet.disconnect();
                 showStatus('Wallet disconnected', 'info');
                 // Clear info message after 2 seconds
                 setTimeout(() => {
@@ -280,14 +247,20 @@ function setupWalletConnection() {
     });
 
     // Listen for wallet connection changes
-    if (window.solana) {
-        window.solana.on('connect', () => {
+    const wallet = window.phantom?.solana || window.solana;
+    if (wallet) {
+        wallet.on('connect', () => {
             console.log('Wallet connected');
             updateWalletButtonState();
         });
 
-        window.solana.on('disconnect', () => {
+        wallet.on('disconnect', () => {
             console.log('Wallet disconnected');
+            updateWalletButtonState();
+        });
+
+        wallet.on('accountChanged', (publicKey) => {
+            console.log('Account changed:', publicKey.toString());
             updateWalletButtonState();
         });
     }
@@ -604,17 +577,41 @@ async function initSolana() {
         connection = new Connection(window.SOLANA_RPC_URL);
         console.log('Solana connection initialized');
         
-        // Check if Phantom is installed
-        if (window.solana && window.solana.isPhantom) {
-            console.log('Phantom wallet detected');
-            
+        // Check for Phantom wallet with a more robust detection
+        const checkPhantomWallet = () => {
+            if (window.phantom?.solana?.isPhantom || window.solana?.isPhantom) {
+                console.log('Phantom wallet detected');
+                return true;
+            }
+            return false;
+        };
+
+        // Initial check
+        if (checkPhantomWallet()) {
+            // Set up event listeners for wallet changes
+            window.addEventListener('phantomWalletChanged', () => {
+                console.log('Phantom wallet state changed');
+                updateWalletButtonState();
+            });
+
             // Check if already connected
-            if (window.solana.isConnected) {
+            if (window.solana?.isConnected) {
                 console.log('Wallet already connected:', window.solana.publicKey.toString());
                 await checkWalletAccessOnConnect(window.solana.publicKey.toString());
             }
         } else {
             console.warn('Phantom wallet not detected');
+            // Set up polling for wallet detection
+            const checkInterval = setInterval(() => {
+                if (checkPhantomWallet()) {
+                    console.log('Phantom wallet detected after polling');
+                    clearInterval(checkInterval);
+                    updateWalletButtonState();
+                }
+            }, 1000); // Check every second
+
+            // Clear interval after 30 seconds to prevent infinite polling
+            setTimeout(() => clearInterval(checkInterval), 30000);
         }
         
         return true;
