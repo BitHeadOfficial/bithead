@@ -220,6 +220,7 @@ window.initSnakeGame = async function () {
     });
   }
 
+  // Function to update leaderboard UI
   async function updateLeaderboardUI() {
     console.log('Updating leaderboard UI...');
     const leaderboardContainer = document.getElementById('leaderboard');
@@ -236,52 +237,62 @@ window.initSnakeGame = async function () {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data = await response.json();
-        console.log('Processed leaderboard data:', data);
+        const responseData = await response.json(); // Get the full response object
+        console.log('Processed leaderboard data:', responseData);
+
+        // Check if the response contains a leaderboard array and it's an array
+        if (!responseData || !Array.isArray(responseData.leaderboard)) {
+            console.error('Invalid leaderboard data format:', responseData);
+            // Show error message or empty state if data is invalid
+            leaderboardContainer.innerHTML = `
+                <div class="leaderboard-error">
+                    <p>Invalid leaderboard data received.</p>
+                    <button id="retryLeaderboardBtn" class="retry-btn">Retry</button>
+                </div>
+            `;
+             // Attach event listener for retry button
+            document.getElementById('retryLeaderboardBtn').addEventListener('click', updateLeaderboardUI);
+            return;
+        }
+
+        // Get the leaderboard array from the response
+        const leaderboardEntries = responseData.leaderboard;
 
         // Sort by score in descending order
-        const sortedData = data.sort((a, b) => b.score - a.score);
+        const sortedData = [...leaderboardEntries].sort((a, b) => (b.score || 0) - (a.score || 0)); // Handle potential null scores
         console.log('Sorted leaderboard data:', sortedData);
-
-        // Get top 10 entries
-        const topEntries = sortedData.slice(0, 10);
-        console.log('Top 10 entries:', topEntries);
 
         // Clear existing entries
         leaderboardContainer.innerHTML = '';
 
-        // Only show "show more" button if there are more than 10 entries
-        const showMoreButton = document.getElementById('show-more-leaderboard');
-        if (showMoreButton) {
-            showMoreButton.style.display = sortedData.length > 10 ? 'block' : 'none';
-        }
-
-        // If no entries, show a message
-        if (topEntries.length === 0) {
-            leaderboardContainer.innerHTML = `
+        // If no entries, display nothing
+        if (sortedData.length === 0) {
+            console.log('No leaderboard entries to display. Showing empty state.');
+            // Optionally, add a message here if you want, but user requested empty
+             leaderboardContainer.innerHTML = `
                 <div class="leaderboard-empty">
                     <p>Be the first to play and claim your spot on the leaderboard!</p>
-                    <button onclick="startGame()" class="start-game-btn">Start Game</button>
-                </div>
+                     </div>
             `;
             return;
         }
 
         // Render entries
         console.log('Rendering leaderboard entries...');
-        topEntries.forEach((entry, index) => {
+        // Render all entries received, not just top 10, user requested visible permanently.
+        sortedData.forEach((entry, index) => {
             const entryElement = document.createElement('div');
             entryElement.className = 'leaderboard-entry';
             entryElement.innerHTML = `
                 <div class="rank">${index + 1}</div>
                 <div class="player-info">
-                    <img src="${entry.profilePic || 'https://unavatar.io/twitter/bithead'}" 
-                         alt="${entry.displayName || 'Anonymous'}" 
+                    <img src="${entry.profilePic || entry.profile_pic || 'https://unavatar.io/twitter/bithead'}" 
+                         alt="${entry.displayName || entry.display_name || 'Anonymous'}" 
                          onerror="this.src='https://unavatar.io/twitter/bithead'"
                          class="profile-picture">
-                    <span class="username">${entry.displayName || 'Anonymous'}</span>
+                    <span class="username">${entry.displayName || entry.display_name || 'Anonymous'}</span>
                 </div>
-                <div class="score">${entry.score.toLocaleString()}</div>
+                <div class="score">${(entry.score || 0).toLocaleString()}</div>
             `;
             leaderboardContainer.appendChild(entryElement);
         });
@@ -291,11 +302,16 @@ window.initSnakeGame = async function () {
         leaderboardContainer.innerHTML = `
             <div class="leaderboard-error">
                 <p>Unable to load leaderboard. Please try again later.</p>
-                <button onclick="updateLeaderboardUI()" class="retry-btn">Retry</button>
+                <button id="retryLeaderboardBtn" class="retry-btn">Retry</button>
             </div>
         `;
+        // Attach event listener for retry button
+        document.getElementById('retryLeaderboardBtn').addEventListener('click', updateLeaderboardUI);
     }
   }
+
+  // Make updateLeaderboardUI globally accessible for retry button
+  window.updateLeaderboardUI = updateLeaderboardUI;
 
   // Fetch leaderboard on load
   fetchLeaderboard();

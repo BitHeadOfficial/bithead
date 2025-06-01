@@ -195,7 +195,7 @@ function setupWalletConnection() {
             walletConnectBtn.classList.add('connected');
             
             // Check for access when wallet is connected
-            checkWalletAccessOnConnect(publicKey);
+            checkWalletAccess(publicKey);
             
             // Update whitelist form
             const form = document.getElementById('whitelistForm');
@@ -301,10 +301,11 @@ async function checkWalletAccess(publicKey) {
             if (data.token) {
                 storeToken(data.token, 'wallet');
             }
-            // Note: We don't unlock content here, handle in calling function
+            console.log('Wallet access granted in checkWalletAccess, attempting to unlock...');
+            unlockContent(); // Explicitly unlock here
             return { hasAccess: true, totalSent: data.totalSent, accessType: 'wallet' };
         } else {
-            console.log('No wallet access found or insufficient payment');
+            console.log('No wallet access found or insufficient payment in checkWalletAccess');
             return { hasAccess: false, totalSent: data.totalSent || 0 };
         }
     } catch (error) {
@@ -596,7 +597,7 @@ async function initSolana() {
             // Check if already connected
             if (window.solana?.isConnected) {
                 console.log('Wallet already connected:', window.solana.publicKey.toString());
-                await checkWalletAccessOnConnect(window.solana.publicKey.toString());
+                await checkWalletAccess(window.solana.publicKey.toString());
             }
         } else {
             console.warn('Phantom wallet not detected');
@@ -935,13 +936,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   
 // Load protected content
 async function loadProtectedContent() {
+    console.log('Loading protected content...');
+    
     try {
-        console.log('Loading protected content...');
-        
         const token = getStoredToken();
         if (!token) {
-            console.log('No token found');
-            throw new Error('No access token found');
+            console.log('No token found, cannot load protected content.');
+            // Optionally, hide the protected content section if it was somehow visible
+             const protectedContent = document.querySelectorAll('.protected-content');
+             protectedContent.forEach(content => {
+                 content.style.display = 'none';
+                 content.classList.add('hidden', 'secret');
+             });
+            return; // Exit if no token
         }
 
         console.log('Verifying access with token...');
@@ -952,51 +959,62 @@ async function loadProtectedContent() {
         });
 
         if (!response.ok) {
-            console.log('Access verification failed:', response.status);
+            console.log('Access verification failed:', response.status, response.statusText);
             clearTokens();
-            throw new Error('Failed to verify access');
+             // Optionally, hide the protected content section and show unlock panel
+             const protectedContent = document.querySelectorAll('.protected-content');
+             protectedContent.forEach(content => {
+                 content.style.display = 'none';
+                 content.classList.add('hidden', 'secret');
+             });
+             const unlockPanel = document.getElementById('unlockPanel');
+             if (unlockPanel) unlockPanel.style.display = 'block';
+            throw new Error(`Failed to verify access: ${response.statusText}`);
         }
 
         const data = await response.json();
         console.log('Access check response:', data);
 
         if (data.hasAccess) {
-            // Store the token type for future reference
-            storeToken(token, data.accessType);
+            console.log('Access granted based on stored token.');
+            // Ensure token type is stored in case it was a password token originally
+             if (data.accessType) {
+                 localStorage.setItem(TOKEN_KEYS.ACCESS_TYPE, data.accessType);
+             }
 
-        // Call unlockContent for consistent animation behavior
-        unlockContent();
+            unlockContent(); // Explicitly unlock here if access is granted by backend
+            showStatus('Access restored. Content Unlocked!', 'success');
         
-        // Update status
-        const unlockStatus = document.getElementById('unlockStatus');
-        if (unlockStatus) {
-                if (data.accessType === 'password') {
-                    unlockStatus.textContent = 'Password access granted. Content Unlocked!';
-                } else if (data.accessType === 'wallet') {
-                    unlockStatus.textContent = `Wallet access granted. Total sent: ${data.totalSent / LAMPORTS_PER_SOL} SOL`;
-                }
-            unlockStatus.className = 'status success';
-            unlockStatus.style.display = 'block';
-        }
-            
-            // Update button states
-            updateWalletButtonState();
+            // Update button states (wallet connect) - might not be needed here
+            // updateWalletButtonState();
         
-        console.log('Protected content loaded successfully');
+            console.log('Protected content loaded successfully based on stored token.');
         } else {
-            console.log('Access denied by server');
+            console.log('Access denied by server based on stored token.');
             clearTokens();
-            throw new Error('Access denied');
+             // Optionally, hide the protected content section and show unlock panel
+             const protectedContent = document.querySelectorAll('.protected-content');
+             protectedContent.forEach(content => {
+                 content.style.display = 'none';
+                 content.classList.add('hidden', 'secret');
+             });
+             const unlockPanel = document.getElementById('unlockPanel');
+             if (unlockPanel) unlockPanel.style.display = 'block';
+            throw new Error('Access denied based on stored token');
         }
     } catch (error) {
         console.error('Error loading protected content:', error);
-        const unlockStatus = document.getElementById('unlockStatus');
-        if (unlockStatus) {
-            unlockStatus.textContent = error.message || 'Error loading content. Please try again.';
-            unlockStatus.className = 'status error';
-        }
-        // Reset button states on error
-        updateWalletButtonState();
+        // The UI should already be in a locked state if loadProtectedContent fails
+         // Optionally, show a specific error status if needed
+         const unlockStatus = document.getElementById('unlockStatus');
+         if (unlockStatus) {
+             // Consider a less intrusive error message on page load failures
+             console.log('Status message not updated for silent protected content load failure.');
+             // unlockStatus.textContent = error.message || 'Error loading content. Please try again.';
+             // unlockStatus.className = 'status error';
+         }
+        // Reset button states on error - might not be needed here
+        // updateWalletButtonState();
     }
 }
 
