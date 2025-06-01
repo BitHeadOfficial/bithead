@@ -19,7 +19,7 @@ const connection = new Connection(process.env.SOLANA_RPC_URL);
 const RECIPIENT_WALLET = new PublicKey('5Zd2EiC7S2DaT5mQyC1etYmusNPyEQtHDgojdf5oLHLE');
 
 // Database connection
-const db = new sqlite3.Database('./database.sqlite');
+const db = new sqlite3.Database('./data/bithead.db');
 
 router.post('/payment', async (req, res) => {
     try {

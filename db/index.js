@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Create database connection
-const db = new sqlite3.Database(join(__dirname, '..', 'database.sqlite'));
+const db = new sqlite3.Database(join(__dirname, '..', 'data', 'bithead.db'));
 
 // Initialize database schema
 async function initDb() {

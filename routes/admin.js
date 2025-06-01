@@ -20,7 +20,7 @@ const __dirname = dirname(__filename);
 const router = express.Router();
 
 // Initialize database
-const dbPath = join(__dirname, '..', 'database.sqlite');
+const dbPath = join(__dirname, '..', 'data', 'bithead.db');
 console.log('Database path:', dbPath);
 
 // Ensure database file exists
