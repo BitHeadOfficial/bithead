@@ -73,74 +73,69 @@ function initializeGSAP() {
     });
 }
 
-// Unlock content function
+// Helper function to unlock content - moved outside DOMContentLoaded
 function unlockContent() {
     console.log('Unlocking content...');
-    
-    // Update unlock panel
-    const unlockPanel = document.getElementById('unlockPanel');
-    if (unlockPanel) {
-        unlockPanel.style.display = 'none';
-        console.log('Unlock panel hidden');
-    }
-    
-    // Update hidden content
-    const hiddenContent = document.getElementById('hiddenContent');
-    if (hiddenContent) {
-        hiddenContent.style.display = 'block';
-        hiddenContent.classList.add('unlocked');
-        console.log('Hidden content revealed');
-    }
-    
-    // Update vault items
-    const vaultItems = document.getElementById('vaultItems');
-    if (vaultItems) {
-        vaultItems.style.display = 'grid';
-        vaultItems.classList.add('unlocked');
-        console.log('Vault items revealed');
-    }
-    
-    // Update all locked content elements
-    document.querySelectorAll('.locked-content').forEach(el => {
-        el.style.display = 'block';
-        el.classList.add('unlocked');
-    });
-    console.log('All locked content elements unlocked');
-    
-    // Update navigation if needed
-    const genesisLink = document.querySelector('a[href="genesis.html"]');
-    if (genesisLink) {
-        genesisLink.classList.add('unlocked');
-        console.log('Genesis navigation link updated');
-    }
-    
-    // Store unlock state
-    localStorage.setItem('contentUnlocked', 'true');
-    console.log('Unlock state stored in localStorage');
-    
-    // Trigger any animations or transitions
-    document.body.classList.add('content-unlocked');
-    console.log('Body class updated for animations');
-}
+    const secretSection = document.getElementById('secretSection');
+    const protectedContent = document.querySelectorAll('.protected-content');
+    const fadeOverlay = document.querySelector('.fade-to-paywall');
 
-// Check if content is already unlocked
-function checkUnlockState() {
-    const isUnlocked = localStorage.getItem('contentUnlocked') === 'true';
-    const hasToken = !!localStorage.getItem('accessToken');
-    
-    if (isUnlocked && hasToken) {
-        console.log('Content already unlocked, restoring state...');
-        unlockContent();
-        return true;
+    if (!secretSection) {
+        console.error('Secret section not found');
+        return;
     }
-    return false;
-}
 
-// Initialize unlock state on page load
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('Checking initial unlock state...');
-    checkUnlockState();
-});
+        // Remove hidden and secret classes
+        secretSection.classList.remove('hidden', 'secret');
+        protectedContent.forEach(content => {
+            content.classList.remove('hidden', 'secret');
+            content.style.display = 'block';
+        });
+
+        // Hide fade overlay
+        if (fadeOverlay) {
+            fadeOverlay.style.opacity = '0';
+        }
+
+        // Animate the content reveal with fade and scale
+    if (typeof gsap !== 'undefined') {
+        gsap.fromTo(secretSection, {
+            opacity: 0,
+            scale: 0.96
+        }, {
+            opacity: 1,
+            scale: 1,
+            duration: 1.1,
+            ease: 'power2.out'
+        });
+
+        // Animate each protected content section
+        protectedContent.forEach((content, index) => {
+            gsap.fromTo(content, {
+                opacity: 0,
+                y: 30,
+                scale: 0.96
+            }, {
+                opacity: 1,
+                y: 0,
+                scale: 1,
+                duration: 1,
+                delay: 0.2 + index * 0.15,
+                ease: 'power2.out'
+            });
+        });
+    } else {
+        // Fallback if GSAP is not available
+        secretSection.style.opacity = '1';
+        secretSection.style.transform = 'scale(1)';
+        protectedContent.forEach(content => {
+            content.style.opacity = '1';
+            content.style.transform = 'translateY(0) scale(1)';
+        });
+    }
+
+    console.log('Content unlocked successfully');
+}
 
 // Update the showStatus function to always show messages
 function showStatus(message, type) {
@@ -188,14 +183,13 @@ function setupWalletConnection() {
 
     // Update button state based on connection status
     function updateWalletButtonState() {
-        const wallet = window.phantom?.solana || window.solana;
-        if (wallet?.isConnected) {
-            const publicKey = wallet.publicKey.toString();
+        if (window.solana && window.solana.isConnected) {
+            const publicKey = window.solana.publicKey.toString();
             walletConnectBtn.innerHTML = `<i class="fas fa-wallet"></i> ${publicKey.slice(0, 4)}...${publicKey.slice(-4)}`;
             walletConnectBtn.classList.add('connected');
             
             // Check for access when wallet is connected
-            checkWalletAccess(publicKey);
+            checkWalletAccessOnConnect(publicKey);
             
             // Update whitelist form
             const form = document.getElementById('whitelistForm');
@@ -208,21 +202,55 @@ function setupWalletConnection() {
         } else {
             walletConnectBtn.innerHTML = '<i class="fas fa-wallet"></i> Connect Wallet';
             walletConnectBtn.classList.remove('connected');
+            
+            // Close hidden section when wallet is disconnected
+            const secretSection = document.getElementById('secretSection');
+            const protectedContent = document.querySelectorAll('.protected-content');
+            const unlockStatus = document.getElementById('unlockStatus');
+            
+            if (secretSection) {
+                // Animate the closing
+                gsap.to(secretSection, {
+                    opacity: 0,
+                    y: 20,
+                    duration: 0.4,
+                    ease: "power2.in",
+                    onComplete: () => {
+                        secretSection.classList.add('secret', 'hidden');
+                        // Hide protected content
+                        protectedContent.forEach(content => {
+                            content.style.display = 'none';
+                            content.classList.add('hidden', 'secret');
+                        });
+                        // Clear status
+                        if (unlockStatus) {
+                            unlockStatus.textContent = '';
+                            unlockStatus.className = 'status';
+                        }
+                        // Clear wallet token
+                        localStorage.removeItem(TOKEN_KEYS.WALLET);
+                        if (localStorage.getItem(TOKEN_KEYS.ACCESS_TYPE) === 'wallet') {
+                            localStorage.removeItem(TOKEN_KEYS.ACCESS_TYPE);
+                        }
+                        // Scroll to top
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                    }
+                });
+            }
         }
     }
 
     // Add click handler
     walletConnectBtn.addEventListener('click', async () => {
         try {
-            const wallet = window.phantom?.solana || window.solana;
-            if (!wallet?.isPhantom) {
+            if (!window.solana || !window.solana.isPhantom) {
                 showStatus('Please install Phantom wallet to proceed', 'error');
                 return;
             }
 
-            if (!wallet.isConnected) {
+            if (!window.solana.isConnected) {
                 showStatus('Connecting to wallet...', 'info');
-                await wallet.connect();
+                await window.solana.connect();
                 showStatus('Wallet connected successfully', 'success');
                 // Clear success message after 2 seconds
                 setTimeout(() => {
@@ -233,7 +261,7 @@ function setupWalletConnection() {
                     }
                 }, 2000);
             } else {
-                await wallet.disconnect();
+                await window.solana.disconnect();
                 showStatus('Wallet disconnected', 'info');
                 // Clear info message after 2 seconds
                 setTimeout(() => {
@@ -252,20 +280,14 @@ function setupWalletConnection() {
     });
 
     // Listen for wallet connection changes
-    const wallet = window.phantom?.solana || window.solana;
-    if (wallet) {
-        wallet.on('connect', () => {
+    if (window.solana) {
+        window.solana.on('connect', () => {
             console.log('Wallet connected');
             updateWalletButtonState();
         });
 
-        wallet.on('disconnect', () => {
+        window.solana.on('disconnect', () => {
             console.log('Wallet disconnected');
-            updateWalletButtonState();
-        });
-
-        wallet.on('accountChanged', (publicKey) => {
-            console.log('Account changed:', publicKey.toString());
             updateWalletButtonState();
         });
     }
@@ -275,34 +297,48 @@ function setupWalletConnection() {
 }
 
 // Update automatic wallet access check with rate limiting
-async function checkWalletAccess(publicKey) {
+async function checkWalletAccessOnConnect(publicKey) {
     console.log('Checking wallet access for:', publicKey);
-    showStatus('Checking wallet access...', 'info');
+    
     try {
-        const response = await fetch(window.API_URL + '/api/check-access', {
+        const response = await fetch(`${API_URL}/api/check-access-wallet`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ walletAddress: publicKey }),
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ publicKey })
         });
-        const data = await response.json();
-        console.log('Check wallet access response:', data);
 
-        if (data.success && data.hasAccess) {
-            showStatus('Access granted!', 'success');
-            // Call unlockContent directly when access is granted
+        if (!response.ok) {
+            if (response.status === 429) {
+                console.log('Rate limited, skipping wallet check');
+                return;
+            }
+            throw new Error('Failed to check wallet access');
+        }
+
+        const data = await response.json();
+        console.log('Wallet access check response:', data);
+
+        // Check if user has already paid 0.01 SOL or more
+        if (data.hasAccess || (data.totalSent && data.totalSent >= 0.01 * LAMPORTS_PER_SOL)) {
+            if (data.token) {
+                storeToken(data.token, 'wallet');
+            }
+            showStatus('Wallet access verified! Unlocking content...', 'success');
             unlockContent();
+            // Clear success message after 2 seconds
+            setTimeout(() => {
+                const unlockStatus = document.getElementById('unlockStatus');
+                if (unlockStatus && unlockStatus.className.includes('success')) {
+                    unlockStatus.textContent = '';
+                    unlockStatus.className = 'status';
+                }
+            }, 2000);
         } else {
-             // Access denied or check failed, ensure content is NOT unlocked
-            console.log('Access denied or check failed.');
-            // Optional: show a message indicating access denied for this wallet
-            // showStatus('Access denied for this wallet.', 'info');
+            console.log('No wallet access found or insufficient payment');
         }
     } catch (error) {
-        console.error('Error checking wallet access:', error);
-        // showStatus('Failed to check wallet access.', 'error');
-         // Ensure unlockContent is NOT called on error
+        console.error('Wallet access check error:', error);
+        // Don't show error status for automatic checks
     }
 }
 
@@ -568,41 +604,35 @@ async function initSolana() {
         connection = new Connection(window.SOLANA_RPC_URL);
         console.log('Solana connection initialized');
         
-        // Check for Phantom wallet with a more robust detection
-        const checkPhantomWallet = () => {
-            if (window.phantom?.solana?.isPhantom || window.solana?.isPhantom) {
-                console.log('Phantom wallet detected');
-                return true;
-            }
-            return false;
+        // Wait for Phantom to be injected
+        let retries = 0;
+        const maxRetries = 10;
+        const checkPhantom = () => {
+            return new Promise((resolve) => {
+                if (window.phantom?.solana?.isPhantom || window.solana?.isPhantom) {
+                    resolve(true);
+                } else if (retries < maxRetries) {
+                    retries++;
+                    setTimeout(() => resolve(checkPhantom()), 500);
+                } else {
+                    resolve(false);
+                }
+            });
         };
 
-        // Initial check
-        if (checkPhantomWallet()) {
-            // Set up event listeners for wallet changes
-            window.addEventListener('phantomWalletChanged', () => {
-                console.log('Phantom wallet state changed');
-                updateWalletButtonState();
-            });
-
+        const phantomDetected = await checkPhantom();
+        if (phantomDetected) {
+            console.log('Phantom wallet detected');
+            // Set up wallet connection button and listeners
+            setupWalletConnection();
             // Check if already connected
-            if (window.solana?.isConnected) {
+            if (window.solana.isConnected) {
                 console.log('Wallet already connected:', window.solana.publicKey.toString());
-                await checkWalletAccess(window.solana.publicKey.toString());
+                await checkWalletAccessOnConnect(window.solana.publicKey.toString());
             }
         } else {
-            console.warn('Phantom wallet not detected');
-            // Set up polling for wallet detection
-            const checkInterval = setInterval(() => {
-                if (checkPhantomWallet()) {
-                    console.log('Phantom wallet detected after polling');
-                    clearInterval(checkInterval);
-                    updateWalletButtonState();
-                }
-            }, 1000); // Check every second
-
-            // Clear interval after 30 seconds to prevent infinite polling
-            setTimeout(() => clearInterval(checkInterval), 30000);
+            console.warn('Phantom wallet not detected after retries');
+            showStatus('Please install Phantom wallet to use this feature', 'error');
         }
         
         return true;
@@ -927,66 +957,68 @@ document.addEventListener("DOMContentLoaded", async () => {
   
 // Load protected content
 async function loadProtectedContent() {
-    const accessType = localStorage.getItem(TOKEN_KEYS.ACCESS_TYPE);
-    const token = getStoredToken();
-    console.log('Attempting to load protected content with', accessType, 'token:', token);
-
-    if (!token) {
-        console.log('No access token found.');
-        // If no token, ensure content is NOT unlocked
-        return;
-    }
-
-    showStatus(`Verifying ${accessType} access...`, 'info');
-
     try {
-        const endpoint = accessType === 'wallet' ? '/api/check-access' : '/api/unlock-password'; // This endpoint still seems wrong for password
-         // Correcting the endpoint here as well based on the access type
-        const checkEndpoint = accessType === 'wallet' ? '/api/check-access' : '/api/unlock-password';
-
-
-        const headers = {
-            'Content-Type': 'application/json',
-        };
-        // Include token in headers for verification
-        if (accessType === 'wallet') {
-             headers['Authorization'] = `Bearer ${token}`;
-        } else {
-             // For password access, the token might be verified differently,
-             // but let's assume it's sent in the body or handled server-side after the initial unlock
-             // We might not need to send the password token back for this check
+        console.log('Loading protected content...');
+        
+        const token = getStoredToken();
+        if (!token) {
+            console.log('No token found');
+            throw new Error('No access token found');
         }
 
-
-        const body = accessType === 'wallet' ? JSON.stringify({ walletAddress: localStorage.getItem(TOKEN_KEYS.WALLET) }) : null;
-         // For password access check, the server should verify the token stored with the user identity
-
-
-        const response = await fetch(window.API_URL + checkEndpoint, {
-            method: accessType === 'wallet' ? 'POST' : 'GET', // Assuming password check might be GET with token or POST
-            headers: headers,
-            body: body
+        console.log('Verifying access with token...');
+        const response = await fetch(`${API_URL}/api/check-access`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
         });
 
-        const data = await response.json();
-        console.log('Load protected content response:', data);
-
-        if (data.success && data.hasAccess) {
-            showStatus('Access verified!', 'success');
-            // Call unlockContent directly when access is verified
-            unlockContent();
-        } else {
-             // Access denied or verification failed, clear tokens and ensure content is NOT unlocked
-            console.log('Access verification failed.');
+        if (!response.ok) {
+            console.log('Access verification failed:', response.status);
             clearTokens();
-            // Optional: show message
-            // showStatus('Access verification failed. Please try again.', 'error');
+            throw new Error('Failed to verify access');
+        }
+
+        const data = await response.json();
+        console.log('Access check response:', data);
+
+        if (data.hasAccess) {
+            // Store the token type for future reference
+            storeToken(token, data.accessType);
+
+        // Call unlockContent for consistent animation behavior
+        unlockContent();
+        
+        // Update status
+        const unlockStatus = document.getElementById('unlockStatus');
+        if (unlockStatus) {
+                if (data.accessType === 'password') {
+                    unlockStatus.textContent = 'Password access granted. Content Unlocked!';
+                } else if (data.accessType === 'wallet') {
+                    unlockStatus.textContent = `Wallet access granted. Total sent: ${data.totalSent / LAMPORTS_PER_SOL} SOL`;
+                }
+            unlockStatus.className = 'status success';
+            unlockStatus.style.display = 'block';
+        }
+            
+            // Update button states
+            updateWalletButtonState();
+        
+        console.log('Protected content loaded successfully');
+        } else {
+            console.log('Access denied by server');
+            clearTokens();
+            throw new Error('Access denied');
         }
     } catch (error) {
         console.error('Error loading protected content:', error);
-        clearTokens();
-        // showStatus('An error occurred during access verification.', 'error');
-         // Ensure unlockContent is NOT called on error
+        const unlockStatus = document.getElementById('unlockStatus');
+        if (unlockStatus) {
+            unlockStatus.textContent = error.message || 'Error loading content. Please try again.';
+            unlockStatus.className = 'status error';
+        }
+        // Reset button states on error
+        updateWalletButtonState();
     }
 }
 
@@ -1232,123 +1264,177 @@ function updateWhitelistTable(whitelist) {
 // Update handleSolanaPayment to include more logging
 async function handleSolanaPayment() {
     console.log('handleSolanaPayment called');
+    const solanaPayBtn = document.getElementById('solanaPayBtn');
+    if (!solanaPayBtn) {
+        console.error('Solana pay button not found');
+        return;
+    }
+
     try {
-        const wallet = window.phantom?.solana || window.solana;
-        if (!wallet?.isConnected) {
+        // Check if Phantom wallet is installed
+        if (!window.solana || !window.solana.isPhantom) {
+            console.error('Phantom wallet not detected');
+            showStatus('Please install Phantom wallet to proceed', 'error');
+            return;
+        }
+
+        // Check if wallet is connected
+        if (!window.solana.isConnected) {
+            console.error('Wallet not connected');
             showStatus('Please connect your wallet first', 'error');
             return;
         }
 
-        const publicKey = wallet.publicKey.toString();
+        const publicKey = window.solana.publicKey.toString();
         console.log('Initiating payment with public key:', publicKey);
 
-        // Show loading state
-        showStatus('Initiating payment...', 'info');
-        const paymentButton = document.getElementById('solanaPayBtn');
-        if (paymentButton) {
-            paymentButton.disabled = true;
-            paymentButton.textContent = 'Processing...';
-        }
+        showStatus('Creating transaction...', 'info');
+        solanaPayBtn.disabled = true;
 
-        // Get payment transaction from server
         console.log('Sending payment request to server...');
         const response = await fetch(`${API_URL}/api/payment`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                publicKey,
-                amount: PAYMENT_AMOUNT
-            })
+            body: JSON.stringify({ publicKey, amount: PAYMENT_AMOUNT })
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+            const errorText = await response.text();
+            console.error('Payment request failed:', response.status, errorText);
+            throw new Error(`Payment request failed: ${response.statusText}`);
         }
 
-        const { transaction: serializedTransaction, token, message } = await response.json();
-        console.log('Payment request successful:', message);
-
-        // Ensure Buffer is available
-        if (typeof window.Buffer === 'undefined') {
-            throw new Error('Buffer is not available. Please refresh the page and try again.');
-        }
-
-        // Deserialize and sign transaction
-        console.log('Deserializing and signing transaction...');
-        const transaction = Transaction.from(Buffer.from(serializedTransaction, 'base64'));
-       
-        // Sign and send transaction
+        const { transaction: serializedTransaction, token } = await response.json();
+        console.log('Payment request successful, token received');
+        
+        // Convert base64 to Uint8Array using browser-compatible methods
+        const transactionBytes = Uint8Array.from(atob(serializedTransaction), c => c.charCodeAt(0));
+        const transaction = Transaction.from(transactionBytes);
+        
+        showStatus('Please sign the transaction in your wallet...', 'info');
+        
         console.log('Signing and sending transaction...');
-        const { signature } = await wallet.signAndSendTransaction(transaction);
-        console.log('Transaction signed and sent:', signature);
-
-        // Wait for confirmation
-        console.log('Waiting for transaction confirmation...');
-        let confirmed = false;
-        let attempts = 0;
+        const signed = await window.solana.signAndSendTransaction(transaction);
+        console.log('Transaction signed and sent:', signed.signature);
+        
+        // Update status immediately after sending
+        showStatus('Transaction sent! Waiting for confirmation...', 'info');
+        
+        // Add a small delay to allow the transaction to be processed
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        console.log('Waiting for transaction confirmation with timeout:', TRANSACTION_TIMEOUT, 'ms');
+        let confirmationAttempts = 0;
         const maxAttempts = 3;
-
-        while (!confirmed && attempts < maxAttempts) {
-            attempts++;
-            console.log('Confirmation attempt', attempts + '/' + maxAttempts);
+        let confirmationSuccess = false;
+        
+        while (confirmationAttempts < maxAttempts && !confirmationSuccess) {
             try {
-                const status = await connection.getSignatureStatus(signature);
+                console.log(`Confirmation attempt ${confirmationAttempts + 1}/${maxAttempts}`);
+                
+                // First check if the transaction is already confirmed
+                const status = await connection.getSignatureStatus(signed.signature, {
+                    searchTransactionHistory: true
+                });
                 console.log('Transaction status:', status);
                 
-                if (status?.value?.confirmationStatus === 'confirmed' || 
-                    status?.value?.confirmationStatus === 'finalized') {
-                    confirmed = true;
-                    console.log('Transaction confirmed!');
-                    break;
+                if (status?.value?.confirmationStatus === 'confirmed' || status?.value?.confirmationStatus === 'finalized') {
+                    console.log('Transaction already confirmed!');
+                    confirmationSuccess = true;
+                } else {
+                    // If not confirmed, wait for confirmation
+                    const confirmation = await Promise.race([
+                        connection.confirmTransaction({
+                            signature: signed.signature,
+                            blockhash: transaction.recentBlockhash,
+                            lastValidBlockHeight: status?.value?.lastValidBlockHeight
+                        }, {
+                            commitment: 'confirmed',
+                            maxRetries: 5
+                        }),
+                        new Promise((_, reject) => 
+                            setTimeout(() => reject(new Error('Transaction confirmation timeout - please check your wallet for status')), TRANSACTION_TIMEOUT)
+                        )
+                    ]);
+
+                    if (confirmation.value.err) {
+                        console.error('Transaction failed:', confirmation.value.err);
+                        throw new Error('Transaction failed: ' + JSON.stringify(confirmation.value.err));
+                    }
+
+                    console.log('Transaction confirmed successfully on attempt', confirmationAttempts + 1);
+                    confirmationSuccess = true;
+                }
+
+                if (confirmationSuccess) {
+                    // Store token and unlock content immediately after confirmation
+                    console.log('Storing token and unlocking content...');
+                    storeToken(token, 'wallet');
+                    
+                    // Force a check-access call to verify the token
+                    try {
+                        const verifyResponse = await fetch(`${API_URL}/api/check-access`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+                        
+                        if (verifyResponse.ok) {
+                            const verifyData = await verifyResponse.json();
+                            if (verifyData.hasAccess) {
+                                console.log('Access verified, unlocking content...');
+                                showStatus('Payment successful! Unlocking content...', 'success');
+                                unlockContent();
+                                // Update wallet button state
+                                updateWalletButtonState();
+                                break;
+                            }
+                        }
+                    } catch (verifyError) {
+                        console.error('Error verifying access:', verifyError);
+                        // Continue with unlock anyway since we have the token
+                        showStatus('Payment successful! Unlocking content...', 'success');
+                        unlockContent();
+                        updateWalletButtonState();
+                    }
                 }
                 
-                // Wait before next attempt
-                await new Promise(resolve => setTimeout(resolve, 2000));
             } catch (error) {
-                console.warn('Error checking transaction status:', error);
-                if (attempts === maxAttempts) {
-                    throw new Error('Transaction confirmation timeout');
+                confirmationAttempts++;
+                console.log(`Confirmation attempt ${confirmationAttempts} failed:`, error.message);
+                
+                if (confirmationAttempts >= maxAttempts) {
+                    // Even if confirmation fails, try to unlock content if we have the token
+                    console.log('Attempting to unlock content despite confirmation failure...');
+                    storeToken(token, 'wallet');
+                    unlockContent();
+                    updateWalletButtonState();
+                    throw new Error('Transaction sent but confirmation status unclear. Content unlocked anyway - please check your wallet for status.');
                 }
+                
+                // Wait before retrying
+                await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }
 
-        if (!confirmed) {
-            throw new Error('Transaction not confirmed after maximum attempts');
-        }
-
-        // Store token and unlock content
-        console.log('Storing token and unlocking content...');
-        storeToken(token, 'wallet');
-        
-        // Immediately check wallet access and update UI
-        if (typeof checkWalletAccess !== 'function') {
-            console.error('checkWalletAccess is not defined');
-            showStatus('Internal error: Access check function not found. Please refresh.', 'error');
-            // Still attempt to unlock visually if confirmation was successful
+        if (!confirmationSuccess) {
+            // Try to unlock content anyway
+            console.log('Attempting to unlock content despite confirmation failure...');
+            storeToken(token, 'wallet');
             unlockContent();
-            return; // Stop execution here if function is missing
-        }
-        const accessResponse = await checkWalletAccess(publicKey);
-        if (accessResponse.hasAccess) {
-            console.log('Access granted, unlocking content...');
-            unlockContent();
-            showStatus('Payment successful! Content unlocked.', 'success');
-        } else {
-            console.log('Access check failed:', accessResponse);
-            showStatus('Payment successful but access check failed. Please refresh the page.', 'warning');
+            updateWalletButtonState();
+            throw new Error('Transaction sent but confirmation status unclear. Content unlocked anyway - please check your wallet for status.');
         }
 
     } catch (error) {
-        console.error('Payment failed:', error);
-        showStatus(error.message || 'Payment failed. Please try again.', 'error');
-        
-        // Reset button state
-        const paymentButton = document.getElementById('solanaPayBtn');
-        if (paymentButton) {
-            paymentButton.disabled = false;
-            paymentButton.textContent = 'Sacrifice 0.01 SOL';
+        console.error('Transaction error:', error);
+        if (error.message.includes('timeout') || error.message.includes('confirmation status unclear')) {
+            showStatus('Transaction sent but taking longer than expected to confirm. Content unlocked anyway - please check your wallet for status.', 'warning');
+        } else {
+            showStatus('Transaction failed: ' + error.message, 'error');
         }
+    } finally {
+        solanaPayBtn.disabled = false;
     }
 }
 
@@ -1494,43 +1580,49 @@ function setupPaymentSection() {
 
 // Handle password unlock
 async function handlePasswordUnlock() {
-    const passwordInput = document.getElementById('passwordInput');
-    const password = passwordInput.value;
-    showStatus('Attempting password unlock...', 'info');
-
-    try {
-        // Corrected endpoint for password unlock
-        const response = await fetch(window.API_URL + '/api/unlock-password', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ password }),
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            showStatus('Password unlock successful!', 'success');
-            // Assuming the API returns a token on success
-            if (data.token) {
-                storeToken(data.token, 'password');
-                // Call unlockContent directly on success
+    const secretPassword = document.getElementById('secretPassword');
+    const unlockBtn = document.getElementById('unlockBtn');
+    const unlockStatus = document.getElementById('unlockStatus');
+    
+    if (!secretPassword || !unlockBtn || !unlockStatus) {
+        console.error('Required elements not found for password unlock');
+        return;
+    }
+    
+    unlockBtn.onclick = async () => {
+        const password = secretPassword.value.trim();
+        if (!password) {
+            showStatus('Please enter the secret word', 'error');
+            return;
+        }
+        
+        try {
+            unlockBtn.disabled = true;
+            showStatus('Verifying...', 'info');
+            
+            const response = await fetch(`${API_URL}/api/check-access-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok && data.hasAccess) {
+                if (data.token) {
+                    storeToken(data.token, 'password');
+                }
+                showStatus('Access granted! Unlocking content...', 'success');
                 unlockContent();
             } else {
-                 // If no token but success is true, still attempt to unlock
-                 unlockContent();
+                showStatus(data.error || 'Invalid secret word', 'error');
             }
-            // No need to call checkUnlockState or loadProtectedContent here, unlockContent should handle it
-        } else {
-            showStatus(data.error || 'Password unlock failed.', 'error');
-             // Ensure unlockContent is NOT called on failure
+        } catch (error) {
+            console.error('Password unlock error:', error);
+            showStatus('Failed to verify access', 'error');
+        } finally {
+            unlockBtn.disabled = false;
         }
-    } catch (error) {
-        console.error('Password unlock error:', error);
-        showStatus('An error occurred during password unlock.', 'error');
-         // Ensure unlockContent is NOT called on error
-    }
+    };
 }
-  
   

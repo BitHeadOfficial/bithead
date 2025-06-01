@@ -179,7 +179,7 @@ export const updateMetrics = {
         try {
             metrics.uptime.lastCheckSeconds = Math.floor((Date.now() - metrics.uptime.startTime) / 1000);
             metrics.uptime.uptimeSeconds = metrics.uptime.lastCheckSeconds;
-            metrics.lastUpdated = new Date();
+    metrics.lastUpdated = new Date();
         } catch (error) {
             logger.error('Error updating uptime metrics:', error);
         }
@@ -188,19 +188,19 @@ export const updateMetrics = {
 
 // Initialize metrics on module load
 initializeMetrics();
-
-// Log metrics every hour
+    
+    // Log metrics every hour
 const logMetrics = () => {
     try {
-        const now = new Date();
-        if (now - metrics.lastUpdated > 3600000) { // 1 hour
-            logger.info('Metrics Update:', metrics);
+    const now = new Date();
+    if (now - metrics.lastUpdated > 3600000) { // 1 hour
+        logger.info('Metrics Update:', metrics);
             // Reset metrics but keep uptime
             const uptime = metrics.uptime;
-            metrics = {
-                requests: 0,
-                errors: 0,
-                walletConnections: 0,
+        metrics = {
+            requests: 0,
+            errors: 0,
+            walletConnections: 0,
                 transactions: {
                     total: 0,
                     successful: 0,
@@ -241,35 +241,35 @@ export const getMetrics = () => {
 // Error logging middleware
 export const errorLogger = (err, req, res, next) => {
     try {
-        logger.error(`${err.status || 500} - ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
+    logger.error(`${err.status || 500} - ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
         updateMetrics.error('request');
         next(err);
     } catch (error) {
         logger.error('Error in errorLogger middleware:', error);
-        next(err);
+    next(err);
     }
 };
 
 // Request logging middleware
 export const requestLogger = (req, res, next) => {
     try {
-        logger.http(`${req.method} ${req.originalUrl} - ${req.ip}`);
+    logger.http(`${req.method} ${req.originalUrl} - ${req.ip}`);
         updateMetrics.request(req.path);
         next();
     } catch (error) {
         logger.error('Error in requestLogger middleware:', error);
-        next();
+    next();
     }
 };
 
 // Wallet connection logger
 export const logWalletConnection = (publicKey, success) => {
     try {
-        if (success) {
-            logger.info(`Wallet connected: ${publicKey}`);
+    if (success) {
+        logger.info(`Wallet connected: ${publicKey}`);
             updateMetrics.walletConnection();
-        } else {
-            logger.warn(`Failed wallet connection attempt: ${publicKey}`);
+    } else {
+        logger.warn(`Failed wallet connection attempt: ${publicKey}`);
         }
     } catch (error) {
         logger.error('Error in logWalletConnection:', error);
@@ -279,11 +279,11 @@ export const logWalletConnection = (publicKey, success) => {
 // Transaction logger
 export const logTransaction = (txHash, amount, success) => {
     try {
-        if (success) {
-            logger.info(`Transaction successful: ${txHash} - Amount: ${amount} SOL`);
+    if (success) {
+        logger.info(`Transaction successful: ${txHash} - Amount: ${amount} SOL`);
             updateMetrics.transaction('successful');
-        } else {
-            logger.error(`Transaction failed: ${txHash} - Amount: ${amount} SOL`);
+    } else {
+        logger.error(`Transaction failed: ${txHash} - Amount: ${amount} SOL`);
             updateMetrics.transaction('failed');
         }
     } catch (error) {

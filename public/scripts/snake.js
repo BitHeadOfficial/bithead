@@ -2,45 +2,14 @@
 
 import { API_URL, fetchAPI } from './config.js';
 
-// Initialize leaderboard data at the top level
-let leaderboardData = [];
-
 // We expose our main function on window so script.js can call it
-window.initSnakeGame = async function () {
+window.initSnakeGame = function () {
   console.log("initSnakeGame called!"); // Debug to confirm it's invoked
 
   const canvas = document.getElementById("snakeCanvas");
   if (!canvas) {
     console.error("Snake canvas not found!");
     return;
-  }
-
-  // Fetch leaderboard immediately on initialization
-  try {
-    console.log('Fetching initial leaderboard...');
-    const response = await fetchAPI('/api/leaderboard');
-    console.log('Leaderboard response:', response);
-    
-    if (response && response.success && Array.isArray(response.leaderboard)) {
-      leaderboardData = response.leaderboard.map(entry => ({
-        displayName: entry.display_name || 'Anonymous',
-        twitterHandle: entry.twitter_handle || '@anonymous',
-        profilePic: entry.profile_pic || `https://unavatar.io/twitter/${(entry.twitter_handle || 'anonymous').replace('@', '')}`,
-        score: entry.score || 0
-      }));
-      console.log('Processed leaderboard data:', leaderboardData);
-      updateLeaderboardUI();
-    } else {
-      console.error('Invalid leaderboard response:', response);
-      // Initialize with empty data if response is invalid
-      leaderboardData = [];
-      updateLeaderboardUI();
-    }
-  } catch (error) {
-    console.error('Error fetching initial leaderboard:', error);
-    // Initialize with empty data on error
-    leaderboardData = [];
-    updateLeaderboardUI();
   }
 
   const ctx = canvas.getContext("2d");
@@ -108,21 +77,15 @@ window.initSnakeGame = async function () {
     'assets/images/The_American_Dream.png'
   ];
 
-  // Fetch leaderboard on load
+  let leaderboardData = [];
+
+  // Fetch leaderboard from backend
   async function fetchLeaderboard() {
     try {
       const response = await fetchAPI('/api/leaderboard');
-      if (response.success && Array.isArray(response.leaderboard)) {
-        leaderboardData = response.leaderboard.map(entry => ({
-          displayName: entry.display_name || 'Anonymous',
-          twitterHandle: entry.twitter_handle || '@anonymous',
-          profilePic: entry.profile_pic || `https://unavatar.io/twitter/${(entry.twitter_handle || 'anonymous').replace('@', '')}`,
-          score: entry.score || 0
-        }));
-        updateLeaderboardUI();
-        return leaderboardData;
-      }
-      return [];
+      leaderboardData = response.leaderboard || [];
+      updateLeaderboardUI(); // Update UI immediately after fetching
+      return leaderboardData;
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
       return [];
@@ -176,10 +139,10 @@ window.initSnakeGame = async function () {
         const data = res;
         if (data.success && Array.isArray(data.leaderboard)) {
           leaderboardData = data.leaderboard.map((entry, i) => ({
-            displayName: entry.display_name || 'Anonymous',
-            twitterHandle: entry.twitter_handle || '@anonymous',
-            profilePic: entry.profile_pic || `https://unavatar.io/twitter/${(entry.twitter_handle || 'anonymous').replace('@', '')}`,
-            score: entry.score || 0
+            displayName: entry.display_name,
+            twitterHandle: entry.twitter_handle,
+            profilePic: entry.profile_pic || profilePics[i % profilePics.length],
+            score: entry.score
           }));
           updateLeaderboardUI();
         } else if (data.success) {
@@ -220,99 +183,104 @@ window.initSnakeGame = async function () {
     });
   }
 
-  // Function to update leaderboard UI
-  async function updateLeaderboardUI() {
-    console.log('Updating leaderboard UI...');
-    const leaderboardContainer = document.getElementById('leaderboard');
-    if (!leaderboardContainer) {
-        console.error('Leaderboard container not found');
-        return;
+  function updateLeaderboardUI() {
+    const leaderboardEl = document.getElementById("leaderboard");
+    if (!leaderboardEl) return;
+    // Sort by score desc (should already be sorted from backend)
+    leaderboardData.sort((a, b) => b.score - a.score);
+    // Take top 10
+    const topTen = leaderboardData.slice(0, 10);
+    // Show only 5 by default, allow toggling
+    let showCount = updateLeaderboardUI.showCount || 5;
+    let expanded = showCount > 5;
+    let showMoreBtn = document.getElementById("showMoreLeaderboard");
+    if (!showMoreBtn) {
+      showMoreBtn = document.createElement("button");
+      showMoreBtn.id = "showMoreLeaderboard";
+      showMoreBtn.type = "button";
+      showMoreBtn.textContent = "Show More";
+      showMoreBtn.style.display = "block";
+      showMoreBtn.style.margin = "0.7em auto 0 auto";
+      showMoreBtn.style.width = "90%";
+      showMoreBtn.style.background = "linear-gradient(90deg, #4296d2 0%, #2f6d99 100%)";
+      showMoreBtn.style.color = "#fff";
+      showMoreBtn.style.border = "none";
+      showMoreBtn.style.borderRadius = "2em";
+      showMoreBtn.style.cursor = "pointer";
+      showMoreBtn.style.fontSize = "1em";
+      showMoreBtn.style.fontWeight = "600";
+      showMoreBtn.style.letterSpacing = "0.04em";
+      showMoreBtn.style.boxShadow = "0 2px 8px rgba(66,150,210,0.12)";
+      showMoreBtn.style.transition = "background 0.2s, box-shadow 0.2s";
+      showMoreBtn.addEventListener("mouseenter", function () {
+        showMoreBtn.style.background = "linear-gradient(90deg, #2f6d99 0%, #4296d2 100%)";
+        showMoreBtn.style.boxShadow = "0 4px 16px rgba(66,150,210,0.18)";
+      });
+      showMoreBtn.addEventListener("mouseleave", function () {
+        showMoreBtn.style.background = "linear-gradient(90deg, #4296d2 0%, #2f6d99 100%)";
+        showMoreBtn.style.boxShadow = "0 2px 8px rgba(66,150,210,0.12)";
+      });
+      showMoreBtn.addEventListener("click", function () {
+        expanded = !expanded;
+        showCount = expanded ? 10 : 5;
+        updateLeaderboardUI.showCount = showCount;
+        renderLeaderboard();
+      });
+      leaderboardEl.parentNode.appendChild(showMoreBtn);
     }
-
-    try {
-        const response = await fetch(`${API_URL}/api/leaderboard`);
-        console.log('Leaderboard response:', response);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const responseData = await response.json(); // Get the full response object
-        console.log('Processed leaderboard data:', responseData);
-
-        // Check if the response contains a leaderboard array and it's an array
-        if (!responseData || !Array.isArray(responseData.leaderboard)) {
-            console.error('Invalid leaderboard data format:', responseData);
-            // Show error message or empty state if data is invalid
-            leaderboardContainer.innerHTML = `
-                <div class="leaderboard-error">
-                    <p>Invalid leaderboard data received.</p>
-                    <button id="retryLeaderboardBtn" class="retry-btn">Retry</button>
-                </div>
-            `;
-             // Attach event listener for retry button
-            document.getElementById('retryLeaderboardBtn').addEventListener('click', updateLeaderboardUI);
-            return;
-        }
-
-        // Get the leaderboard array from the response
-        const leaderboardEntries = responseData.leaderboard;
-
-        // Sort by score in descending order
-        const sortedData = [...leaderboardEntries].sort((a, b) => (b.score || 0) - (a.score || 0)); // Handle potential null scores
-        console.log('Sorted leaderboard data:', sortedData);
-
-        // Clear existing entries
-        leaderboardContainer.innerHTML = '';
-
-        // If no entries, display the empty state message
-        if (sortedData.length === 0) {
-            console.log('No leaderboard entries to display. Showing empty state.');
-             leaderboardContainer.innerHTML = `
-                <div class="leaderboard-empty">
-                    <p>Be the first to play and claim your spot on the leaderboard!</p>
-                     </div>
-            `;
-            return;
-        }
-
-        // Render entries
-        console.log('Rendering leaderboard entries...');
-        // Render all entries received, not just top 10, user requested visible permanently.
-        sortedData.forEach((entry, index) => {
-            const entryElement = document.createElement('div');
-            entryElement.className = 'leaderboard-entry';
-            // Use entry.profilePic or entry.profile_pic and entry.displayName or entry.display_name
-            // Ensure profile picture has correct class for styling
-            entryElement.innerHTML = `
-                <div class="rank">${index + 1}</div>
-                <div class="player-info">
-                    <img src="${entry.profilePic || entry.profile_pic || 'https://unavatar.io/twitter/bithead'}" 
-                         alt="${entry.displayName || entry.display_name || 'Anonymous'}" 
-                         onerror="this.src='https://unavatar.io/twitter/bithead'"
-                         class="profile-picture-small-circle">
-                    <span class="username">${entry.displayName || entry.display_name || 'Anonymous'}</span>
-                </div>
-                <div class="score">${(entry.score || 0).toLocaleString()}</div>
-            `;
-            leaderboardContainer.appendChild(entryElement);
-        });
-
-    } catch (error) {
-        console.error('Error updating leaderboard:', error);
-        leaderboardContainer.innerHTML = `
-            <div class="leaderboard-error">
-                <p>Unable to load leaderboard. Please try again later.</p>
-                <button id="retryLeaderboardBtn" class="retry-btn">Retry</button>
-            </div>
-        `;
-        // Attach event listener for retry button
-        document.getElementById('retryLeaderboardBtn').addEventListener('click', updateLeaderboardUI);
+    function renderLeaderboard() {
+      leaderboardEl.innerHTML = "";
+      (topTen.slice(0, showCount)).forEach((entry, index) => {
+        const li = document.createElement("li");
+        // Position number
+        const pos = document.createElement("span");
+        pos.textContent = (index + 1) + ".";
+        pos.className = "leaderboard-pos";
+        pos.style.minWidth = "2em";
+        pos.style.textAlign = "right";
+        pos.style.fontWeight = "bold";
+        li.appendChild(pos);
+        // Profile pic (always use unavatar.io/twitter/handle, fallback to unavatar.io/x/handle, then local)
+        const img = document.createElement("img");
+        const handle = entry.twitterHandle.replace(/^@/, "");
+        img.src = `https://unavatar.io/twitter/${handle}`;
+        img.alt = entry.displayName;
+        img.width = 32;
+        img.height = 32;
+        img.style.borderRadius = "50%";
+        img.onerror = function() {
+          // Try X as a fallback if Twitter fails
+          if (!this._triedX) {
+            this._triedX = true;
+            this.src = `https://unavatar.io/x/${handle}`;
+          } else {
+            this.src = 'assets/images/placeholder1.png';
+          }
+        };
+        li.appendChild(img);
+        // Twitter handle with link
+        const link = document.createElement("a");
+        link.href = `https://twitter.com/${handle}`;
+        link.target = "_blank";
+        link.textContent = entry.displayName;
+        // Score
+        const score = document.createElement("span");
+        score.textContent = entry.score;
+        // Assemble
+        li.appendChild(link);
+        li.appendChild(document.createTextNode(" - "));
+        li.appendChild(score);
+        leaderboardEl.appendChild(li);
+      });
+      if (topTen.length > 5) {
+        showMoreBtn.style.display = "block";
+        showMoreBtn.textContent = expanded ? "Show Less" : "Show More";
+      } else {
+        showMoreBtn.style.display = "none";
+      }
     }
+    renderLeaderboard();
   }
-
-  // Make updateLeaderboardUI globally accessible for retry button
-  window.updateLeaderboardUI = updateLeaderboardUI;
 
   // Fetch leaderboard on load
   fetchLeaderboard();
@@ -680,22 +648,18 @@ window.initSnakeGame = async function () {
     obstacles = [];
     roundStartTime = Date.now();
     roundActive = true;
-    // Reset betting UI state for the new round
-     if (betAButton) {
-         betAButton.disabled = false;
-         betAButton.classList.remove("selected-bet");
-         betAButton.classList.add("filled-button"); // Ensure correct styling is reapplied
-     }
-     if (betBButton) {
-         betBButton.disabled = false;
-         betBButton.classList.remove("selected-bet");
-         betBButton.classList.add("outline-button"); // Ensure correct styling is reapplied
-     }
-     currentBet = null; // Reset the current bet
-
-    if (tweetButton) tweetButton.style.display = "none"; // Hide tweet button at start of new round
+    currentBet = null;
+    if (betAButton) {
+      betAButton.disabled = false;
+      betAButton.classList.remove("selected-bet");
+    }
+    if (betBButton) {
+      betBButton.disabled = false;
+      betBButton.classList.remove("selected-bet");
+    }
+    if (tweetButton) tweetButton.style.display = "none";
     lastUpdate = 0;
-    hideShareButton(); // Hide the share container
+    hideShareButton();
   }
 
   let lastUpdate = 0;
@@ -793,34 +757,18 @@ window.initSnakeGame = async function () {
           snakeA.accuracy = Math.max(0.3, snakeA.accuracy - 0.05);
           snakeB.accuracy = Math.max(0.3, snakeB.accuracy - 0.05);
         }
-        const winningSnake = !moveA && moveB ? "A" : !moveB && moveA ? "B" : "Tie";
+        const winningSnake =
+          !moveA && moveB ? "A" : !moveB && moveA ? "B" : "Tie";
 
-        // Betting logic
+        // Betting
         if (currentBet) {
           if (currentBet === winningSnake) {
             currentStreak++;
-            console.log(`Correct bet! Streak increased to ${currentStreak}`);
           } else {
-            console.log(`Incorrect bet. Streak lost. Final streak: ${currentStreak}`);
-            // Streak lost, show modal/share
-            lastScore = currentStreak; // Store streak BEFORE resetting for modal
-            lastSnapshot = canvas.toDataURL('image/png'); // Capture snapshot before restart
-            streakJustKilled = true;
-            // showModal() will handle resetting streak and showing share button after modal closes
-            showModal(); 
-            // Do NOT reset currentStreak here, it's done in modal submission/cancel
+            showModal();
           }
-          // Disable buttons after bet is processed for the round
-           if (betAButton) betAButton.disabled = true;
-           if (betBButton) betBButton.disabled = true;
-        } else {
-            // If no bet was placed, streak is not affected by win/loss
-            console.log('No bet placed this round.');
+          currentBet = null;
         }
-
-        // Always reset betting buttons state at the start of a new round (when restartRound is called)
-        // This logic is handled in restartRound now
-
         if (streakDisplay) {
           streakDisplay.textContent = `Your current streak: ${currentStreak}`;
         }
@@ -835,6 +783,11 @@ window.initSnakeGame = async function () {
         if (scoreBEl) scoreBEl.textContent = snakeBWins;
         if (roundTimerEl) {
           roundTimerEl.textContent = `Last Round Time: ${roundDuration}s`;
+        }
+        if (currentBet && currentBet !== winningSnake) {
+          lastScore = currentStreak;
+          lastSnapshot = canvas.toDataURL('image/png');
+          streakJustKilled = true;
         }
         setTimeout(restartRound, 500);
       }

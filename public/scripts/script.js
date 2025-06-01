@@ -34,11 +34,6 @@ function setupSmoothScrolling() {
                     behavior: 'smooth',
                     block: 'start'
                 });
-
-                // Reset all navigation links
-                document.querySelectorAll('.nav-links a').forEach(link => {
-                    link.classList.remove('active');
-                });
             }
         });
     });
@@ -52,116 +47,100 @@ function setupSmoothScrolling() {
                 target.scrollIntoView({
                     behavior: 'smooth',
                     block: 'start'
-                });
-                // Set active state for current section
-                document.querySelectorAll('.nav-links a').forEach(link => {
-                    link.classList.remove('active');
-                    if (link.getAttribute('href') === window.location.hash) {
-                        link.classList.add('active');
-                    }
-                });
+          });
             }, 100); // Small delay to ensure DOM is ready
-        }
+      }
     }
 }
 
 // Scrollspy: highlight nav link for section in view
 const setupScrollSpy = () => {
-    const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
-    const sections = Array.from(navLinks)
-        .map(link => document.querySelector(link.getAttribute('href')))
-        .filter(Boolean);
-    const offset = 80; // header height offset
+  const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+  const sections = Array.from(navLinks)
+    .map(link => document.querySelector(link.getAttribute('href')))
+    .filter(Boolean);
+  const offset = 80; // header height offset
 
-    function onScroll() {
-        const scrollPos = window.scrollY + offset + 1;
-        let activeFound = false;
-        
-        // Reset all links first
-        navLinks.forEach(link => {
-            link.classList.remove('active');
-            // Remove any inline styles that might have been added
-            link.style.color = '';
-            link.style.backgroundColor = '';
-        });
-
-        for (let i = sections.length - 1; i >= 0; i--) {
-            const section = sections[i];
-            if (section && section.offsetTop <= scrollPos) {
-                navLinks[i].classList.add('active');
-                activeFound = true;
-                break;
-            }
-        }
+  function onScroll() {
+    const scrollPos = window.scrollY + offset + 1;
+    let activeFound = false;
+    for (let i = sections.length - 1; i >= 0; i--) {
+      const section = sections[i];
+      if (section && section.offsetTop <= scrollPos) {
+        navLinks.forEach(link => link.classList.remove('active'));
+        navLinks[i].classList.add('active');
+        activeFound = true;
+        break;
+      }
     }
-
-    window.addEventListener('scroll', onScroll);
-    onScroll(); // Initial call
+    if (!activeFound) {
+      navLinks.forEach(link => link.classList.remove('active'));
+    }
+  }
+  window.addEventListener('scroll', onScroll);
+  onScroll(); // Initial call
 };
 
 // Mobile burger menu
 const setupBurgerMenu = () => {
-    console.log('[BurgerMenu] setupBurgerMenu called');
-    const hamburger = document.querySelector(".hamburger");
-    const navContainer = document.querySelector(".nav-container");
-    const navLinks = document.querySelector(".nav-links");
+  console.log('[BurgerMenu] setupBurgerMenu called');
+  const hamburger = document.querySelector(".hamburger");
+  const navContainer = document.querySelector(".nav-container");
+  const navLinks = document.querySelector(".nav-links");
 
-    if (!hamburger || !navContainer || !navLinks) {
-        console.warn('[BurgerMenu] Elements not found:', {hamburger, navContainer, navLinks});
-        return;
+  if (!hamburger || !navContainer || !navLinks) {
+    console.warn('[BurgerMenu] Elements not found:', {hamburger, navContainer, navLinks});
+    return;
+  }
+
+  // Prevent double-binding
+  if (hamburger.dataset.burgerBound === "true") {
+    console.log('[BurgerMenu] Listeners already bound');
+    return;
+  }
+  hamburger.dataset.burgerBound = "true";
+  console.log('[BurgerMenu] Attaching listeners');
+
+  hamburger.addEventListener("click", (e) => {
+    e.stopPropagation();
+    hamburger.classList.toggle("active");
+    navContainer.classList.toggle("active");
+    navLinks.classList.toggle("active");
+    hamburger.textContent = navLinks.classList.contains("active") ? "✖" : "☰";
+    console.log('[BurgerMenu] Hamburger clicked, menu toggled');
+  });
+
+  // Prevent clicks inside navContainer from bubbling up
+  navContainer.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
+
+  // Close menu when clicking outside
+  document.addEventListener("click", (e) => {
+    // Only close if menu is open and click is outside both hamburger and navContainer
+    if (
+      navLinks.classList.contains("active") &&
+      !navContainer.contains(e.target) &&
+      !hamburger.contains(e.target)
+    ) {
+      hamburger.classList.remove("active");
+      navContainer.classList.remove("active");
+      navLinks.classList.remove("active");
+      hamburger.textContent = "☰";
+      console.log('[BurgerMenu] Clicked outside, menu closed');
     }
+  });
 
-    // Prevent double-binding
-    if (hamburger.dataset.burgerBound === "true") {
-        console.log('[BurgerMenu] Listeners already bound');
-        return;
-    }
-    hamburger.dataset.burgerBound = "true";
-    console.log('[BurgerMenu] Attaching listeners');
-
-    hamburger.addEventListener("click", (e) => {
-        e.stopPropagation();
-        hamburger.classList.toggle("active");
-        navContainer.classList.toggle("active");
-        navLinks.classList.toggle("active");
-        hamburger.textContent = navLinks.classList.contains("active") ? "✖" : "☰";
-        console.log('[BurgerMenu] Hamburger clicked, menu toggled');
+  // Close menu when clicking a link
+  navLinks.querySelectorAll("a").forEach(link => {
+    link.addEventListener("click", () => {
+      hamburger.classList.remove("active");
+      navContainer.classList.remove("active");
+      navLinks.classList.remove("active");
+      hamburger.textContent = "☰";
+      console.log('[BurgerMenu] Nav link clicked, menu closed');
     });
-
-    // Close menu and reset states when clicking a link
-    navLinks.querySelectorAll("a").forEach(link => {
-        link.addEventListener("click", () => {
-            // Reset menu state
-            hamburger.classList.remove("active");
-            navContainer.classList.remove("active");
-            navLinks.classList.remove("active");
-            hamburger.textContent = "☰";
-
-            // Reset all navigation links
-            navLinks.querySelectorAll("a").forEach(navLink => {
-                navLink.classList.remove('active');
-                navLink.style.color = '';
-                navLink.style.backgroundColor = '';
-            });
-
-            // Set active state for clicked link
-            link.classList.add('active');
-            console.log('[BurgerMenu] Nav link clicked, menu closed and states reset');
-        });
-    });
-
-    // Close menu when clicking outside
-    document.addEventListener("click", (e) => {
-        if (navLinks.classList.contains("active") && 
-            !navContainer.contains(e.target) && 
-            !hamburger.contains(e.target)) {
-            hamburger.classList.remove("active");
-            navContainer.classList.remove("active");
-            navLinks.classList.remove("active");
-            hamburger.textContent = "☰";
-            console.log('[BurgerMenu] Clicked outside, menu closed');
-        }
-    });
+  });
 };
 
 // Flip card event
@@ -329,11 +308,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     setupSmoothScrolling();
     setupScrollSpy();
     initializeContactForm(); // Initialize the contact form
-    
-    // Initialize Snake game after its component is loaded
-    if (typeof window.initSnakeGame === 'function') {
-        window.initSnakeGame();
-    }
   } else {
     // We're on a subpage
     if (headerContainer) {
@@ -371,6 +345,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   setupPortfolioCardFlip();
+
+  if (typeof initSnakeGame === "function") {
+    initSnakeGame();
+  }
 });
 
 async function checkWalletAccess(walletAddress) {

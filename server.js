@@ -807,10 +807,10 @@ app.use((err, req, res, next) => {
         updateMetrics.error('server_error');
         
         // Send error response
-        res.status(err.status || 500).json({
-            success: false,
-            error: process.env.NODE_ENV === 'production' 
-                ? 'An error occurred' 
+    res.status(err.status || 500).json({
+        success: false,
+        error: process.env.NODE_ENV === 'production' 
+            ? 'An error occurred' 
                 : err.message,
             timestamp: new Date().toISOString()
         });
