@@ -46,7 +46,7 @@ footer p {
 }
 
 .social-links a:hover {
-  color: #ccc;
+  color: #4296d2;
 }
 
 .footer-container {
@@ -65,11 +65,16 @@ footer p {
 }
 
 .footer-links a {
-    color: #4296d2;
+    color: #fff;
     text-decoration: none;
     transition: color 0.3s ease;
 }
 
 .footer-links a:hover {
-    color: #fff;
+    color: #4296d2;
+}
+
+/* Add this rule to prevent text wrapping on small screens if needed */
+.footer-links li, .social-links li {
+    white-space: nowrap;
 }
