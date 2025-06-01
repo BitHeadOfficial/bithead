@@ -1285,6 +1285,11 @@ async function handleSolanaPayment() {
         const { transaction: serializedTransaction, token, message } = await response.json();
         console.log('Payment request successful:', message);
 
+        // Ensure Buffer is available
+        if (typeof window.Buffer === 'undefined') {
+            throw new Error('Buffer is not available. Please refresh the page and try again.');
+        }
+
         // Deserialize and sign transaction
         console.log('Deserializing and signing transaction...');
         const transaction = Transaction.from(Buffer.from(serializedTransaction, 'base64'));
@@ -1295,7 +1300,7 @@ async function handleSolanaPayment() {
         console.log('Transaction signed and sent:', signature);
 
         // Wait for confirmation
-        console.log('Waiting for transaction confirmation with timeout:', TRANSACTION_TIMEOUT, 'ms');
+        console.log('Waiting for transaction confirmation...');
         let confirmed = false;
         let attempts = 0;
         const maxAttempts = 3;

@@ -220,141 +220,81 @@ window.initSnakeGame = async function () {
     });
   }
 
-  function updateLeaderboardUI() {
+  async function updateLeaderboardUI() {
     console.log('Updating leaderboard UI...');
-    const leaderboardEl = document.getElementById("leaderboard");
-    if (!leaderboardEl) {
-      console.error('Leaderboard element not found!');
-      return;
-    }
-
-    // Sort by score desc (should already be sorted from backend)
-    leaderboardData.sort((a, b) => b.score - a.score);
-    console.log('Sorted leaderboard data:', leaderboardData);
-
-    // Take top 10
-    const topTen = leaderboardData.slice(0, 10);
-    console.log('Top 10 entries:', topTen);
-
-    // Show only 5 by default, allow toggling
-    let showCount = updateLeaderboardUI.showCount || 5;
-    let expanded = showCount > 5;
-
-    // Create or update show more button
-    let showMoreBtn = document.getElementById("showMoreLeaderboard");
-    if (!showMoreBtn) {
-      console.log('Creating show more button...');
-      showMoreBtn = document.createElement("button");
-      showMoreBtn.id = "showMoreLeaderboard";
-      showMoreBtn.type = "button";
-      showMoreBtn.textContent = "Show More";
-      showMoreBtn.style.display = "block";
-      showMoreBtn.style.margin = "0.7em auto 0 auto";
-      showMoreBtn.style.width = "90%";
-      showMoreBtn.style.background = "linear-gradient(90deg, #4296d2 0%, #2f6d99 100%)";
-      showMoreBtn.style.color = "#fff";
-      showMoreBtn.style.border = "none";
-      showMoreBtn.style.borderRadius = "2em";
-      showMoreBtn.style.cursor = "pointer";
-      showMoreBtn.style.fontSize = "1em";
-      showMoreBtn.style.fontWeight = "600";
-      showMoreBtn.style.letterSpacing = "0.04em";
-      showMoreBtn.style.boxShadow = "0 2px 8px rgba(66,150,210,0.12)";
-      showMoreBtn.style.transition = "background 0.2s, box-shadow 0.2s";
-      showMoreBtn.addEventListener("mouseenter", function () {
-        showMoreBtn.style.background = "linear-gradient(90deg, #2f6d99 0%, #4296d2 100%)";
-        showMoreBtn.style.boxShadow = "0 4px 16px rgba(66,150,210,0.18)";
-      });
-      showMoreBtn.addEventListener("mouseleave", function () {
-        showMoreBtn.style.background = "linear-gradient(90deg, #4296d2 0%, #2f6d99 100%)";
-        showMoreBtn.style.boxShadow = "0 2px 8px rgba(66,150,210,0.12)";
-      });
-      showMoreBtn.addEventListener("click", function () {
-        expanded = !expanded;
-        showCount = expanded ? 10 : 5;
-        updateLeaderboardUI.showCount = showCount;
-        renderLeaderboard();
-      });
-      leaderboardEl.parentNode.appendChild(showMoreBtn);
-    }
-
-    function renderLeaderboard() {
-      console.log('Rendering leaderboard entries...');
-      leaderboardEl.innerHTML = "";
-      
-      if (topTen.length === 0) {
-        console.log('No leaderboard entries to display');
-        const emptyMessage = document.createElement('li');
-        emptyMessage.textContent = 'No scores yet. Be the first!';
-        emptyMessage.style.textAlign = 'center';
-        emptyMessage.style.padding = '1rem';
-        emptyMessage.style.color = '#666';
-        leaderboardEl.appendChild(emptyMessage);
+    const leaderboardContainer = document.getElementById('leaderboard-entries');
+    if (!leaderboardContainer) {
+        console.error('Leaderboard container not found');
         return;
-      }
-
-      topTen.slice(0, showCount).forEach((entry, index) => {
-        console.log(`Rendering entry ${index + 1}:`, entry);
-        const li = document.createElement("li");
-        
-        // Position number
-        const pos = document.createElement("span");
-        pos.textContent = (index + 1) + ".";
-        pos.className = "leaderboard-pos";
-        pos.style.minWidth = "2em";
-        pos.style.textAlign = "right";
-        pos.style.fontWeight = "bold";
-        li.appendChild(pos);
-
-        // Profile pic
-        const img = document.createElement("img");
-        const handle = (entry.twitterHandle || '@anonymous').replace(/^@/, "");
-        img.src = entry.profilePic || `https://unavatar.io/twitter/${handle}`;
-        img.alt = entry.displayName || 'Anonymous';
-        img.width = 32;
-        img.height = 32;
-        img.style.borderRadius = "50%";
-        img.onerror = function() {
-          console.log(`Profile pic failed for ${handle}, trying fallback...`);
-          if (!this._triedX) {
-            this._triedX = true;
-            this.src = `https://unavatar.io/x/${handle}`;
-          } else {
-            console.log('Using default profile pic');
-            this.src = 'assets/images/placeholder1.png';
-          }
-        };
-        li.appendChild(img);
-
-        // Twitter handle with link
-        const link = document.createElement("a");
-        link.href = `https://twitter.com/${handle}`;
-        link.target = "_blank";
-        link.textContent = entry.displayName || 'Anonymous';
-        link.title = entry.twitterHandle || '@anonymous';
-
-        // Score
-        const score = document.createElement("span");
-        score.textContent = entry.score || 0;
-        score.style.marginLeft = 'auto';
-        score.style.paddingLeft = '0.5rem';
-
-        // Assemble
-        li.appendChild(link);
-        li.appendChild(score);
-        leaderboardEl.appendChild(li);
-      });
-
-      // Update show more button visibility
-      if (topTen.length > 5) {
-        showMoreBtn.style.display = "block";
-        showMoreBtn.textContent = expanded ? "Show Less" : "Show More";
-      } else {
-        showMoreBtn.style.display = "none";
-      }
     }
 
-    renderLeaderboard();
+    try {
+        const response = await fetch(`${API_URL}/api/leaderboard`);
+        console.log('Leaderboard response:', response);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Processed leaderboard data:', data);
+
+        // Sort by score in descending order
+        const sortedData = data.sort((a, b) => b.score - a.score);
+        console.log('Sorted leaderboard data:', sortedData);
+
+        // Get top 10 entries
+        const topEntries = sortedData.slice(0, 10);
+        console.log('Top 10 entries:', topEntries);
+
+        // Clear existing entries
+        leaderboardContainer.innerHTML = '';
+
+        // Only show "show more" button if there are more than 10 entries
+        const showMoreButton = document.getElementById('show-more-leaderboard');
+        if (showMoreButton) {
+            showMoreButton.style.display = sortedData.length > 10 ? 'block' : 'none';
+        }
+
+        // If no entries, show a message
+        if (topEntries.length === 0) {
+            leaderboardContainer.innerHTML = `
+                <div class="leaderboard-empty">
+                    <p>Be the first to play and claim your spot on the leaderboard!</p>
+                    <button onclick="startGame()" class="start-game-btn">Start Game</button>
+                </div>
+            `;
+            return;
+        }
+
+        // Render entries
+        console.log('Rendering leaderboard entries...');
+        topEntries.forEach((entry, index) => {
+            const entryElement = document.createElement('div');
+            entryElement.className = 'leaderboard-entry';
+            entryElement.innerHTML = `
+                <div class="rank">${index + 1}</div>
+                <div class="player-info">
+                    <img src="${entry.profilePic || 'https://unavatar.io/twitter/bithead'}" 
+                         alt="${entry.displayName || 'Anonymous'}" 
+                         onerror="this.src='https://unavatar.io/twitter/bithead'"
+                         class="profile-picture">
+                    <span class="username">${entry.displayName || 'Anonymous'}</span>
+                </div>
+                <div class="score">${entry.score.toLocaleString()}</div>
+            `;
+            leaderboardContainer.appendChild(entryElement);
+        });
+
+    } catch (error) {
+        console.error('Error updating leaderboard:', error);
+        leaderboardContainer.innerHTML = `
+            <div class="leaderboard-error">
+                <p>Unable to load leaderboard. Please try again later.</p>
+                <button onclick="updateLeaderboardUI()" class="retry-btn">Retry</button>
+            </div>
+        `;
+    }
   }
 
   // Fetch leaderboard on load
