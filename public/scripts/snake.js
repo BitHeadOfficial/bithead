@@ -64,6 +64,7 @@ window.initSnakeGame = function () {
   // Betting system variables
   let currentBet = null; // "A" or "B"
   let currentStreak = 0;
+  let betPlaced = false; // New flag to track if a bet has been placed for the current round
   const profilePics = [
     'assets/images/BitHead_NFT.jpg',
     'assets/images/BitHead_PP.jpg',
@@ -311,20 +312,26 @@ window.initSnakeGame = function () {
   if (betAButton && betBButton && tweetButton && streakDisplay) {
     // Bet A
     betAButton.addEventListener("click", () => {
-      currentBet = "A";
-      betAButton.classList.add("selected-bet");
-      betBButton.classList.remove("selected-bet");
-      betAButton.disabled = true;
-      betBButton.disabled = true;
+      if (!betPlaced) {  // Only allow bet if none placed yet
+        currentBet = "A";
+        betPlaced = true;
+        betAButton.classList.add("selected-bet");
+        betBButton.classList.remove("selected-bet");
+        betAButton.disabled = true;
+        betBButton.disabled = true;
+      }
     });
 
     // Bet B
     betBButton.addEventListener("click", () => {
-      currentBet = "B";
-      betBButton.classList.add("selected-bet");
-      betAButton.classList.remove("selected-bet");
-      betAButton.disabled = true;
-      betBButton.disabled = true;
+      if (!betPlaced) {  // Only allow bet if none placed yet
+        currentBet = "B";
+        betPlaced = true;
+        betBButton.classList.add("selected-bet");
+        betAButton.classList.remove("selected-bet");
+        betAButton.disabled = true;
+        betBButton.disabled = true;
+      }
     });
 
     // Tweet button
@@ -656,6 +663,7 @@ window.initSnakeGame = function () {
     roundStartTime = Date.now();
     roundActive = true;
     currentBet = null;
+    betPlaced = false;  // Reset bet placed flag
     if (betAButton) {
       betAButton.disabled = false;
       betAButton.classList.remove("selected-bet");
@@ -752,30 +760,38 @@ window.initSnakeGame = function () {
 
       if (!moveA || !moveB) {
         roundActive = false;
+        let winningSnake = null;
+        
         if (!moveA && moveB) {
           snakeBWins++;
           snakeB.accuracy = Math.min(1.0, snakeB.accuracy + 0.1);
           snakeA.accuracy = Math.max(0.3, snakeA.accuracy - 0.1);
+          winningSnake = "B";
         } else if (!moveB && moveA) {
           snakeAWins++;
           snakeA.accuracy = Math.min(1.0, snakeA.accuracy + 0.1);
           snakeB.accuracy = Math.max(0.3, snakeB.accuracy - 0.1);
+          winningSnake = "A";
         } else {
           snakeA.accuracy = Math.max(0.3, snakeA.accuracy - 0.05);
           snakeB.accuracy = Math.max(0.3, snakeB.accuracy - 0.05);
+          winningSnake = "Tie";
         }
-        const winningSnake =
-          !moveA && moveB ? "A" : !moveB && moveA ? "B" : "Tie";
 
-        // Betting
-        if (currentBet) {
+        // Betting logic
+        if (currentBet && betPlaced) {
           if (currentBet === winningSnake) {
             currentStreak++;
-          } else {
+            console.log(`Bet won! Streak increased to ${currentStreak}`);
+          } else if (winningSnake !== "Tie") {
+            console.log(`Bet lost! Streak reset from ${currentStreak}`);
             showModal();
           }
+          // Reset bet state
           currentBet = null;
+          betPlaced = false;
         }
+
         if (streakDisplay) {
           streakDisplay.textContent = `Your current streak: ${currentStreak}`;
         }
@@ -791,7 +807,7 @@ window.initSnakeGame = function () {
         if (roundTimerEl) {
           roundTimerEl.textContent = `Last Round Time: ${roundDuration}s`;
         }
-        if (currentBet && currentBet !== winningSnake) {
+        if (currentBet && currentBet !== winningSnake && winningSnake !== "Tie") {
           lastScore = currentStreak;
           lastSnapshot = canvas.toDataURL('image/png');
           streakJustKilled = true;
