@@ -3,7 +3,7 @@
 const API_URL = window.API_URL || 'https://bithead.onrender.com/api';
 
 // Constants
-const PAYMENT_AMOUNT = 0.01; // 0.01 SOL
+const PAYMENT_AMOUNT = 1; // 1 SOL
 const RECIPIENT_ADDRESS = '5Zd2EiC7S2DaT5mQyC1etYmusNPyEQtHDgojdf5oLHLE'; // Production recipient wallet
 const TRANSACTION_TIMEOUT = 30000; // 30 seconds timeout for transaction confirmation
 
@@ -161,8 +161,8 @@ function updateWalletButtonState() {
     const accessType = localStorage.getItem(TOKEN_KEYS.ACCESS_TYPE);
 
     if (solanaPayBtn) {
-        // Always show "Sacrifice 0.01 SOL" text
-        solanaPayBtn.textContent = 'Sacrifice 0.01 SOL';
+        // Always show "Sacrifice 1 SOL" text
+        solanaPayBtn.textContent = 'Sacrifice 1 SOL';
         solanaPayBtn.onclick = handleSolanaPayment;
     }
 }
@@ -318,8 +318,8 @@ async function checkWalletAccessOnConnect(publicKey) {
         const data = await response.json();
         console.log('Wallet access check response:', data);
 
-        // Check if user has already paid 0.01 SOL or more
-        if (data.hasAccess || (data.totalSent && data.totalSent >= 0.01 * LAMPORTS_PER_SOL)) {
+        // Check if user has already paid 1 SOL or more
+        if (data.hasAccess || (data.totalSent && data.totalSent >= 1 * LAMPORTS_PER_SOL)) {
             if (data.token) {
                 storeToken(data.token, 'wallet');
             }
@@ -875,7 +875,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Update Solana payment button initialization
     if (solanaPayBtn) {
         console.log('Initializing Solana payment button...');
-        solanaPayBtn.textContent = 'Sacrifice 0.01 SOL';
+        solanaPayBtn.textContent = 'Sacrifice 1 SOL';
         solanaPayBtn.onclick = async (e) => {
             e.preventDefault();
             console.log('Payment button clicked');
@@ -885,7 +885,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // Update the payment description text
         const paymentDescription = document.querySelector('.payment-description');
         if (paymentDescription) {
-            paymentDescription.textContent = 'Support the cause by sending 0.01 SOL to unlock exclusive content.';
+            paymentDescription.textContent = 'Support the cause by sending 1 SOL to unlock exclusive content.';
         }
             } else {
         console.error('Solana payment button not found in DOM');
