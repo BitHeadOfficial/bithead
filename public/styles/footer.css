@@ -41,11 +41,36 @@ footer p {
 .social-links a {
   font-size: 1rem;
   color: #fff;
-  transition: color 0.3s ease;
+  transition: color 0.3s ease, transform 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(66, 150, 210, 0.1);
+  border: 1px solid rgba(66, 150, 210, 0.2);
 }
 
 .social-links a:hover {
   color: #4296d2;
+  transform: translateY(-2px);
+  background: rgba(66, 150, 210, 0.2);
+  border-color: rgba(66, 150, 210, 0.4);
+}
+
+/* Special styling for X (Twitter) logo */
+.social-links a[href*="twitter.com"],
+.social-links a[href*="x.com"] {
+  background: rgba(29, 161, 242, 0.1);
+  border: 1px solid rgba(29, 161, 242, 0.2);
+}
+
+.social-links a[href*="twitter.com"]:hover,
+.social-links a[href*="x.com"]:hover {
+  background: rgba(29, 161, 242, 0.2);
+  border-color: rgba(29, 161, 242, 0.4);
+  color: #1da1f2;
 }
 
 .footer-container {
