@@ -296,7 +296,6 @@ window.initSnakeGame = function () {
   // Grab betting UI references
   const betAButton = document.getElementById("bet-A");
   const betBButton = document.getElementById("bet-B");
-  const tweetButton = document.getElementById("tweet-button");
   const streakDisplay = document.getElementById("streak-display");
 
   // Initialize bet button styles
@@ -309,7 +308,7 @@ window.initSnakeGame = function () {
     betBButton.textContent = "Bet on Snake B";
   }
 
-  if (betAButton && betBButton && tweetButton && streakDisplay) {
+  if (betAButton && betBButton && streakDisplay) {
     // Bet A
     betAButton.addEventListener("click", () => {
       if (!betPlaced) {  // Only allow bet if none placed yet
@@ -332,17 +331,6 @@ window.initSnakeGame = function () {
         betAButton.disabled = true;
         betBButton.disabled = true;
       }
-    });
-
-    // Tweet button
-    tweetButton.addEventListener("click", () => {
-      const tweetText = encodeURIComponent(
-        `I just had a winning streak of ${currentStreak} in Snake Duel Challenge! #SnakeDuel`
-      );
-      window.open(
-        `https://twitter.com/intent/tweet?text=${tweetText}`,
-        "_blank"
-      );
     });
   }
 
@@ -672,7 +660,6 @@ window.initSnakeGame = function () {
       betBButton.disabled = false;
       betBButton.classList.remove("selected-bet");
     }
-    if (tweetButton) tweetButton.style.display = "none";
     lastUpdate = 0;
     hideShareButton();
   }
@@ -794,9 +781,6 @@ window.initSnakeGame = function () {
 
         if (streakDisplay) {
           streakDisplay.textContent = `Your current streak: ${currentStreak}`;
-        }
-        if (tweetButton) {
-          tweetButton.style.display = currentStreak > 0 ? "block" : "none";
         }
         const roundDuration = ((Date.now() - roundStartTime) / 1000).toFixed(1);
         const scoreAEl = document.getElementById("score-A");
