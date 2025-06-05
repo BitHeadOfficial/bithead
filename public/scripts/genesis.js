@@ -170,18 +170,16 @@ function unlockContent() {
 }
 
 // Update the showStatus function to always show messages
-function showStatus(message, type) {
-    const unlockStatus = document.getElementById('unlockStatus');
-    if (unlockStatus) {
-        unlockStatus.textContent = message;
-        unlockStatus.className = `status ${type}`;
-        unlockStatus.style.display = 'block';
-        // Only auto-hide error messages
+function showStatus(message, type = 'error') {
+    const statusDiv = document.getElementById('whitelistStatus');
+    if (statusDiv) {
+        statusDiv.textContent = message;
+        statusDiv.className = 'whitelist-status ' + type;
+        // Ensure the status div is visible
+        statusDiv.style.display = 'block';
+        // Scroll the status into view if it's an error
         if (type === 'error') {
-            setTimeout(() => {
-                unlockStatus.textContent = '';
-                unlockStatus.className = 'status';
-            }, 5000); // Increased timeout for error messages
+            statusDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     }
 }
@@ -536,24 +534,23 @@ function setupWhitelistForm() {
 
         if (isSubmitting) {
             console.log('Whitelist form already submitting, ignoring.');
-            return; // Prevent multiple submissions if already submitting
+            return;
         }
 
-        isSubmitting = true; // Set flag at the start of submission
-
-        // Disable form elements immediately on submission
+        isSubmitting = true;
         const formElements = form.querySelectorAll('input, button');
         formElements.forEach(el => el.disabled = true);
 
         if (!window.solana || !window.solana.isConnected) {
             showStatus('Please connect your wallet first', 'error');
-            // Re-enable form elements on error before fetch and reset flag
             formElements.forEach(el => el.disabled = false);
             isSubmitting = false;
             return;
         }
 
-        statusDiv.textContent = '';
+        // Clear previous status
+        showStatus('', '');
+
         const name = document.getElementById('whitelistName').value;
         const email = document.getElementById('whitelistEmail').value;
         const wallet = window.solana.publicKey.toString();
@@ -565,47 +562,45 @@ function setupWhitelistForm() {
                 body: JSON.stringify({ name, email, walletAddress: wallet })
             });
 
-            // Check for non-200 status codes
+            const data = await res.json();
+
             if (!res.ok) {
-                const errorData = await res.json(); // Attempt to parse JSON error
-                if (errorData.error) {
-                    if (errorData.error.includes('UNIQUE constraint failed')) {
-                        statusDiv.textContent = 'You are already whitelisted with this email or wallet address.';
+                if (data.error) {
+                    if (data.error.includes('UNIQUE constraint failed') || 
+                        data.error.includes('already whitelisted')) {
+                        showStatus('You are already whitelisted with this email or wallet address.', 'error');
                     } else {
-                        statusDiv.textContent = errorData.error;
+                        showStatus(data.error, 'error');
                     }
                 } else {
-                    statusDiv.textContent = `Error: ${res.status} ${res.statusText}`; // Generic error for non-JSON responses
+                    showStatus(`Error: ${res.status} ${res.statusText}`, 'error');
                 }
-            } else { // Success
-            const data = await res.json();
+                formElements.forEach(el => el.disabled = false);
+                isSubmitting = false;
+                return;
+            }
+
             if (data.success) {
                 form.style.display = 'none';
-                successDiv.style.display = 'block';
-                successDiv.classList.add('visible');
-                statusDiv.textContent = '';
-                    localStorage.setItem('whitelist_submitted', '1');
-                    // No need to re-enable form or reset flag on success, form is hidden
-                    return; // Exit after successful submission
-                } else {
-                     // This part might be redundant if backend always sends error in !res.ok
-                    // but keep as a fallback for non-success data with 200 status
-                    if (data.error && data.error.includes('UNIQUE constraint failed')) {
-                        statusDiv.textContent = 'You are already whitelisted with this email or wallet address.';
-            } else {
-                statusDiv.textContent = data.error || 'Failed to join whitelist.';
-                    }
+                const successDiv = document.getElementById('whitelistSuccess');
+                if (successDiv) {
+                    successDiv.style.display = 'block';
+                    successDiv.classList.add('visible');
                 }
+                localStorage.setItem('whitelist_submitted', '1');
+                return;
             }
+
+            // Fallback error handling
+            showStatus(data.error || 'Failed to join whitelist.', 'error');
+            formElements.forEach(el => el.disabled = false);
+            isSubmitting = false;
+
         } catch (err) {
             console.error('Whitelist submission fetch error:', err);
-            statusDiv.textContent = 'An unexpected error occurred. Please try again.';
-        } finally {
-            // Always re-enable form elements and reset flag on error or catch
-            if (form.style.display !== 'none') { // Only re-enable if form is still visible
-                formElements.forEach(el => el.disabled = false);
-            }
-            isSubmitting = false; // Reset flag
+            showStatus('An unexpected error occurred. Please try again.', 'error');
+            formElements.forEach(el => el.disabled = false);
+            isSubmitting = false;
         }
     });
 

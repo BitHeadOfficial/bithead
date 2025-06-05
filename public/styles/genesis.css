@@ -686,24 +686,23 @@
     text-align: center;
     font-size: 0.9rem;
     transition: all 0.3s ease;
-    opacity: 0;
-    transform: translateY(-10px);
+    opacity: 1;
+    transform: translateY(0);
+    display: block;
+  }
+
+  .whitelist-status.error {
+    background: rgba(244, 67, 54, 0.1);
+    border: 1px solid rgba(244, 67, 54, 0.3);
+    color: #f44336;
+    font-weight: 500;
   }
 
   .whitelist-status.success {
     background: rgba(76, 175, 80, 0.2);
     border: 1px solid rgba(76, 175, 80, 0.4);
     color: #4CAF50;
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  .whitelist-status.error {
-    background: rgba(244, 67, 54, 0.2);
-    border: 1px solid rgba(244, 67, 54, 0.4);
-    color: #f44336;
-    opacity: 1;
-    transform: translateY(0);
+    font-weight: 500;
   }
   
   /* Solana Payment Button */
