@@ -75,6 +75,9 @@ window.initSnakeGame = function () {
     'assets/images/placeholder1.png',
     'assets/images/placeholder2.png',
     'assets/images/placeholder3.png',
+    'assets/images/placeholder4.png',
+    'assets/images/placeholder5.png',
+    'assets/images/placeholder6.png',
     'assets/images/The_American_Dream.png'
   ];
 
@@ -242,7 +245,7 @@ window.initSnakeGame = function () {
         pos.style.fontWeight = "bold";
         li.appendChild(pos);
         
-        // Profile pic (handle both camelCase and snake_case from backend)
+        // Profile pic with data attribute for Twitter handle
         const img = document.createElement("img");
         const twitterHandle = entry.twitterHandle || entry.twitter_handle || '';
         const handle = twitterHandle.replace(/^@/, "");
@@ -253,13 +256,13 @@ window.initSnakeGame = function () {
         img.width = 32;
         img.height = 32;
         img.style.borderRadius = "50%";
+        img.setAttribute('data-twitter-handle', twitterHandle); // Store Twitter handle as data attribute
         img.onerror = function() {
-          // Try X as a fallback if Twitter fails
           if (!this._triedX) {
             this._triedX = true;
             this.src = `https://unavatar.io/x/${handle}`;
           } else {
-            this.src = 'assets/images/placeholder1.png';
+            this.src = getRandomPlaceholder();
           }
         };
         li.appendChild(img);
@@ -290,8 +293,24 @@ window.initSnakeGame = function () {
     renderLeaderboard();
   }
 
-  // Fetch leaderboard on load
-  fetchLeaderboard();
+  // Fetch leaderboard on load and set up periodic updates
+  fetchLeaderboard().then(() => {
+    // Update profile pictures every 24 hours
+    setInterval(updateLeaderboardProfilePics, 24 * 60 * 60 * 1000);
+    
+    // Also update profile pictures when the leaderboard is shown
+    const showMoreBtn = document.getElementById("showMoreLeaderboard");
+    if (showMoreBtn) {
+      const originalClickHandler = showMoreBtn.onclick;
+      showMoreBtn.onclick = function() {
+        if (originalClickHandler) {
+          originalClickHandler.call(this);
+        }
+        // Update profile pictures when leaderboard is expanded/collapsed
+        updateLeaderboardProfilePics();
+      };
+    }
+  });
 
   // Grab betting UI references
   const betAButton = document.getElementById("bet-A");
@@ -718,6 +737,58 @@ window.initSnakeGame = function () {
   }
   function hideShareButton() {
     shareContainer.style.display = 'none';
+  }
+
+  // Helper function to get random placeholder
+  function getRandomPlaceholder() {
+    const placeholders = profilePics.filter(pic => pic.includes('placeholder'));
+    return placeholders[Math.floor(Math.random() * placeholders.length)];
+  }
+
+  // Function to update profile pictures for existing leaderboard entries
+  async function updateLeaderboardProfilePics() {
+    try {
+      // Only update if we have leaderboard data
+      if (!leaderboardData || leaderboardData.length === 0) return;
+
+      // Get all profile picture elements
+      const profilePics = document.querySelectorAll('#leaderboard li img');
+      
+      // Update each profile picture
+      profilePics.forEach(async (img) => {
+        const twitterHandle = img.getAttribute('data-twitter-handle');
+        if (!twitterHandle) return;
+
+        const handle = twitterHandle.replace(/^@/, '');
+        // Try Twitter first
+        const twitterUrl = `https://unavatar.io/twitter/${handle}`;
+        const xUrl = `https://unavatar.io/x/${handle}`;
+
+        try {
+          // Check if Twitter image exists
+          const twitterResponse = await fetch(twitterUrl, { method: 'HEAD' });
+          if (twitterResponse.ok) {
+            img.src = twitterUrl;
+            return;
+          }
+          
+          // If Twitter fails, try X
+          const xResponse = await fetch(xUrl, { method: 'HEAD' });
+          if (xResponse.ok) {
+            img.src = xUrl;
+            return;
+          }
+          
+          // If both fail, use placeholder
+          img.src = getRandomPlaceholder();
+        } catch (error) {
+          console.error('Error updating profile picture:', error);
+          img.src = getRandomPlaceholder();
+        }
+      });
+    } catch (error) {
+      console.error('Error in updateLeaderboardProfilePics:', error);
+    }
   }
 
   function gameLoop(timestamp) {

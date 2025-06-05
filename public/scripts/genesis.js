@@ -85,44 +85,74 @@ function unlockContent() {
         return;
     }
 
-        // Remove hidden and secret classes
-        secretSection.classList.remove('hidden', 'secret');
-        protectedContent.forEach(content => {
-            content.classList.remove('hidden', 'secret');
-            content.style.display = 'block';
-        });
+    // Remove hidden and secret classes
+    secretSection.classList.remove('hidden', 'secret');
+    protectedContent.forEach(content => {
+        content.classList.remove('hidden', 'secret');
+        content.style.display = 'block';
+    });
 
-        // Hide fade overlay
-        if (fadeOverlay) {
-            fadeOverlay.style.opacity = '0';
+    // Hide fade overlay
+    if (fadeOverlay) {
+        fadeOverlay.style.opacity = '0';
+    }
+
+    // Animate the content reveal with enhanced effects
+    if (typeof gsap !== 'undefined') {
+        // First, animate the unlock panel sliding up and fading out
+        const unlockPanel = document.querySelector('.unlock-panel');
+        if (unlockPanel) {
+            gsap.to(unlockPanel, {
+                y: -50,
+                opacity: 0,
+                duration: 0.5,
+                ease: 'power2.in'
+            });
         }
 
-        // Animate the content reveal with fade and scale
-    if (typeof gsap !== 'undefined') {
+        // Then animate the secret section with a more dramatic effect
         gsap.fromTo(secretSection, {
             opacity: 0,
-            scale: 0.96
+            scale: 0.95,
+            y: 50
         }, {
             opacity: 1,
             scale: 1,
-            duration: 1.1,
-            ease: 'power2.out'
+            y: 0,
+            duration: 1.2,
+            ease: 'power3.out',
+            onComplete: () => {
+                // Scroll to the secret section after animation
+                secretSection.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start'
+                });
+            }
         });
 
-        // Animate each protected content section
+        // Animate each protected content section with a staggered effect
         protectedContent.forEach((content, index) => {
             gsap.fromTo(content, {
                 opacity: 0,
-                y: 30,
+                y: 40,
                 scale: 0.96
             }, {
                 opacity: 1,
                 y: 0,
                 scale: 1,
                 duration: 1,
-                delay: 0.2 + index * 0.15,
-                ease: 'power2.out'
+                delay: 0.3 + index * 0.2, // Increased delay between items
+                ease: 'power3.out'
             });
+        });
+
+        // Add a subtle pulse animation to draw attention
+        gsap.to(secretSection, {
+            boxShadow: '0 0 30px rgba(66, 150, 210, 0.3)',
+            duration: 0.5,
+            repeat: 2,
+            yoyo: true,
+            ease: 'power2.inOut'
         });
     } else {
         // Fallback if GSAP is not available
@@ -132,6 +162,8 @@ function unlockContent() {
             content.style.opacity = '1';
             content.style.transform = 'translateY(0) scale(1)';
         });
+        // Fallback scroll
+        secretSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     console.log('Content unlocked successfully');
