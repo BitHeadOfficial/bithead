@@ -579,28 +579,81 @@
   /* — Responsive — */
   @media (max-width: 600px) {
     .drama-headline {
-      font-size: 2rem;
+      font-size: 1.5rem;
     }
     .drama-list {
-      gap: 1rem;
+      padding-left: 1rem;
     }
     .drama-list li {
-      padding: 0.75rem 1rem;
+      font-size: 0.9rem;
     }
-  
     .unlock-panel {
-      bottom: 200px;
-      max-width: 90%;
+      padding: 1.5rem;
+      margin: 0 1rem;
     }
-  
     .pillars-grid {
       grid-template-columns: 1fr;
-      gap: 1.5rem;
-      padding: 0 1.5rem;
     }
-  
     .nft-hero {
-      max-width: 90%;
+      flex-direction: column;
+    }
+    
+    /* Additional secret section fixes for very small screens */
+    .secret {
+      padding: 0.75rem;
+      margin: 0.75rem 0;
+    }
+    
+    .secret h2 {
+      font-size: 1.6rem;
+    }
+    
+    .secret > h2:first-of-type {
+      font-size: 1.8rem;
+      margin: 1.5rem 0 0.75rem;
+    }
+    
+    .secret > p:first-of-type {
+      font-size: 0.95rem;
+      padding: 0 0.25rem;
+    }
+    
+    .secret p {
+      font-size: 0.95rem;
+    }
+    
+    .section-title {
+      font-size: 1.8rem;
+      padding: 0 0.25rem;
+    }
+    
+    .section-text {
+      font-size: 0.95rem;
+      padding: 0 0.25rem;
+    }
+    
+    .pillar-box {
+      padding: 1rem;
+    }
+    
+    .matrix-card {
+      padding: 1rem;
+    }
+    
+    .achievement-card {
+      padding: 1rem;
+    }
+    
+    .evolution-card {
+      padding: 1rem;
+    }
+    
+    .final-section {
+      padding: 1.5rem 0.75rem;
+    }
+    
+    .final-section h2 {
+      font-size: 1.8rem;
     }
   }
   
@@ -1380,6 +1433,97 @@
     
     .welcome-section {
       padding: 2rem 1rem;
+    }
+    
+    /* Secret section mobile fixes */
+    .secret {
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 8px;
+      overflow: hidden;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    
+    .secret h2 {
+      font-size: 1.8rem;
+      margin-bottom: 0.75rem;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    
+    .secret > h2:first-of-type {
+      font-size: 2rem;
+      margin: 2rem 0 1rem;
+      padding: 0 0.5rem;
+    }
+    
+    .secret > p:first-of-type {
+      font-size: 1rem;
+      padding: 0 0.5rem;
+      margin: 0 auto 3rem;
+    }
+    
+    .secret p {
+      margin-bottom: 1rem;
+      line-height: 1.5;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    
+    .section-title {
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+      padding: 0 0.5rem;
+    }
+    
+    .section-text {
+      font-size: 1rem;
+      padding: 0 0.5rem;
+      margin: 0 auto 2rem;
+    }
+    
+    /* Pillar boxes mobile fix */
+    .pillar-boxes {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      padding: 0 0.5rem;
+    }
+    
+    .pillar-box {
+      padding: 1.5rem;
+    }
+    
+    /* Matrix cards mobile fix */
+    .matrix-card {
+      padding: 1.5rem;
+      margin: 0.5rem;
+      min-width: auto;
+    }
+    
+    /* Achievement cards mobile fix */
+    .achievement-card {
+      padding: 1.5rem;
+    }
+    
+    /* Evolution cards mobile fix */
+    .evolution-card {
+      padding: 1.5rem;
+    }
+    
+    /* Final section mobile fix */
+    .final-section {
+      padding: 2rem 1rem;
+      margin: 1rem 0;
+    }
+    
+    .final-section h2 {
+      font-size: 2rem;
+    }
+    
+    .final-section .cta-group {
+      flex-direction: column;
+      gap: 0.75rem;
     }
   }
   
