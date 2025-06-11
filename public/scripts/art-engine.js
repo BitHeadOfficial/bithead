@@ -229,12 +229,12 @@ class BitHeadzArtEngine {
         const pathParts = webkitRelativePath.split('/');
         // The first part is the folder name, which represents the layer
         const folderNameWithPrefix = pathParts[0];
-        const folderMatch = folderNameWithPrefix.match(/^\\d+_(.+)$/);
+        const folderMatch = folderNameWithPrefix.match(/^\d+_(.+)$/);
         layerName = folderMatch ? folderMatch[1] : folderNameWithPrefix; // Extract name without prefix if available
       } else {
         // Fallback for files without webkitRelativePath (unlikely if folder upload works, but safe)
-        layerName = file.name.replace(/\\.png$/i, '').replace(/[^a-zA-Z0-9]/g, '_');
-        const prefixMatch = layerName.match(/^(\\d+)_(.+?)$/);
+        layerName = file.name.replace(/\.png$/i, '').replace(/[^a-zA-Z0-9]/g, '_');
+        const prefixMatch = layerName.match(/^(\d+)_(.+?)$/);
         if (prefixMatch) {
           layerName = prefixMatch[2];
         }
@@ -275,7 +275,7 @@ class BitHeadzArtEngine {
     }
     
     // Extract numeric prefix if it exists (e.g., from '00_Background')
-    const match = layerName.match(/^(\\d+)/);
+    const match = layerName.match(/^(\d+)/);
     return match ? parseInt(match[1]) : 999;
   }
 
