@@ -32,14 +32,6 @@ const upload = multer({
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB per file
     files: 100 // Max 100 files
-  },
-  fileFilter: function (req, file, cb) {
-    // Only allow PNG files
-    if (file.mimetype === 'image/png') {
-      cb(null, true);
-    } else {
-      cb(new Error('Only PNG files are allowed'), false);
-    }
   }
 });
 
@@ -47,7 +39,7 @@ const upload = multer({
 const generationJobs = new Map();
 
 // Upload layers and start generation
-router.post('/generate', upload.array('layers'), async (req, res) => {
+router.post('/generate', upload.any(), async (req, res) => {
   try {
     console.log('NFT Generator: Starting generation process');
     
@@ -58,6 +50,19 @@ router.post('/generate', upload.array('layers'), async (req, res) => {
       return res.status(400).json({ error: 'No files uploaded' });
     }
 
+    // Filter and validate files
+    const validFiles = files.filter(file => {
+      if (file.mimetype !== 'image/png') {
+        console.log(`Skipping non-PNG file: ${file.originalname} (${file.mimetype})`);
+        return false;
+      }
+      return true;
+    });
+
+    if (validFiles.length === 0) {
+      return res.status(400).json({ error: 'No valid PNG files uploaded' });
+    }
+
     if (!collectionName || !collectionSize) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
@@ -66,6 +71,8 @@ router.post('/generate', upload.array('layers'), async (req, res) => {
     if (size < 1 || size > 10000) {
       return res.status(400).json({ error: 'Invalid collection size' });
     }
+
+    console.log(`NFT Generator: Processing ${validFiles.length} valid PNG files`);
 
     // Create generation job
     const generationId = uuidv4();
@@ -81,7 +88,7 @@ router.post('/generate', upload.array('layers'), async (req, res) => {
       collectionDescription,
       rarityMode,
       optionalLayers: JSON.parse(optionalLayers || '{}'),
-      files: files.map(f => ({
+      files: validFiles.map(f => ({
         originalname: f.originalname,
         path: f.path
       })),
