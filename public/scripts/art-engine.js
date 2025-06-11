@@ -92,8 +92,18 @@ class BitHeadzArtEngine {
       });
     });
     
-    const pngFiles = allFiles.filter(file => file.type === 'image/png');
-    const nonPngFiles = allFiles.filter(file => file.type !== 'image/png');
+    // Filter for PNG files - check both MIME type and file extension
+    const pngFiles = allFiles.filter(file => {
+      const isPngType = file.type === 'image/png';
+      const isPngExtension = file.name.toLowerCase().endsWith('.png');
+      return isPngType || isPngExtension;
+    });
+    
+    const nonPngFiles = allFiles.filter(file => {
+      const isPngType = file.type === 'image/png';
+      const isPngExtension = file.name.toLowerCase().endsWith('.png');
+      return !(isPngType || isPngExtension);
+    });
     
     // If no PNG files found, provide helpful error message
     if (pngFiles.length === 0) {
@@ -114,6 +124,8 @@ class BitHeadzArtEngine {
     if (nonPngFiles.length > 0) {
       console.warn(`Found ${nonPngFiles.length} non-PNG files that will be ignored:`, nonPngFiles.map(f => f.name));
     }
+
+    console.log(`Found ${pngFiles.length} PNG files:`, pngFiles.map(f => f.name));
 
     // Group files by folder structure
     const layerGroups = this.groupFilesByLayer(pngFiles);
