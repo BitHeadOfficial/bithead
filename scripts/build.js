@@ -23,7 +23,7 @@ window.env = ${JSON.stringify(env, null, 2)};
 // Create config.js content
 const configContent = `
 // Shared configuration and utilities
-export const API_URL = window.env.BACKEND_URL;
+export const API_URL = \`\${window.env.BACKEND_URL}/api\`;
 export const SOLANA_RPC_URL = window.env.SOLANA_RPC_URL;
 export const SOLANA_NETWORK = window.env.SOLANA_NETWORK;
 
@@ -147,7 +147,8 @@ const htmlFiles = [
     'admin.html',
     '404.html',
     'terms-of-service.html',
-    'privacy-policy.html'
+    'privacy-policy.html',
+    'resources/bithead-art-engine.html'
 ];
 
 htmlFiles.forEach(file => {
