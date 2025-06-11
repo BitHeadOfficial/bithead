@@ -45,6 +45,7 @@ router.post('/generate', upload.any(), async (req, res) => {
     
     const { collectionName, collectionSize, collectionDescription, rarityMode, optionalLayers } = req.body;
     const files = req.files;
+    const filePaths = req.body.filePaths;
 
     if (!files || files.length === 0) {
       return res.status(400).json({ error: 'No files uploaded' });
@@ -88,9 +89,10 @@ router.post('/generate', upload.any(), async (req, res) => {
       collectionDescription,
       rarityMode,
       optionalLayers: JSON.parse(optionalLayers || '{}'),
-      files: validFiles.map(f => ({
+      files: validFiles.map((f, index) => ({
         originalname: f.originalname,
-        path: f.path
+        path: f.path,
+        webkitRelativePath: filePaths && filePaths[index] ? filePaths[index] : f.originalname
       })),
       createdAt: new Date(),
       outputPath: null
@@ -267,14 +269,15 @@ async function generateCollection(job) {
 function organizeLayers(files, layersDir) {
   console.log(`NFT Generator: Organizing ${files.length} files into layers...`);
   console.log(`NFT Generator: Sample file names:`, files.slice(0, 5).map(f => f.originalname));
+  console.log(`NFT Generator: Sample webkitRelativePaths:`, files.slice(0, 5).map(f => f.webkitRelativePath));
   
   const layerStructure = [];
   const layerGroups = new Map();
 
   // Group files by layer name and extract layer order
   files.forEach(file => {
-    const layerInfo = extractLayerInfo(file.originalname);
-    console.log(`NFT Generator: File "${file.originalname}" -> Layer: ${layerInfo.name}, Order: ${layerInfo.order}`);
+    const layerInfo = extractLayerInfo(file.webkitRelativePath || file.originalname);
+    console.log(`NFT Generator: File "${file.webkitRelativePath || file.originalname}" -> Layer: ${layerInfo.name}, Order: ${layerInfo.order}`);
     
     if (!layerGroups.has(layerInfo.name)) {
       layerGroups.set(layerInfo.name, {
@@ -301,7 +304,7 @@ function organizeLayers(files, layersDir) {
 
     layerData.files.forEach(file => {
       // Extract just the filename from the path (e.g., "H_Green_Ball.png" from "02_Head/H_Green_Ball.png")
-      const fileName = file.originalname.split('/').pop();
+      const fileName = (file.webkitRelativePath || file.originalname).split('/').pop();
       const destPath = path.join(layerDir, fileName);
       fs.copyFileSync(file.path, destPath);
     });

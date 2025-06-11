@@ -5,6 +5,7 @@ class BitHeadzArtEngine {
     this.layerStructure = [];
     this.generationId = null;
     this.isGenerating = false;
+    this.originalFileData = new Map(); // Store original file data with webkitRelativePath
     
     this.initializeElements();
     this.setupEventListeners();
@@ -186,54 +187,34 @@ class BitHeadzArtEngine {
         console.log(`  ${index}: "${item.webkitRelativePath}"`);
       });
     }
-    
-    allFilesWithPaths.forEach((item, index) => {
-      const file = item.file;
-      console.log(`File ${index}:`, {
-        name: file.name,
-        type: file.type,
-        size: file.size,
-        webkitRelativePath: item.webkitRelativePath || 'N/A',
-        lastModified: file.lastModified,
-      });
-    });
-    
-    // Filter for PNG files - check both MIME type and file extension
+
+    // Filter for PNG files only
     const pngFilesWithPaths = allFilesWithPaths.filter(item => {
       const file = item.file;
-      const isPngType = file.type === 'image/png';
-      const isPngExtension = file.name.toLowerCase().endsWith('.png');
-      return isPngType || isPngExtension;
-    });
-    
-    const nonPngFilesWithPaths = allFilesWithPaths.filter(item => {
-      const file = item.file;
-      const isPngType = file.type === 'image/png';
-      const isPngExtension = file.name.toLowerCase().endsWith('.png');
-      return !(isPngType || isPngExtension);
-    });
-    
-    // If no PNG files found, provide helpful error message
-    if (pngFilesWithPaths.length === 0) {
-      if (allFilesWithPaths.length > 0) {
-        // We have files but no PNGs
-        if (nonPngFilesWithPaths.length > 0) {
-          this.showError(`No PNG files found. Found ${nonPngFilesWithPaths.length} non-PNG file(s). Please ensure your folders contain PNG images only.`);
-        } else {
-          this.showError('No PNG files found in the uploaded folders. Please check that your folders contain PNG images.');
-        }
-      } else {
-        this.showError('Please select folders containing PNG files.');
+      const isPNG = file.type === 'image/png' || file.name.toLowerCase().endsWith('.png');
+      if (!isPNG) {
+        console.log(`Skipping non-PNG file: ${file.name} (${file.type})`);
       }
+      return isPNG;
+    });
+
+    if (pngFilesWithPaths.length === 0) {
+      this.showError('No PNG files found. Please upload PNG files only.');
       return;
     }
 
-    // If we have some non-PNG files, show a warning but continue
-    if (nonPngFilesWithPaths.length > 0) {
-      console.warn(`Found ${nonPngFilesWithPaths.length} non-PNG files that will be ignored:`, nonPngFilesWithPaths.map(item => item.file.name));
-    }
+    console.log(`Found ${pngFilesWithPaths.length} PNG files`);
 
-    console.log(`Found ${pngFilesWithPaths.length} PNG files:`, pngFilesWithPaths.map(item => item.file.name));
+    // Store original file data for later use
+    this.originalFileData.clear();
+    pngFilesWithPaths.forEach(item => {
+      const file = item.file;
+      const key = `${file.name}_${file.size}_${file.lastModified}`; // Create unique key
+      this.originalFileData.set(key, {
+        file: file,
+        webkitRelativePath: item.webkitRelativePath
+      });
+    });
 
     // Group files by folder structure
     // This part should now correctly receive files with webkitRelativePath for both drag-and-drop and select
@@ -531,11 +512,31 @@ class BitHeadzArtEngine {
       formData.append('collectionDescription', this.collectionDescription.value);
       formData.append('rarityMode', this.rarityMode.value);
       
-      // Add layers
+      // Add all files with their original paths
+      // We need to reconstruct the original file list with webkitRelativePath
+      const allFiles = [];
       this.uploadedLayers.forEach((files, layerName) => {
-        files.forEach((file, index) => {
-          formData.append(`layers[${layerName}][${index}]`, file);
+        files.forEach(file => {
+          // Find the original file data that contains webkitRelativePath
+          // We need to search through our original file data to find the matching file
+          const originalFileData = this.findOriginalFileData(file);
+          if (originalFileData) {
+            allFiles.push(originalFileData);
+          } else {
+            // Fallback: create a path based on layer name
+            const fallbackPath = `${this.getLayerOrder(layerName).toString().padStart(2, '0')}_${layerName}/${file.name}`;
+            allFiles.push({
+              file: file,
+              webkitRelativePath: fallbackPath
+            });
+          }
         });
+      });
+      
+      // Add files to FormData with their paths
+      allFiles.forEach((fileData, index) => {
+        formData.append(`files`, fileData.file);
+        formData.append(`filePaths`, fileData.webkitRelativePath);
       });
       
       // Add optional layer settings
@@ -564,9 +565,18 @@ class BitHeadzArtEngine {
       
     } catch (error) {
       console.error('Generation error:', error);
-      this.showError('Generation failed. Please try again.');
-      this.resetGenerationState();
+      this.showError(`Generation failed: ${error.message}`);
+      this.isGenerating = false;
+      this.generateBtn.disabled = false;
+      this.generateBtn.innerHTML = '<span class="button-text">Generate Collection</span><span class="button-icon">🚀</span>';
     }
+  }
+
+  // Helper method to find original file data with webkitRelativePath
+  findOriginalFileData(file) {
+    // Create the same unique key used when storing the data
+    const key = `${file.name}_${file.size}_${file.lastModified}`;
+    return this.originalFileData.get(key) || null;
   }
 
   async pollGenerationProgress() {
