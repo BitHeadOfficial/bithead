@@ -272,7 +272,10 @@ function organizeLayers(files, layersDir) {
 
   // Create layer directories and move files
   layerGroups.forEach((files, layerName) => {
-    const layerDir = path.join(layersDir, layerName);
+    // Create folder with numeric prefix based on layer order
+    const layerOrder = getLayerOrder(layerName);
+    const folderName = `${layerOrder.toString().padStart(2, '0')}_${layerName}`;
+    const layerDir = path.join(layersDir, folderName);
     fs.mkdirSync(layerDir, { recursive: true });
 
     files.forEach(file => {
@@ -283,7 +286,8 @@ function organizeLayers(files, layersDir) {
     layerStructure.push({
       name: layerName,
       count: files.length,
-      path: layerDir
+      path: layerDir,
+      folder: folderName
     });
   });
 
@@ -296,6 +300,18 @@ function organizeLayers(files, layersDir) {
 
 // Extract layer name from filename
 function extractLayerName(fileName) {
+  // Handle file paths like "02_Head/H_Green_Ball.png"
+  const pathParts = fileName.split('/');
+  if (pathParts.length > 1) {
+    // Extract from folder name (e.g., "02_Head")
+    const folderName = pathParts[0];
+    const prefixMatch = folderName.match(/^(\d+)_(.+)$/);
+    if (prefixMatch) {
+      return prefixMatch[2]; // Return "Head" from "02_Head"
+    }
+  }
+  
+  // Fallback to original logic for direct filenames
   const prefixMatch = fileName.match(/^(\d+)_(.+?)(?:\.png)?$/i);
   if (prefixMatch) {
     return prefixMatch[2].replace(/[^a-zA-Z0-9]/g, '_');
@@ -305,8 +321,21 @@ function extractLayerName(fileName) {
 
 // Get layer order from name
 function getLayerOrder(layerName) {
+  // First try to extract from the layer name itself (if it already has a prefix)
   const match = layerName.match(/^(\d+)/);
-  return match ? parseInt(match[1]) : 999;
+  if (match) {
+    return parseInt(match[1]);
+  }
+  
+  // If no prefix in layer name, try to extract from the original file path
+  // This handles cases where the layer name was extracted from a file path like "02_Head/H_Green_Ball.png"
+  const pathMatch = layerName.match(/(\d+)_/);
+  if (pathMatch) {
+    return parseInt(pathMatch[1]);
+  }
+  
+  // Default order for layers without numeric prefixes
+  return 999;
 }
 
 // Create zip archive
