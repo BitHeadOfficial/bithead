@@ -30,6 +30,7 @@ import monitoringRoutes from './routes/monitoring.js';
 import { updateMetrics } from './utils/logger.js';
 import contactRoutes from './routes/contact.js';
 import whitelistRoutes from './routes/whitelist.js';
+import nftGeneratorRoutes from './routes/nft-generator.js';
 import { errorLogger, requestLogger, logWalletConnection, logTransaction } from './utils/logger.js';
 
 // Initialize error handling
@@ -530,6 +531,9 @@ app.use('/api/monitoring', monitoringRoutes);
 
 // Register routes
 app.use('/api/contact', contactRoutes);
+
+// Add NFT generator routes
+app.use('/api/nft-generator', nftGeneratorRoutes);
 
 // Update rate limit handling to use metrics
 const rateLimiter = rateLimit({
