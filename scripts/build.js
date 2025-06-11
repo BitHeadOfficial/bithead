@@ -99,35 +99,28 @@ function injectEnvIntoHtml(filePath) {
     fs.writeFileSync(filePath, updatedContent);
 }
 
-// Create dist directory if it doesn't exist
+// First, delete the existing dist directory to ensure a clean build
 const distDir = path.join(__dirname, '..', 'dist');
-if (!fs.existsSync(distDir)) {
-    fs.mkdirSync(distDir, { recursive: true });
+if (fs.existsSync(distDir)) {
+    fs.rmSync(distDir, { recursive: true, force: true });
 }
+fs.mkdirSync(distDir, { recursive: true });
 
-// Copy directory recursively
-function copyDir(src, dest) {
-    if (!fs.existsSync(dest)) {
-        fs.mkdirSync(dest, { recursive: true });
-    }
+// Copy contents of public directory to dist
+console.log('Copying public directory contents to dist...');
+const publicDir = path.join(__dirname, '..', 'public');
+const entries = fs.readdirSync(publicDir, { withFileTypes: true });
 
-    const entries = fs.readdirSync(src, { withFileTypes: true });
+for (const entry of entries) {
+    const srcPath = path.join(publicDir, entry.name);
+    const destPath = path.join(distDir, entry.name);
 
-    for (const entry of entries) {
-        const srcPath = path.join(src, entry.name);
-        const destPath = path.join(dest, entry.name);
-
-        if (entry.isDirectory()) {
-            copyDir(srcPath, destPath);
-        } else {
-            fs.copyFileSync(srcPath, destPath);
-        }
+    if (entry.isDirectory()) {
+        copyDir(srcPath, destPath);
+    } else {
+        fs.copyFileSync(srcPath, destPath);
     }
 }
-
-// First, copy the entire public directory to dist
-console.log('Copying public directory to dist...');
-copyDir(path.join(__dirname, '..', 'public'), distDir);
 
 // Create scripts directory in dist if it doesn't exist
 const distScriptsDir = path.join(distDir, 'scripts');
