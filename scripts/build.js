@@ -99,6 +99,26 @@ function injectEnvIntoHtml(filePath) {
     fs.writeFileSync(filePath, updatedContent);
 }
 
+// Copy directory recursively
+function copyDir(src, dest) {
+    if (!fs.existsSync(dest)) {
+        fs.mkdirSync(dest, { recursive: true });
+    }
+
+    const entries = fs.readdirSync(src, { withFileTypes: true });
+
+    for (const entry of entries) {
+        const srcPath = path.join(src, entry.name);
+        const destPath = path.join(dest, entry.name);
+
+        if (entry.isDirectory()) {
+            copyDir(srcPath, destPath);
+        } else {
+            fs.copyFileSync(srcPath, destPath);
+        }
+    }
+}
+
 // First, delete the existing dist directory to ensure a clean build
 const distDir = path.join(__dirname, '..', 'dist');
 if (fs.existsSync(distDir)) {
