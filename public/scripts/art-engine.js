@@ -14,7 +14,6 @@ class BitHeadzArtEngine {
     // Upload elements
     this.uploadArea = document.getElementById('uploadArea');
     this.layerInput = document.getElementById('layerInput');
-    this.fallbackInput = document.getElementById('fallbackInput');
     this.uploadedLayersContainer = document.getElementById('uploadedLayers');
     this.layerPreview = document.getElementById('layerPreview');
     
@@ -47,9 +46,8 @@ class BitHeadzArtEngine {
     
     // File input events
     this.layerInput.addEventListener('change', this.handleFileSelect.bind(this));
-    this.fallbackInput.addEventListener('change', this.handleFileSelect.bind(this));
     
-    // Ensure webkitdirectory is set properly
+    // Ensure webkitdirectory is set properly (for browser compatibility)
     this.layerInput.setAttribute('webkitdirectory', '');
     this.layerInput.setAttribute('directory', '');
     
@@ -74,8 +72,70 @@ class BitHeadzArtEngine {
     e.preventDefault();
     this.uploadArea.classList.remove('dragover');
     
-    const files = Array.from(e.dataTransfer.files);
+    // Use DataTransferItemList interface to access the file(s)
+    const items = e.dataTransfer.items;
+    if (items) {
+      this.processDroppedItems(items);
+    }
+  }
+
+  async processDroppedItems(items) {
+    const files = [];
+    const queue = [];
+
+    // Enqueue all dropped items for processing
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.webkitGetAsEntry) {
+        const entry = item.webkitGetAsEntry();
+        if (entry) {
+          queue.push(this.readEntry(entry));
+        }
+      }
+    }
+
+    // Process the queue concurrently
+    const results = await Promise.all(queue);
+    results.forEach(result => files.push(...result));
+
     this.processFiles(files);
+  }
+
+  async readEntry(entry) {
+    if (entry.isFile) {
+      return [await this.readFileEntry(entry)];
+    } else if (entry.isDirectory) {
+      return await this.readDirectoryEntry(entry);
+    }
+    return [];
+  }
+
+  async readFileEntry(fileEntry) {
+    return new Promise((resolve, reject) => {
+      fileEntry.file(
+        (file) => {
+          // Add webkitRelativePath property for consistency
+          file.webkitRelativePath = fileEntry.fullPath.substring(1); 
+          resolve(file);
+        },
+        (error) => reject(error)
+      );
+    });
+  }
+
+  async readDirectoryEntry(directoryEntry) {
+    return new Promise((resolve) => {
+      directoryEntry.createReader().readEntries(async (entries) => {
+        const files = [];
+        const queue = [];
+        for (let i = 0; i < entries.length; i++) {
+          queue.push(this.readEntry(entries[i]));
+        }
+        const results = await Promise.all(queue);
+        results.forEach(result => files.push(...result));
+        resolve(files);
+      });
+    });
   }
 
   handleFileSelect(e) {
@@ -102,19 +162,9 @@ class BitHeadzArtEngine {
         size: file.size,
         webkitRelativePath: file.webkitRelativePath || 'N/A',
         lastModified: file.lastModified,
-        isDirectory: file.webkitRelativePath ? file.webkitRelativePath.includes('/') : false
+        isDirectory: file.webkitRelativePath ? file.webkitRelativePath.includes('/') && file.size === 0 : false // Directories usually have size 0
       });
     });
-    
-    // Check if we're getting folder names instead of files
-    const hasFolderStructure = allFiles.some(file => file.webkitRelativePath && file.webkitRelativePath.includes('/'));
-    
-    // If no folder structure and only one file, it might be a folder name
-    if (!hasFolderStructure && allFiles.length === 1 && allFiles[0].size < 1000) {
-      console.warn('Single small file detected - likely a folder name. webkitdirectory may not be working.');
-      this.showErrorWithFallback('Folder upload not supported in this browser. Please select individual PNG files from your layer folders instead.');
-      return;
-    }
     
     // Filter for PNG files - check both MIME type and file extension
     const pngFiles = allFiles.filter(file => {
@@ -139,7 +189,7 @@ class BitHeadzArtEngine {
           this.showError('No PNG files found in the uploaded folders. Please check that your folders contain PNG images.');
         }
       } else {
-        this.showError('Please select PNG files or folders containing PNG files.');
+        this.showError('Please select folders containing PNG files.');
       }
       return;
     }
@@ -152,6 +202,7 @@ class BitHeadzArtEngine {
     console.log(`Found ${pngFiles.length} PNG files:`, pngFiles.map(f => f.name));
 
     // Group files by folder structure
+    // This part should now correctly receive files with webkitRelativePath for both drag-and-drop and select
     const layerGroups = this.groupFilesByLayer(pngFiles);
     
     // Add to uploaded layers
@@ -168,8 +219,21 @@ class BitHeadzArtEngine {
     const groups = new Map();
     
     files.forEach(file => {
-      // Extract layer name from file path or name
-      let layerName = this.extractLayerName(file);
+      // Extract layer name from webkitRelativePath for folder uploads
+      // For individual files, it will use the file.name
+      let layerName;
+      if (file.webkitRelativePath && file.webkitRelativePath.includes('/')) {
+        const pathParts = file.webkitRelativePath.split('/');
+        // The first part is the folder name, which represents the layer
+        const folderNameWithPrefix = pathParts[0];
+        const folderMatch = folderNameWithPrefix.match(/^\\d+_(.+)$/);
+        layerName = folderMatch ? folderMatch[1] : folderNameWithPrefix;
+      } else {
+        // Fallback for individual file selection (though not preferred by user)
+        // or if webkitRelativePath is not available/empty for some reason.
+        const prefixMatch = file.name.match(/^(\\d+)_(.+?)(?:\\.png)?$/i);
+        layerName = prefixMatch ? prefixMatch[2].replace(/[^a-zA-Z0-9]/g, '_') : file.name.replace(/\.png$/i, '').replace(/[^a-zA-Z0-9]/g, '_');
+      }
       
       if (!groups.has(layerName)) {
         groups.set(layerName, []);
@@ -182,31 +246,49 @@ class BitHeadzArtEngine {
   }
 
   extractLayerName(file) {
-    // Check if file has a path (folder upload)
+    // This function is now mostly redundant as groupFilesByLayer handles path extraction
+    // Keeping for backward compatibility or if called directly elsewhere
     if (file.webkitRelativePath) {
-      // Extract folder name from path (e.g., "00_Background/blue.png" -> "Background")
       const pathParts = file.webkitRelativePath.split('/');
       if (pathParts.length > 1) {
-        const folderName = pathParts[0]; // Get the folder name
-        // Extract layer name from folder name (e.g., "00_Background" -> "Background")
-        const folderMatch = folderName.match(/^(\d+)_(.+)$/);
+        const folderName = pathParts[0];
+        const folderMatch = folderName.match(/^(\\d+)_(.+)$/);
         if (folderMatch) {
-          return folderMatch[2]; // Return the descriptive part
+          return folderMatch[2];
         }
-        return folderName; // Fallback to full folder name
+        return folderName;
       }
     }
-    
-    // Fallback for individual file uploads
     const fileName = file.name;
-    // Try to extract layer name from prefix (00_, 01_, etc.)
-    const prefixMatch = fileName.match(/^(\d+)_(.+?)(?:\.png)?$/i);
+    const prefixMatch = fileName.match(/^(\\d+)_(.+?)(?:\\.png)?$/i);
     if (prefixMatch) {
       return prefixMatch[2].replace(/[^a-zA-Z0-9]/g, '_');
     }
-    
-    // Fallback: use filename without extension
     return fileName.replace(/\.png$/i, '').replace(/[^a-zA-Z0-9]/g, '_');
+  }
+
+  getLayerOrder(layerName) {
+    const layerOrderMap = {
+      'Background': 0,
+      'Body': 1,
+      'Head': 2,
+      'Eyes': 3,
+      'Mouth': 4,
+      'Accessories': 5,
+      'Clothing': 6,
+      'Hair': 7,
+      'Hat': 8,
+      'Glasses': 9,
+      'Jewelry': 10
+    };
+    
+    if (layerOrderMap[layerName] !== undefined) {
+      return layerOrderMap[layerName];
+    }
+    
+    // Extract numeric prefix if it exists (e.g., from '00_Background')
+    const match = layerName.match(/^(\\d+)/);
+    return match ? parseInt(match[1]) : 999;
   }
 
   updateLayerDisplay() {
@@ -228,34 +310,6 @@ class BitHeadzArtEngine {
       const layerItem = this.createLayerItem(layerName, files);
       this.uploadedLayersContainer.appendChild(layerItem);
     });
-  }
-
-  getLayerOrder(layerName) {
-    // For folder uploads, we need to check the original folder structure
-    // This will be handled by the sorting in updateLayerDisplay
-    // For now, return a default order based on common layer names
-    const layerOrderMap = {
-      'Background': 0,
-      'Body': 1,
-      'Head': 2,
-      'Eyes': 3,
-      'Mouth': 4,
-      'Accessories': 5,
-      'Clothing': 6,
-      'Hair': 7,
-      'Hat': 8,
-      'Glasses': 9,
-      'Jewelry': 10
-    };
-    
-    // Check if we have a predefined order
-    if (layerOrderMap[layerName] !== undefined) {
-      return layerOrderMap[layerName];
-    }
-    
-    // Extract numeric prefix if it exists (for backward compatibility)
-    const match = layerName.match(/^(\d+)/);
-    return match ? parseInt(match[1]) : 999;
   }
 
   createLayerItem(layerName, files) {
@@ -579,50 +633,8 @@ class BitHeadzArtEngine {
   }
 
   showErrorWithFallback(message) {
-    // Create a temporary error message with a fallback button
-    const errorDiv = document.createElement('div');
-    errorDiv.style.cssText = `
-      position: fixed;
-      top: 100px;
-      right: 20px;
-      background: rgba(220, 53, 69, 0.9);
-      color: white;
-      padding: 1rem 1.5rem;
-      border-radius: 8px;
-      z-index: 10000;
-      max-width: 300px;
-      font-weight: 600;
-    `;
-    errorDiv.textContent = message;
-    
-    const fallbackBtn = document.createElement('button');
-    fallbackBtn.style.cssText = `
-      background: white;
-      color: #dc3545;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 4px;
-      margin-top: 0.5rem;
-      cursor: pointer;
-      font-weight: 600;
-    `;
-    fallbackBtn.textContent = 'Select Individual Files';
-    fallbackBtn.addEventListener('click', () => {
-      this.fallbackInput.click();
-      if (errorDiv.parentNode) {
-        errorDiv.parentNode.removeChild(errorDiv);
-      }
-    });
-    
-    errorDiv.appendChild(fallbackBtn);
-    
-    document.body.appendChild(errorDiv);
-    
-    setTimeout(() => {
-      if (errorDiv.parentNode) {
-        errorDiv.parentNode.removeChild(errorDiv);
-      }
-    }, 10000);
+    // Since individual file upload is not desired, we'll revert this to a standard error
+    this.showError(message);
   }
 }
 
