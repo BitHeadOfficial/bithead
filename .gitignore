@@ -78,6 +78,7 @@ junit.xml
 .cache/
 .temp/
 .tmp/
+temp/
 *.bak
 *.backup
 *~
@@ -142,3 +143,8 @@ junit.xml
 *.7z 
 # Local Netlify folder
 .netlify
+
+# BitHeadzArtEngine sensitive files
+BitHeadzArtEngine/Layers/
+BitHeadzArtEngine/build/
+BitHeadzArtEngine/temp/

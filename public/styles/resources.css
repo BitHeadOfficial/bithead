@@ -1,0 +1,254 @@
+/* Resources Page Styles */
+.resources-main {
+  min-height: 100vh;
+  background-color: #000;
+  color: #fff;
+  padding-top: 80px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Hero Section */
+.resources-hero {
+  text-align: center;
+  padding: 4rem 0;
+  margin-bottom: 3rem;
+}
+
+.resources-hero h1 {
+  font-size: 3.5rem;
+  font-weight: 600;
+  font-style: oblique;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 0 20px rgba(66, 150, 210, 0.5);
+}
+
+.resources-hero p {
+  font-size: 1.2rem;
+  color: #ccc;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Tools Section */
+.tools-section {
+  margin-bottom: 4rem;
+}
+
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+/* Tool Card */
+.tool-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(66, 150, 210, 0.2);
+  border-radius: 12px;
+  padding: 2rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.tool-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(66, 150, 210, 0.4);
+  box-shadow: 0 10px 30px rgba(66, 150, 210, 0.2);
+}
+
+.tool-card.coming-soon {
+  opacity: 0.6;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.tool-card.coming-soon:hover {
+  transform: none;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: none;
+}
+
+/* Tool Icon */
+.tool-icon {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.tool-emoji {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+/* Tool Content */
+.tool-content h3 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  font-style: oblique;
+  margin-bottom: 1rem;
+  text-align: center;
+  color: #fff;
+}
+
+.tool-content p {
+  color: #ccc;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+/* Feature Tags */
+.tool-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.feature-tag {
+  background: rgba(66, 150, 210, 0.2);
+  color: #4296d2;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid rgba(66, 150, 210, 0.3);
+}
+
+/* Launch Button */
+.launch-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #4296d2, #2d6da3);
+  color: #fff;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  font-size: 1rem;
+}
+
+.launch-button:hover {
+  background: linear-gradient(135deg, #2d6da3, #1e4a7a);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(66, 150, 210, 0.4);
+}
+
+.launch-button.disabled {
+  background: rgba(255, 255, 255, 0.1);
+  color: #666;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.launch-button.disabled:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: none;
+  box-shadow: none;
+}
+
+.arrow {
+  transition: transform 0.3s ease;
+}
+
+.launch-button:hover .arrow {
+  transform: translateX(3px);
+}
+
+/* Info Section */
+.info-section {
+  text-align: center;
+  padding: 3rem 0;
+  border-top: 1px solid rgba(66, 150, 210, 0.2);
+}
+
+.info-section h2 {
+  font-size: 2.5rem;
+  font-weight: 600;
+  font-style: oblique;
+  margin-bottom: 1.5rem;
+  color: #fff;
+}
+
+.info-section p {
+  font-size: 1.1rem;
+  color: #ccc;
+  max-width: 800px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Active Navigation */
+.nav-links a.active {
+  color: #4296d2 !important;
+  text-shadow: 0 0 10px rgba(66, 150, 210, 0.5);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+  }
+  
+  .resources-hero h1 {
+    font-size: 2.5rem;
+  }
+  
+  .resources-hero p {
+    font-size: 1rem;
+  }
+  
+  .tools-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .tool-card {
+    padding: 1.5rem;
+  }
+  
+  .tool-content h3 {
+    font-size: 1.5rem;
+  }
+  
+  .info-section h2 {
+    font-size: 2rem;
+  }
+  
+  .info-section p {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .resources-hero h1 {
+    font-size: 2rem;
+  }
+  
+  .tool-features {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .feature-tag {
+    width: fit-content;
+  }
+} 

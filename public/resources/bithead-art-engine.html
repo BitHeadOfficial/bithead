@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Free NFT Generator - Upload PNG layers and create unique NFT collections" />
+
+    <!-- Your CSS -->
+    <link rel="stylesheet" href="../styles/base.css" />
+    <link rel="stylesheet" href="../styles/header.css" />
+    <link rel="stylesheet" href="../styles/footer.css" />
+    <link rel="stylesheet" href="../styles/art-engine.css" />
+
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+
+    <title>BitHeadzArtEngine | BitHead</title>
+
+    <!-- CookieConsent by Osano -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js"></script>
+    <script>
+    window.addEventListener('load', function(){
+      window.cookieconsent.initialise({
+        palette: {
+          popup: { background: "#222" },
+          button: { background: "#4296d2" }
+        },
+        theme: "classic",
+        position: "bottom-right",
+        type: "opt-in",
+        content: {
+          message: "This website uses cookies to ensure you get the best experience and to analyze traffic (Google Analytics).",
+          allow: "Allow cookies",
+          deny: "Decline",
+          link: "Learn more",
+          href: "/privacy-policy.html"
+        },
+        onInitialise: function (status) {
+          if (status == 'allow') {
+            enableGA();
+          }
+        },
+        onStatusChange: function(status) {
+          if (status == 'allow') {
+            enableGA();
+          }
+        }
+      });
+
+      function enableGA() {
+        var gtagScript = document.createElement('script');
+        gtagScript.async = true;
+        gtagScript.src = "https://www.googletagmanager.com/gtag/js?id=G-RS08PRH4N6";
+        document.head.appendChild(gtagScript);
+
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-RS08PRH4N6');
+      }
+    });
+    </script>
+  </head>
+  <body>
+    <!-- Header -->
+    <header>
+      <div class="nav-logo">
+        <a href="/">BITHEAD</a>
+      </div>
+      <div class="nav-container">
+        <nav>
+          <ul class="nav-links">
+            <li><a href="/#about">About</a></li>
+            <li><a href="/#portfolio">Portfolio</a></li>
+            <li><a href="/#snake-section">Snake</a></li>
+            <li><a href="/#nft-mint">NFT</a></li>
+            <li><a href="/#shop">Shops</a></li>
+            <li><a href="/#exclusive">Drops</a></li>
+            <li><a href="/resources">Resources</a></li>
+            <li><a href="/#cta">Contact</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="hamburger">☰</div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="art-engine-main">
+      <div class="container">
+        <!-- Hero Section -->
+        <section class="tool-hero">
+          <div class="breadcrumb">
+            <a href="/resources">Resources</a>
+            <span class="separator">→</span>
+            <span>BitHeadzArtEngine</span>
+          </div>
+          <h1>BitHeadzArtEngine</h1>
+          <p>Free NFT generator with layer-based composition, rarity controls, and metadata generation</p>
+        </section>
+
+        <!-- Main Tool Interface -->
+        <section class="tool-interface">
+          <div class="interface-grid">
+            <!-- Left Panel - Configuration -->
+            <div class="config-panel">
+              <h2>Configuration</h2>
+              
+              <!-- Layer Upload Section -->
+              <div class="config-section">
+                <h3>Layer Upload</h3>
+                <div class="upload-area" id="uploadArea">
+                  <div class="upload-content">
+                    <span class="upload-icon">📁</span>
+                    <p>Drag & drop PNG layers here or click to browse</p>
+                    <p class="upload-hint">Organize layers with prefixes: 00_Background, 01_Body, etc.</p>
+                  </div>
+                  <input type="file" id="layerInput" multiple accept=".png" style="display: none;">
+                </div>
+                <div class="uploaded-layers" id="uploadedLayers"></div>
+              </div>
+
+              <!-- Collection Settings -->
+              <div class="config-section">
+                <h3>Collection Settings</h3>
+                <div class="form-group">
+                  <label for="collectionName">Collection Name</label>
+                  <input type="text" id="collectionName" placeholder="My NFT Collection" value="My NFT Collection">
+                </div>
+                <div class="form-group">
+                  <label for="collectionSize">Collection Size</label>
+                  <input type="number" id="collectionSize" min="1" max="10000" value="100">
+                </div>
+                <div class="form-group">
+                  <label for="collectionDescription">Description</label>
+                  <textarea id="collectionDescription" rows="3" placeholder="Describe your NFT collection...">A unique NFT collection generated with BitHeadzArtEngine</textarea>
+                </div>
+              </div>
+
+              <!-- Rarity Settings -->
+              <div class="config-section">
+                <h3>Rarity Settings</h3>
+                <div class="form-group">
+                  <label for="rarityMode">Rarity Distribution</label>
+                  <select id="rarityMode">
+                    <option value="bell-curve">Bell Curve (Recommended)</option>
+                    <option value="random">Random</option>
+                    <option value="equal">Equal Distribution</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="optionalLayers">Optional Layers</label>
+                  <div class="optional-layers" id="optionalLayers">
+                    <!-- Will be populated dynamically -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Generate Button -->
+              <div class="config-section">
+                <button id="generateBtn" class="generate-button">
+                  <span class="button-text">Generate Collection</span>
+                  <span class="button-icon">🚀</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Right Panel - Preview & Status -->
+            <div class="preview-panel">
+              <h2>Preview & Status</h2>
+              
+              <!-- Layer Preview -->
+              <div class="preview-section">
+                <h3>Layer Structure</h3>
+                <div class="layer-preview" id="layerPreview">
+                  <p class="no-layers">Upload layers to see preview</p>
+                </div>
+              </div>
+
+              <!-- Generation Status -->
+              <div class="preview-section">
+                <h3>Generation Status</h3>
+                <div class="generation-status" id="generationStatus">
+                  <p class="status-text">Ready to generate</p>
+                  <div class="progress-bar" id="progressBar" style="display: none;">
+                    <div class="progress-fill" id="progressFill"></div>
+                  </div>
+                  <div class="status-details" id="statusDetails"></div>
+                </div>
+              </div>
+
+              <!-- Download Section -->
+              <div class="preview-section" id="downloadSection" style="display: none;">
+                <h3>Download</h3>
+                <div class="download-content">
+                  <p>Your collection is ready!</p>
+                  <button id="downloadBtn" class="download-button">
+                    <span class="button-text">Download Collection</span>
+                    <span class="button-icon">⬇️</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Instructions Section -->
+        <section class="instructions-section">
+          <h2>How to Use</h2>
+          <div class="instructions-grid">
+            <div class="instruction-card">
+              <div class="instruction-number">1</div>
+              <h3>Prepare Your Layers</h3>
+              <p>Create PNG layers for each trait (background, body, eyes, etc.). Use prefixes like 00_, 01_, 02_ to define layer order.</p>
+            </div>
+            <div class="instruction-card">
+              <div class="instruction-number">2</div>
+              <h3>Upload Layers</h3>
+              <p>Drag and drop your layer folders or individual PNG files. The tool will automatically detect the layer structure.</p>
+            </div>
+            <div class="instruction-card">
+              <div class="instruction-number">3</div>
+              <h3>Configure Settings</h3>
+              <p>Set your collection name, size, description, and rarity preferences. Adjust optional layers as needed.</p>
+            </div>
+            <div class="instruction-card">
+              <div class="instruction-number">4</div>
+              <h3>Generate & Download</h3>
+              <p>Click generate and wait for processing. Download your complete collection with images and metadata.</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <div class="section-divider"></div>
+      <div class="footer-content">
+        <ul class="social-links">
+          <li><a href="https://x.com/BitHeadOfficial" target="_blank" rel="noopener noreferrer">𝕏</a></li>
+        </ul>
+        <p>BitHead – All rights reserved.</p>
+        <ul class="footer-links">
+          <li><a href="/terms-of-service.html">Terms of Service</a></li>
+          <li><a href="/privacy-policy.html">Privacy Policy</a></li>
+        </ul>
+      </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script type="module">
+      import { setupSmoothScrolling, setupScrollSpy } from '../scripts/config.js';
+      
+      // Initialize utilities after DOM is loaded
+      document.addEventListener('DOMContentLoaded', () => {
+        setupSmoothScrolling();
+        setupScrollSpy();
+      });
+    </script>
+
+    <!-- Load main application script -->
+    <script type="module" src="../scripts/script.js"></script>
+    
+    <!-- Load art engine script -->
+    <script type="module" src="../scripts/art-engine.js"></script>
+  </body>
+</html> 

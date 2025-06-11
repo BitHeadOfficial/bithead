@@ -24,6 +24,12 @@ if (!process.env.ACCESS_PASSWORD) {
     process.exit(1);
 }
 
+// Create temp directory for NFT generator
+const tempDir = path.join(__dirname, 'temp');
+if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir, { recursive: true });
+}
+
 // Middleware
 app.use(cors({
     origin: 'https://nimble-malabi-65e406.netlify.app'
@@ -50,9 +56,11 @@ app.set('trust proxy', 1);
 
 // Import routes
 const paymentRoutes = require('./routes/payment');
+const nftGeneratorRoutes = require('./routes/nft-generator');
 
 // Routes
 app.use('/api', paymentRoutes);
+app.use('/api/nft-generator', nftGeneratorRoutes);
 
 // Unlock endpoint
 app.post('/api/unlock', (req, res) => {
