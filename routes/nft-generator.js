@@ -266,6 +266,7 @@ async function generateCollection(job) {
 // Organize uploaded files into layer structure
 function organizeLayers(files, layersDir) {
   console.log(`NFT Generator: Organizing ${files.length} files into layers...`);
+  console.log(`NFT Generator: Sample file names:`, files.slice(0, 5).map(f => f.originalname));
   
   const layerStructure = [];
   const layerGroups = new Map();
