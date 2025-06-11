@@ -35,7 +35,7 @@ app.use(cors({
     origin: 'https://nimble-malabi-65e406.netlify.app'
 }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'dist')));
 app.set('trust proxy', 1);
 
 // Placeholder Whitelist routes (Directly in app.js for debugging)
