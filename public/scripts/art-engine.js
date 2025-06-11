@@ -83,14 +83,31 @@ class BitHeadzArtEngine {
     
     // Debug: Log what we received
     console.log('Files received:', allFiles.length);
+    console.log('File input attributes:', {
+      multiple: this.layerInput.multiple,
+      webkitdirectory: this.layerInput.webkitdirectory,
+      directory: this.layerInput.directory
+    });
+    
     allFiles.forEach((file, index) => {
       console.log(`File ${index}:`, {
         name: file.name,
         type: file.type,
         size: file.size,
-        webkitRelativePath: file.webkitRelativePath || 'N/A'
+        webkitRelativePath: file.webkitRelativePath || 'N/A',
+        lastModified: file.lastModified,
+        isDirectory: file.webkitRelativePath ? file.webkitRelativePath.includes('/') : false
       });
     });
+    
+    // Check if we're getting folder names instead of files
+    const hasFolderStructure = allFiles.some(file => file.webkitRelativePath && file.webkitRelativePath.includes('/'));
+    
+    if (!hasFolderStructure && allFiles.length > 0) {
+      console.warn('No folder structure detected. Files may be folder names instead of actual files.');
+      this.showError('Please select the folders containing PNG files, not the folder names themselves. Try selecting the parent folder that contains your layer folders.');
+      return;
+    }
     
     // Filter for PNG files - check both MIME type and file extension
     const pngFiles = allFiles.filter(file => {
