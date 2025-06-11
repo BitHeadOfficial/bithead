@@ -103,7 +103,7 @@ class BitHeadzArtEngine {
     
     files.forEach(file => {
       // Extract layer name from file path or name
-      let layerName = this.extractLayerName(file.name);
+      let layerName = this.extractLayerName(file);
       
       if (!groups.has(layerName)) {
         groups.set(layerName, []);
@@ -115,7 +115,24 @@ class BitHeadzArtEngine {
     return groups;
   }
 
-  extractLayerName(fileName) {
+  extractLayerName(file) {
+    // Check if file has a path (folder upload)
+    if (file.webkitRelativePath) {
+      // Extract folder name from path (e.g., "00_Background/blue.png" -> "Background")
+      const pathParts = file.webkitRelativePath.split('/');
+      if (pathParts.length > 1) {
+        const folderName = pathParts[0]; // Get the folder name
+        // Extract layer name from folder name (e.g., "00_Background" -> "Background")
+        const folderMatch = folderName.match(/^(\d+)_(.+)$/);
+        if (folderMatch) {
+          return folderMatch[2]; // Return the descriptive part
+        }
+        return folderName; // Fallback to full folder name
+      }
+    }
+    
+    // Fallback for individual file uploads
+    const fileName = file.name;
     // Try to extract layer name from prefix (00_, 01_, etc.)
     const prefixMatch = fileName.match(/^(\d+)_(.+?)(?:\.png)?$/i);
     if (prefixMatch) {
@@ -148,7 +165,29 @@ class BitHeadzArtEngine {
   }
 
   getLayerOrder(layerName) {
-    // Extract numeric prefix if it exists
+    // For folder uploads, we need to check the original folder structure
+    // This will be handled by the sorting in updateLayerDisplay
+    // For now, return a default order based on common layer names
+    const layerOrderMap = {
+      'Background': 0,
+      'Body': 1,
+      'Head': 2,
+      'Eyes': 3,
+      'Mouth': 4,
+      'Accessories': 5,
+      'Clothing': 6,
+      'Hair': 7,
+      'Hat': 8,
+      'Glasses': 9,
+      'Jewelry': 10
+    };
+    
+    // Check if we have a predefined order
+    if (layerOrderMap[layerName] !== undefined) {
+      return layerOrderMap[layerName];
+    }
+    
+    // Extract numeric prefix if it exists (for backward compatibility)
     const match = layerName.match(/^(\d+)/);
     return match ? parseInt(match[1]) : 999;
   }

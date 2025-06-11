@@ -112,10 +112,10 @@
                 <div class="upload-area" id="uploadArea">
                   <div class="upload-content">
                     <span class="upload-icon">📁</span>
-                    <p>Drag & drop PNG layers here or click to browse</p>
-                    <p class="upload-hint">Organize layers with prefixes: 00_Background, 01_Body, etc.</p>
+                    <p>Drag & drop layer folders here or click to browse</p>
+                    <p class="upload-hint">Upload folders like: 00_Background, 01_Body, 02_Head, etc.</p>
                   </div>
-                  <input type="file" id="layerInput" multiple accept=".png" style="display: none;">
+                  <input type="file" id="layerInput" multiple accept=".png" webkitdirectory directory style="display: none;">
                 </div>
                 <div class="uploaded-layers" id="uploadedLayers"></div>
               </div>
@@ -211,12 +211,12 @@
             <div class="instruction-card">
               <div class="instruction-number">1</div>
               <h3>Prepare Your Layers</h3>
-              <p>Create PNG layers for each trait (background, body, eyes, etc.). Use prefixes like 00_, 01_, 02_ to define layer order.</p>
+              <p>Create PNG layers for each trait (background, body, eyes, etc.). Organize them in folders with prefixes like 00_Background, 01_Body, 02_Head, etc.</p>
             </div>
             <div class="instruction-card">
               <div class="instruction-number">2</div>
-              <h3>Upload Layers</h3>
-              <p>Drag and drop your layer folders or individual PNG files. The tool will automatically detect the layer structure.</p>
+              <h3>Upload Layer Folders</h3>
+              <p>Drag and drop your entire layer folders (e.g., 00_Background, 01_Body) or click to browse and select folders. The tool will automatically detect the layer structure.</p>
             </div>
             <div class="instruction-card">
               <div class="instruction-number">3</div>
