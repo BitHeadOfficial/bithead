@@ -114,9 +114,8 @@ class BitHeadzArtEngine {
     return new Promise((resolve, reject) => {
       fileEntry.file(
         (file) => {
-          // Add webkitRelativePath property for consistency
-          file.webkitRelativePath = fileEntry.fullPath.substring(1); 
-          resolve(file);
+          // Return a simple object containing the file and its relative path
+          resolve({ file: file, webkitRelativePath: fileEntry.fullPath.substring(1) });
         },
         (error) => reject(error)
       );
@@ -139,52 +138,55 @@ class BitHeadzArtEngine {
   }
 
   handleFileSelect(e) {
-    const files = Array.from(e.target.files);
+    // For file input, files already have webkitRelativePath if folder was selected
+    const files = Array.from(e.target.files).map(file => ({ file: file, webkitRelativePath: file.webkitRelativePath || '' }));
     this.processFiles(files);
   }
 
-  processFiles(files) {
+  processFiles(filesData) {
     // First, let's see what files we received
-    const allFiles = Array.from(files);
+    const allFilesWithPaths = Array.from(filesData);
     
     // Debug: Log what we received
-    console.log('Files received:', allFiles.length);
+    console.log('Files received:', allFilesWithPaths.length);
     console.log('File input attributes:', {
       multiple: this.layerInput.multiple,
       webkitdirectory: this.layerInput.webkitdirectory,
       directory: this.layerInput.directory
     });
     
-    allFiles.forEach((file, index) => {
+    allFilesWithPaths.forEach((item, index) => {
+      const file = item.file;
       console.log(`File ${index}:`, {
         name: file.name,
         type: file.type,
         size: file.size,
-        webkitRelativePath: file.webkitRelativePath || 'N/A',
+        webkitRelativePath: item.webkitRelativePath || 'N/A',
         lastModified: file.lastModified,
-        isDirectory: file.webkitRelativePath ? file.webkitRelativePath.includes('/') && file.size === 0 : false // Directories usually have size 0
       });
     });
     
     // Filter for PNG files - check both MIME type and file extension
-    const pngFiles = allFiles.filter(file => {
+    const pngFilesWithPaths = allFilesWithPaths.filter(item => {
+      const file = item.file;
       const isPngType = file.type === 'image/png';
       const isPngExtension = file.name.toLowerCase().endsWith('.png');
       return isPngType || isPngExtension;
     });
     
-    const nonPngFiles = allFiles.filter(file => {
+    const nonPngFilesWithPaths = allFilesWithPaths.filter(item => {
+      const file = item.file;
       const isPngType = file.type === 'image/png';
       const isPngExtension = file.name.toLowerCase().endsWith('.png');
       return !(isPngType || isPngExtension);
     });
     
     // If no PNG files found, provide helpful error message
-    if (pngFiles.length === 0) {
-      if (allFiles.length > 0) {
+    if (pngFilesWithPaths.length === 0) {
+      if (allFilesWithPaths.length > 0) {
         // We have files but no PNGs
-        if (nonPngFiles.length > 0) {
-          this.showError(`No PNG files found. Found ${nonPngFiles.length} non-PNG file(s). Please ensure your folders contain PNG images only.`);
+        if (nonPngFilesWithPaths.length > 0) {
+          this.showError(`No PNG files found. Found ${nonPngFilesWithPaths.length} non-PNG file(s). Please ensure your folders contain PNG images only.`);
         } else {
           this.showError('No PNG files found in the uploaded folders. Please check that your folders contain PNG images.');
         }
@@ -195,15 +197,15 @@ class BitHeadzArtEngine {
     }
 
     // If we have some non-PNG files, show a warning but continue
-    if (nonPngFiles.length > 0) {
-      console.warn(`Found ${nonPngFiles.length} non-PNG files that will be ignored:`, nonPngFiles.map(f => f.name));
+    if (nonPngFilesWithPaths.length > 0) {
+      console.warn(`Found ${nonPngFilesWithPaths.length} non-PNG files that will be ignored:`, nonPngFilesWithPaths.map(item => item.file.name));
     }
 
-    console.log(`Found ${pngFiles.length} PNG files:`, pngFiles.map(f => f.name));
+    console.log(`Found ${pngFilesWithPaths.length} PNG files:`, pngFilesWithPaths.map(item => item.file.name));
 
     // Group files by folder structure
     // This part should now correctly receive files with webkitRelativePath for both drag-and-drop and select
-    const layerGroups = this.groupFilesByLayer(pngFiles);
+    const layerGroups = this.groupFilesByLayer(pngFilesWithPaths);
     
     // Add to uploaded layers
     layerGroups.forEach((files, layerName) => {
@@ -215,24 +217,27 @@ class BitHeadzArtEngine {
     this.updateOptionalLayers();
   }
 
-  groupFilesByLayer(files) {
+  groupFilesByLayer(filesWithPaths) {
     const groups = new Map();
     
-    files.forEach(file => {
-      // Extract layer name from webkitRelativePath for folder uploads
-      // For individual files, it will use the file.name
+    filesWithPaths.forEach(item => {
+      const file = item.file;
+      const webkitRelativePath = item.webkitRelativePath;
+      
       let layerName;
-      if (file.webkitRelativePath && file.webkitRelativePath.includes('/')) {
-        const pathParts = file.webkitRelativePath.split('/');
+      if (webkitRelativePath && webkitRelativePath.includes('/')) {
+        const pathParts = webkitRelativePath.split('/');
         // The first part is the folder name, which represents the layer
         const folderNameWithPrefix = pathParts[0];
         const folderMatch = folderNameWithPrefix.match(/^\\d+_(.+)$/);
-        layerName = folderMatch ? folderMatch[1] : folderNameWithPrefix;
+        layerName = folderMatch ? folderMatch[1] : folderNameWithPrefix; // Extract name without prefix if available
       } else {
-        // Fallback for individual file selection (though not preferred by user)
-        // or if webkitRelativePath is not available/empty for some reason.
-        const prefixMatch = file.name.match(/^(\\d+)_(.+?)(?:\\.png)?$/i);
-        layerName = prefixMatch ? prefixMatch[2].replace(/[^a-zA-Z0-9]/g, '_') : file.name.replace(/\.png$/i, '').replace(/[^a-zA-Z0-9]/g, '_');
+        // Fallback for files without webkitRelativePath (unlikely if folder upload works, but safe)
+        layerName = file.name.replace(/\\.png$/i, '').replace(/[^a-zA-Z0-9]/g, '_');
+        const prefixMatch = layerName.match(/^(\\d+)_(.+?)$/);
+        if (prefixMatch) {
+          layerName = prefixMatch[2];
+        }
       }
       
       if (!groups.has(layerName)) {
@@ -246,25 +251,8 @@ class BitHeadzArtEngine {
   }
 
   extractLayerName(file) {
-    // This function is now mostly redundant as groupFilesByLayer handles path extraction
-    // Keeping for backward compatibility or if called directly elsewhere
-    if (file.webkitRelativePath) {
-      const pathParts = file.webkitRelativePath.split('/');
-      if (pathParts.length > 1) {
-        const folderName = pathParts[0];
-        const folderMatch = folderName.match(/^(\\d+)_(.+)$/);
-        if (folderMatch) {
-          return folderMatch[2];
-        }
-        return folderName;
-      }
-    }
-    const fileName = file.name;
-    const prefixMatch = fileName.match(/^(\\d+)_(.+?)(?:\\.png)?$/i);
-    if (prefixMatch) {
-      return prefixMatch[2].replace(/[^a-zA-Z0-9]/g, '_');
-    }
-    return fileName.replace(/\.png$/i, '').replace(/[^a-zA-Z0-9]/g, '_');
+    // This function is now fully redundant as groupFilesByLayer handles path extraction
+    return "UnknownLayer"; // Should not be called
   }
 
   getLayerOrder(layerName) {
