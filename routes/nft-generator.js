@@ -1,9 +1,15 @@
-const express = require('express');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const { v4: uuidv4 } = require('uuid');
-const archiver = require('archiver');
+import express from 'express';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import { v4 as uuidv4 } from 'uuid';
+import archiver from 'archiver';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 const router = express.Router();
 
 // Configure multer for file uploads
@@ -201,7 +207,7 @@ async function generateCollection(job) {
     job.progress = 30;
 
     // Import the BitHeadzArtEngine
-    const { generateCollectionWithLayers } = require('../BitHeadzArtEngine/index.js');
+    const { generateCollectionWithLayers } = await import('../BitHeadzArtEngine/index.js');
 
     // Generate the collection
     const generationResult = await generateCollectionWithLayers({
@@ -343,4 +349,4 @@ setInterval(() => {
   });
 }, 60 * 60 * 1000); // Check every hour
 
-module.exports = router; 
+export default router; 
