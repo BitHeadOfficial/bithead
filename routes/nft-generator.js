@@ -258,48 +258,66 @@ async function generateCollection(job) {
 
 // Organize uploaded files into layer structure
 function organizeLayers(files, layersDir) {
+  console.log(`NFT Generator: Organizing ${files.length} files into layers...`);
+  
   const layerStructure = [];
   const layerGroups = new Map();
 
-  // Group files by layer name
+  // Group files by layer name and extract layer order
   files.forEach(file => {
-    const layerName = extractLayerName(file.originalname);
-    if (!layerGroups.has(layerName)) {
-      layerGroups.set(layerName, []);
+    const layerInfo = extractLayerInfo(file.originalname);
+    console.log(`NFT Generator: File "${file.originalname}" -> Layer: ${layerInfo.name}, Order: ${layerInfo.order}`);
+    
+    if (!layerGroups.has(layerInfo.name)) {
+      layerGroups.set(layerInfo.name, {
+        order: layerInfo.order,
+        files: []
+      });
     }
-    layerGroups.get(layerName).push(file);
+    layerGroups.get(layerInfo.name).files.push(file);
+  });
+
+  console.log(`NFT Generator: Found ${layerGroups.size} layer groups:`);
+  layerGroups.forEach((layerData, layerName) => {
+    console.log(`  - ${layerName}: ${layerData.files.length} files, order ${layerData.order}`);
   });
 
   // Create layer directories and move files
-  layerGroups.forEach((files, layerName) => {
+  layerGroups.forEach((layerData, layerName) => {
     // Create folder with numeric prefix based on layer order
-    const layerOrder = getLayerOrder(layerName);
-    const folderName = `${layerOrder.toString().padStart(2, '0')}_${layerName}`;
+    const folderName = `${layerData.order.toString().padStart(2, '0')}_${layerName}`;
     const layerDir = path.join(layersDir, folderName);
     fs.mkdirSync(layerDir, { recursive: true });
 
-    files.forEach(file => {
-      const destPath = path.join(layerDir, file.originalname);
+    console.log(`NFT Generator: Creating layer directory: ${folderName}`);
+
+    layerData.files.forEach(file => {
+      // Extract just the filename from the path (e.g., "H_Green_Ball.png" from "02_Head/H_Green_Ball.png")
+      const fileName = file.originalname.split('/').pop();
+      const destPath = path.join(layerDir, fileName);
       fs.copyFileSync(file.path, destPath);
     });
 
     layerStructure.push({
       name: layerName,
-      count: files.length,
+      count: layerData.files.length,
       path: layerDir,
-      folder: folderName
+      folder: folderName,
+      order: layerData.order
     });
   });
 
-  return layerStructure.sort((a, b) => {
-    const aOrder = getLayerOrder(a.name);
-    const bOrder = getLayerOrder(b.name);
-    return aOrder - bOrder;
+  const sortedStructure = layerStructure.sort((a, b) => a.order - b.order);
+  console.log(`NFT Generator: Final layer structure:`);
+  sortedStructure.forEach(layer => {
+    console.log(`  - ${layer.folder}: ${layer.count} files`);
   });
+
+  return sortedStructure;
 }
 
-// Extract layer name from filename
-function extractLayerName(fileName) {
+// Extract layer name and order from filename
+function extractLayerInfo(fileName) {
   // Handle file paths like "02_Head/H_Green_Ball.png"
   const pathParts = fileName.split('/');
   if (pathParts.length > 1) {
@@ -307,35 +325,26 @@ function extractLayerName(fileName) {
     const folderName = pathParts[0];
     const prefixMatch = folderName.match(/^(\d+)_(.+)$/);
     if (prefixMatch) {
-      return prefixMatch[2]; // Return "Head" from "02_Head"
+      return {
+        name: prefixMatch[2], // Return "Head" from "02_Head"
+        order: parseInt(prefixMatch[1])
+      };
     }
   }
   
   // Fallback to original logic for direct filenames
   const prefixMatch = fileName.match(/^(\d+)_(.+?)(?:\.png)?$/i);
   if (prefixMatch) {
-    return prefixMatch[2].replace(/[^a-zA-Z0-9]/g, '_');
-  }
-  return fileName.replace(/\.png$/i, '').replace(/[^a-zA-Z0-9]/g, '_');
-}
-
-// Get layer order from name
-function getLayerOrder(layerName) {
-  // First try to extract from the layer name itself (if it already has a prefix)
-  const match = layerName.match(/^(\d+)/);
-  if (match) {
-    return parseInt(match[1]);
+    return {
+      name: prefixMatch[2].replace(/[^a-zA-Z0-9]/g, '_'),
+      order: parseInt(prefixMatch[1])
+    };
   }
   
-  // If no prefix in layer name, try to extract from the original file path
-  // This handles cases where the layer name was extracted from a file path like "02_Head/H_Green_Ball.png"
-  const pathMatch = layerName.match(/(\d+)_/);
-  if (pathMatch) {
-    return parseInt(pathMatch[1]);
-  }
-  
-  // Default order for layers without numeric prefixes
-  return 999;
+  return {
+    name: fileName.replace(/\.png$/i, '').replace(/[^a-zA-Z0-9]/g, '_'),
+    order: 999
+  };
 }
 
 // Create zip archive
