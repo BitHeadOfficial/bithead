@@ -138,8 +138,12 @@ class BitHeadzArtEngine {
   }
 
   handleFileSelect(e) {
-    // For file input, files already have webkitRelativePath if folder was selected
-    const files = Array.from(e.target.files).map(file => ({ file: file, webkitRelativePath: file.webkitRelativePath || '' }));
+    // For file input with webkitdirectory, files already have webkitRelativePath
+    // We should preserve the original webkitRelativePath, not override it
+    const files = Array.from(e.target.files).map(file => ({ 
+      file: file, 
+      webkitRelativePath: file.webkitRelativePath || file.name // Use original path or fallback to filename
+    }));
     this.processFiles(files);
   }
 
@@ -154,6 +158,30 @@ class BitHeadzArtEngine {
       webkitdirectory: this.layerInput.webkitdirectory,
       directory: this.layerInput.directory
     });
+    
+    // Debug: Check first few files in detail
+    console.log('=== DETAILED FILE DEBUG ===');
+    allFilesWithPaths.slice(0, 5).forEach((item, index) => {
+      const file = item.file;
+      console.log(`File ${index} DETAIL:`, {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        webkitRelativePath: item.webkitRelativePath || 'N/A',
+        originalWebkitRelativePath: file.webkitRelativePath || 'N/A',
+        lastModified: file.lastModified,
+        fullPath: item.webkitRelativePath,
+        hasPath: !!item.webkitRelativePath,
+        pathIncludesSlash: item.webkitRelativePath ? item.webkitRelativePath.includes('/') : false
+      });
+    });
+    
+    // Debug: Check if any files have webkitRelativePath
+    const filesWithPath = allFilesWithPaths.filter(item => item.webkitRelativePath && item.webkitRelativePath.includes('/'));
+    console.log(`Files with webkitRelativePath containing '/': ${filesWithPath.length}`);
+    if (filesWithPath.length > 0) {
+      console.log('Sample paths:', filesWithPath.slice(0, 3).map(item => item.webkitRelativePath));
+    }
     
     allFilesWithPaths.forEach((item, index) => {
       const file = item.file;
@@ -206,6 +234,12 @@ class BitHeadzArtEngine {
     // Group files by folder structure
     // This part should now correctly receive files with webkitRelativePath for both drag-and-drop and select
     const layerGroups = this.groupFilesByLayer(pngFilesWithPaths);
+    
+    // Debug: Log the layer groups
+    console.log('=== LAYER GROUPS DEBUG ===');
+    layerGroups.forEach((files, layerName) => {
+      console.log(`Layer "${layerName}": ${files.length} files`);
+    });
     
     // Add to uploaded layers
     layerGroups.forEach((files, layerName) => {
