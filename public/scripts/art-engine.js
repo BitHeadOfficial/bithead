@@ -14,6 +14,7 @@ class BitHeadzArtEngine {
     // Upload elements
     this.uploadArea = document.getElementById('uploadArea');
     this.layerInput = document.getElementById('layerInput');
+    this.fallbackInput = document.getElementById('fallbackInput');
     this.uploadedLayersContainer = document.getElementById('uploadedLayers');
     this.layerPreview = document.getElementById('layerPreview');
     
@@ -46,6 +47,11 @@ class BitHeadzArtEngine {
     
     // File input events
     this.layerInput.addEventListener('change', this.handleFileSelect.bind(this));
+    this.fallbackInput.addEventListener('change', this.handleFileSelect.bind(this));
+    
+    // Ensure webkitdirectory is set properly
+    this.layerInput.setAttribute('webkitdirectory', '');
+    this.layerInput.setAttribute('directory', '');
     
     // Generate button
     this.generateBtn.addEventListener('click', this.startGeneration.bind(this));
@@ -103,9 +109,10 @@ class BitHeadzArtEngine {
     // Check if we're getting folder names instead of files
     const hasFolderStructure = allFiles.some(file => file.webkitRelativePath && file.webkitRelativePath.includes('/'));
     
-    if (!hasFolderStructure && allFiles.length > 0) {
-      console.warn('No folder structure detected. Files may be folder names instead of actual files.');
-      this.showError('Please select the folders containing PNG files, not the folder names themselves. Try selecting the parent folder that contains your layer folders.');
+    // If no folder structure and only one file, it might be a folder name
+    if (!hasFolderStructure && allFiles.length === 1 && allFiles[0].size < 1000) {
+      console.warn('Single small file detected - likely a folder name. webkitdirectory may not be working.');
+      this.showErrorWithFallback('Folder upload not supported in this browser. Please select individual PNG files from your layer folders instead.');
       return;
     }
     
@@ -569,6 +576,53 @@ class BitHeadzArtEngine {
         errorDiv.parentNode.removeChild(errorDiv);
       }
     }, 5000);
+  }
+
+  showErrorWithFallback(message) {
+    // Create a temporary error message with a fallback button
+    const errorDiv = document.createElement('div');
+    errorDiv.style.cssText = `
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      background: rgba(220, 53, 69, 0.9);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      z-index: 10000;
+      max-width: 300px;
+      font-weight: 600;
+    `;
+    errorDiv.textContent = message;
+    
+    const fallbackBtn = document.createElement('button');
+    fallbackBtn.style.cssText = `
+      background: white;
+      color: #dc3545;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      margin-top: 0.5rem;
+      cursor: pointer;
+      font-weight: 600;
+    `;
+    fallbackBtn.textContent = 'Select Individual Files';
+    fallbackBtn.addEventListener('click', () => {
+      this.fallbackInput.click();
+      if (errorDiv.parentNode) {
+        errorDiv.parentNode.removeChild(errorDiv);
+      }
+    });
+    
+    errorDiv.appendChild(fallbackBtn);
+    
+    document.body.appendChild(errorDiv);
+    
+    setTimeout(() => {
+      if (errorDiv.parentNode) {
+        errorDiv.parentNode.removeChild(errorDiv);
+      }
+    }, 10000);
   }
 }
 
