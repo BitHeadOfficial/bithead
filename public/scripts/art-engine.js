@@ -78,11 +78,41 @@ class BitHeadzArtEngine {
   }
 
   processFiles(files) {
-    const pngFiles = files.filter(file => file.type === 'image/png');
+    // First, let's see what files we received
+    const allFiles = Array.from(files);
     
+    // Debug: Log what we received
+    console.log('Files received:', allFiles.length);
+    allFiles.forEach((file, index) => {
+      console.log(`File ${index}:`, {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        webkitRelativePath: file.webkitRelativePath || 'N/A'
+      });
+    });
+    
+    const pngFiles = allFiles.filter(file => file.type === 'image/png');
+    const nonPngFiles = allFiles.filter(file => file.type !== 'image/png');
+    
+    // If no PNG files found, provide helpful error message
     if (pngFiles.length === 0) {
-      this.showError('Please select PNG files only.');
+      if (allFiles.length > 0) {
+        // We have files but no PNGs
+        if (nonPngFiles.length > 0) {
+          this.showError(`No PNG files found. Found ${nonPngFiles.length} non-PNG file(s). Please ensure your folders contain PNG images only.`);
+        } else {
+          this.showError('No PNG files found in the uploaded folders. Please check that your folders contain PNG images.');
+        }
+      } else {
+        this.showError('Please select PNG files or folders containing PNG files.');
+      }
       return;
+    }
+
+    // If we have some non-PNG files, show a warning but continue
+    if (nonPngFiles.length > 0) {
+      console.warn(`Found ${nonPngFiles.length} non-PNG files that will be ignored:`, nonPngFiles.map(f => f.name));
     }
 
     // Group files by folder structure
