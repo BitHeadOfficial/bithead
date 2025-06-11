@@ -181,6 +181,8 @@ router.get('/download/:generationId', (req, res) => {
 async function generateCollection(job) {
   try {
     console.log(`NFT Generator: Starting generation for job ${job.id}`);
+    console.log(`NFT Generator: Job files count: ${job.files.length}`);
+    console.log(`NFT Generator: First few files:`, job.files.slice(0, 3).map(f => f.originalname));
     
     // Update status
     job.message = 'Organizing layers...';
@@ -199,8 +201,13 @@ async function generateCollection(job) {
     fs.mkdirSync(imagesDir, { recursive: true });
     fs.mkdirSync(metadataDir, { recursive: true });
 
+    console.log(`NFT Generator: Created temp directory: ${tempDir}`);
+    console.log(`NFT Generator: Layers directory: ${layersDir}`);
+
     // Organize uploaded files into layer structure
     const layerStructure = organizeLayers(job.files, layersDir);
+    
+    console.log(`NFT Generator: Layer structure result:`, layerStructure.map(l => `${l.folder}: ${l.count} files`));
     
     job.message = 'Validating layer structure...';
     job.progress = 20;
