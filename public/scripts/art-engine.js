@@ -181,6 +181,10 @@ class BitHeadzArtEngine {
     console.log(`Files with webkitRelativePath containing '/': ${filesWithPath.length}`);
     if (filesWithPath.length > 0) {
       console.log('Sample paths:', filesWithPath.slice(0, 3).map(item => item.webkitRelativePath));
+      console.log('First 5 actual paths:');
+      filesWithPath.slice(0, 5).forEach((item, index) => {
+        console.log(`  ${index}: "${item.webkitRelativePath}"`);
+      });
     }
     
     allFilesWithPaths.forEach((item, index) => {
@@ -254,17 +258,29 @@ class BitHeadzArtEngine {
   groupFilesByLayer(filesWithPaths) {
     const groups = new Map();
     
-    filesWithPaths.forEach(item => {
+    console.log('=== GROUPFILESBYLAYER DEBUG ===');
+    console.log(`Processing ${filesWithPaths.length} files`);
+    
+    filesWithPaths.forEach((item, index) => {
       const file = item.file;
       const webkitRelativePath = item.webkitRelativePath;
+      
+      console.log(`File ${index}: "${webkitRelativePath}"`);
       
       let layerName;
       if (webkitRelativePath && webkitRelativePath.includes('/')) {
         const pathParts = webkitRelativePath.split('/');
+        console.log(`  Path parts: [${pathParts.join(', ')}]`);
+        
         // The first part is the folder name, which represents the layer
         const folderNameWithPrefix = pathParts[0];
+        console.log(`  Folder name with prefix: "${folderNameWithPrefix}"`);
+        
         const folderMatch = folderNameWithPrefix.match(/^\d+_(.+)$/);
+        console.log(`  Folder match:`, folderMatch);
+        
         layerName = folderMatch ? folderMatch[1] : folderNameWithPrefix; // Extract name without prefix if available
+        console.log(`  Extracted layer name: "${layerName}"`);
       } else {
         // Fallback for files without webkitRelativePath (unlikely if folder upload works, but safe)
         layerName = file.name.replace(/\.png$/i, '').replace(/[^a-zA-Z0-9]/g, '_');
@@ -272,13 +288,21 @@ class BitHeadzArtEngine {
         if (prefixMatch) {
           layerName = prefixMatch[2];
         }
+        console.log(`  Fallback layer name: "${layerName}"`);
       }
       
       if (!groups.has(layerName)) {
         groups.set(layerName, []);
+        console.log(`  Created new group: "${layerName}"`);
       }
       
       groups.get(layerName).push(file);
+      console.log(`  Added file to group "${layerName}"`);
+    });
+
+    console.log('=== FINAL GROUPS ===');
+    groups.forEach((files, layerName) => {
+      console.log(`Group "${layerName}": ${files.length} files`);
     });
 
     return groups;
