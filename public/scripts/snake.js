@@ -889,3 +889,6 @@ window.initSnakeGame = function () {
 
   requestAnimationFrame(gameLoop);
 };
+
+// Make initSnakeGame globally available
+window.initSnakeGame = initSnakeGame;
