@@ -252,34 +252,117 @@
       color: #6b7280;
     }
 
-    /* Single Column Layout with Boxes */
+    /* Tetris-like Grid Layout */
     .interface-grid {
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto auto auto auto;
       gap: 1.5rem;
-      max-width: 900px;
+      max-width: 1200px;
       margin: 0 auto;
+      grid-template-areas: 
+        "upload preview"
+        "settings settings"
+        "rarity active"
+        "generate generate"
+        "status download";
     }
 
+    /* Mobile responsive */
+    @media (max-width: 768px) {
+      .interface-grid {
+        grid-template-columns: 1fr;
+        grid-template-areas: 
+          "upload"
+          "preview"
+          "settings"
+          "rarity"
+          "active"
+          "generate"
+          "status"
+          "download";
+      }
+    }
+
+    /* Grid area assignments */
+    .config-section[data-section="upload"] {
+      grid-area: upload;
+    }
+
+    .config-section[data-section="preview"] {
+      grid-area: preview;
+    }
+
+    .config-section[data-section="settings"] {
+      grid-area: settings;
+    }
+
+    .config-section[data-section="rarity"] {
+      grid-area: rarity;
+    }
+
+    .config-section[data-section="active"] {
+      grid-area: active;
+    }
+
+    .config-section[data-section="generate"] {
+      grid-area: generate;
+    }
+
+    .config-section[data-section="status"] {
+      grid-area: status;
+    }
+
+    .config-section[data-section="download"] {
+      grid-area: download;
+    }
+
+    /* Compact box styling */
     .config-section {
       background: #1a1a1a;
       border: 1px solid #3a3a3a;
       border-radius: 12px;
-      padding: 1.5rem;
+      padding: 1.25rem;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      min-height: fit-content;
     }
 
     .config-section h2 {
       color: #4296d2;
       margin: 0 0 1rem 0;
-      font-size: 1.25rem;
+      font-size: 1.1rem;
       font-weight: 600;
       border-bottom: 1px solid #3a3a3a;
       padding-bottom: 0.5rem;
     }
 
-    .config-section:last-of-type {
-      margin-bottom: 0;
+    /* Make upload and preview sections more compact */
+    .config-section[data-section="upload"],
+    .config-section[data-section="preview"] {
+      padding: 1rem;
+    }
+
+    .config-section[data-section="upload"] h2,
+    .config-section[data-section="preview"] h2 {
+      font-size: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    /* Settings section spans full width */
+    .config-section[data-section="settings"] {
+      grid-column: 1 / -1;
+    }
+
+    /* Generate button section */
+    .config-section[data-section="generate"] {
+      text-align: center;
+      padding: 1.5rem;
+    }
+
+    /* Status and download sections */
+    .config-section[data-section="status"],
+    .config-section[data-section="download"] {
+      padding: 1rem;
     }
 
     /* Compact form styling */
@@ -629,7 +712,7 @@
         <section class="tool-interface">
           <div class="interface-grid">
             <!-- Layer Upload Section -->
-            <div class="config-section">
+            <div class="config-section" data-section="upload">
               <h2>Layer Upload</h2>
               <div class="upload-area" id="uploadArea">
                 <div class="upload-content">
@@ -643,7 +726,7 @@
             </div>
 
             <!-- Layer Preview -->
-            <div class="config-section">
+            <div class="config-section" data-section="preview">
               <h2>Layer Structure</h2>
               <div class="layer-preview" id="layerPreview">
                 <p class="no-layers">Upload layers to see preview</p>
@@ -651,7 +734,7 @@
             </div>
 
             <!-- Collection Settings -->
-            <div class="config-section">
+            <div class="config-section" data-section="settings">
               <h2>Collection Settings</h2>
               <div class="form-group">
                 <label for="collectionName">Collection Name</label>
@@ -673,7 +756,7 @@
             </div>
 
             <!-- Rarity Settings -->
-            <div class="config-section">
+            <div class="config-section" data-section="rarity">
               <h2>Rarity Settings</h2>
               <div class="form-group">
                 <label for="rarityMode">Rarity Mode</label>
@@ -686,7 +769,7 @@
             </div>
 
             <!-- Active Layers -->
-            <div class="config-section">
+            <div class="config-section" data-section="active">
               <h2>Active Layers</h2>
               <div class="form-group">
                 <label>Layer Configuration</label>
@@ -698,7 +781,7 @@
             </div>
 
             <!-- Generate Button -->
-            <div class="config-section">
+            <div class="config-section" data-section="generate">
               <button id="generateBtn" class="generate-button">
                 <span class="button-text">Generate Collection</span>
                 <span class="button-icon">🚀</span>
@@ -706,7 +789,7 @@
             </div>
 
             <!-- Generation Status -->
-            <div class="config-section">
+            <div class="config-section" data-section="status">
               <h2>Generation Status</h2>
               <div class="generation-status" id="generationStatus">
                 <p class="status-text">Ready to generate</p>
@@ -718,7 +801,7 @@
             </div>
 
             <!-- Download Section -->
-            <div class="config-section" id="downloadSection" style="display: none;">
+            <div class="config-section" id="downloadSection" data-section="download" style="display: none;">
               <h2>Download</h2>
               <div class="download-content">
                 <p>Your collection is ready!</p>
