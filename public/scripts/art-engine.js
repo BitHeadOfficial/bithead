@@ -6,6 +6,7 @@ class BitHeadzArtEngine {
     this.generationId = null;
     this.isGenerating = false;
     this.originalFileData = new Map(); // Store original file data with webkitRelativePath
+    this.hasRealProgress = false;
     
     this.initializeElements();
     this.setupEventListeners();
@@ -654,14 +655,14 @@ class BitHeadzArtEngine {
     const animateProgress = () => {
       if (!this.isGenerating) return;
       
-      // Simulate progress during preparation phase
-      if (currentProgress < 5) {
+      // Only show initial animation if we don't have real progress yet
+      if (currentProgress < 5 && !this.hasRealProgress) {
         currentProgress += 0.1;
         this.updateModalProgress(0, currentProgress, targetProgress, 'Preparing layers...', 'Organizing uploaded files');
-      } else if (currentProgress < 10) {
+      } else if (currentProgress < 10 && !this.hasRealProgress) {
         currentProgress += 0.05;
         this.updateModalProgress(0, currentProgress, targetProgress, 'Validating layer structure...', 'Checking layer compatibility');
-      } else if (currentProgress < 15) {
+      } else if (currentProgress < 15 && !this.hasRealProgress) {
         currentProgress += 0.03;
         this.updateModalProgress(0, currentProgress, targetProgress, 'Initializing generation...', 'Setting up generation engine');
       }
@@ -674,6 +675,7 @@ class BitHeadzArtEngine {
 
   hideProgressModal() {
     this.progressModal.style.display = 'none';
+    this.hasRealProgress = false;
   }
 
   updateModalProgress(current, total, target, message, details = '') {
@@ -737,7 +739,7 @@ class BitHeadzArtEngine {
       } else {
         // Continue polling with adaptive interval based on collection size
         const collectionSize = parseInt(this.collectionSize.value);
-        const pollInterval = collectionSize > 1000 ? 5000 : collectionSize > 500 ? 4000 : 3000;
+        const pollInterval = collectionSize > 1000 ? 2000 : collectionSize > 500 ? 1500 : 1000;
         setTimeout(() => this.pollGenerationProgress(), pollInterval);
       }
       
@@ -746,15 +748,15 @@ class BitHeadzArtEngine {
       
       // Don't immediately fail on network errors, continue polling
       if (error.name === 'TypeError' || error.message.includes('Failed to fetch')) {
-        console.log('Network error, retrying in 5 seconds...');
-        setTimeout(() => this.pollGenerationProgress(), 5000);
+        console.log('Network error, retrying in 3 seconds...');
+        setTimeout(() => this.pollGenerationProgress(), 3000);
         return;
       }
       
       // For other errors, show a warning but continue polling
       console.log('Polling error, continuing to poll...');
       const collectionSize = parseInt(this.collectionSize.value);
-      const pollInterval = collectionSize > 1000 ? 5000 : collectionSize > 500 ? 4000 : 3000;
+      const pollInterval = collectionSize > 1000 ? 2000 : collectionSize > 500 ? 1500 : 1000;
       setTimeout(() => this.pollGenerationProgress(), pollInterval);
     }
   }
@@ -775,12 +777,15 @@ class BitHeadzArtEngine {
     this.statusText.textContent = progressMessage;
     this.statusDetails.textContent = status.details || '';
     
-    // Update modal progress with more detailed information
+    // Update modal progress with real backend data
     const current = status.totalGenerated || 0;
     const target = collectionSize;
     const percentage = status.progress || 0;
     
-    // Provide more detailed progress messages
+    // Mark that we have real progress now
+    this.hasRealProgress = true;
+    
+    // Provide more detailed progress messages based on real progress
     let modalMessage = progressMessage;
     let modalDetails = status.details || '';
     
@@ -804,6 +809,7 @@ class BitHeadzArtEngine {
       modalDetails = 'Preparing files for download';
     }
     
+    // Update modal with real progress
     this.updateModalProgress(current, percentage, target, modalMessage, modalDetails);
     
     // Add visual indicator for large collections
