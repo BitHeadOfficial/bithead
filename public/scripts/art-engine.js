@@ -10,6 +10,7 @@ class BitHeadzArtEngine {
     
     this.initializeElements();
     this.setupEventListeners();
+    this.setupPageUnloadHandler();
   }
 
   initializeElements() {
@@ -45,6 +46,7 @@ class BitHeadzArtEngine {
     this.modalProgressCounter = document.getElementById('modalProgressCounter');
     this.modalProgressMessage = document.getElementById('modalProgressMessage');
     this.modalProgressDetails = document.getElementById('modalProgressDetails');
+    this.cancelGenerationBtn = document.getElementById('cancelGenerationBtn');
   }
 
   setupEventListeners() {
@@ -66,6 +68,9 @@ class BitHeadzArtEngine {
     
     // Download button
     this.downloadBtn.addEventListener('click', this.downloadCollection.bind(this));
+    
+    // Cancel button
+    this.cancelGenerationBtn.addEventListener('click', this.cancelGeneration.bind(this));
   }
 
   handleDragOver(e) {
@@ -739,7 +744,7 @@ class BitHeadzArtEngine {
       } else {
         // Continue polling with adaptive interval based on collection size
         const collectionSize = parseInt(this.collectionSize.value);
-        const pollInterval = collectionSize > 1000 ? 2000 : collectionSize > 500 ? 1500 : 1000;
+        const pollInterval = collectionSize > 5000 ? 1000 : collectionSize > 1000 ? 1500 : 1000;
         setTimeout(() => this.pollGenerationProgress(), pollInterval);
       }
       
@@ -756,7 +761,7 @@ class BitHeadzArtEngine {
       // For other errors, show a warning but continue polling
       console.log('Polling error, continuing to poll...');
       const collectionSize = parseInt(this.collectionSize.value);
-      const pollInterval = collectionSize > 1000 ? 2000 : collectionSize > 500 ? 1500 : 1000;
+      const pollInterval = collectionSize > 5000 ? 1000 : collectionSize > 1000 ? 1500 : 1000;
       setTimeout(() => this.pollGenerationProgress(), pollInterval);
     }
   }
@@ -1001,6 +1006,52 @@ class BitHeadzArtEngine {
   showErrorWithFallback(message) {
     // Since individual file upload is not desired, we'll revert this to a standard error
     this.showError(message);
+  }
+
+  setupPageUnloadHandler() {
+    // Clean up when user leaves the page
+    window.addEventListener('beforeunload', () => {
+      if (this.isGenerating && this.generationId) {
+        // Send a beacon to cancel the generation
+        navigator.sendBeacon(`/api/nft-generator/cancel/${this.generationId}`);
+      }
+    });
+
+    // Also handle page visibility change
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden' && this.isGenerating && this.generationId) {
+        // User switched tabs or minimized - we could cancel here too if needed
+        console.log('User left the page during generation');
+      }
+    });
+  }
+
+  async cancelGeneration() {
+    if (!this.generationId) {
+      this.showError('No generation to cancel.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/nft-generator/cancel/${this.generationId}`, {
+        method: 'POST'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Cancellation failed: ${response.statusText}`);
+      }
+
+      this.generationId = null;
+      this.isGenerating = false;
+      this.generateBtn.disabled = false;
+      this.generateBtn.innerHTML = '<span class="button-text">Generate Collection</span><span class="button-icon">🚀</span>';
+      this.hideProgressModal();
+      this.showSuccess('Generation cancelled successfully!');
+      
+    } catch (error) {
+      console.error('Cancellation error:', error);
+      this.showError(`Cancellation failed: ${error.message}`);
+    }
   }
 }
 

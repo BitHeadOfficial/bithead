@@ -245,15 +245,18 @@ async function generateOneNFT(edition, layersOrder, settings, onProgress) {
 async function generateCollectionInBatches(total, batchSize, layersOrder, settings, onProgress) {
   let current = 1;
   let totalGenerated = 0;
+  let memoryClearCounter = 0;
 
-  // Dynamic batch sizing based on collection size
+  // Dynamic batch sizing based on collection size - increased for better performance
   let dynamicBatchSize = batchSize;
-  if (total > 1000) {
-    dynamicBatchSize = 3; // Smaller batches for very large collections
+  if (total > 5000) {
+    dynamicBatchSize = 50; // Larger batches for very large collections
+  } else if (total > 1000) {
+    dynamicBatchSize = 25; // Medium-large batches for large collections
   } else if (total > 500) {
-    dynamicBatchSize = 5; // Medium batches for large collections
+    dynamicBatchSize = 15; // Medium batches for medium collections
   } else if (total > 200) {
-    dynamicBatchSize = 8; // Standard batches for medium collections
+    dynamicBatchSize = 10; // Standard batches for medium collections
   }
 
   console.log(`Using dynamic batch size: ${dynamicBatchSize} for collection of ${total} NFTs`);
@@ -274,10 +277,22 @@ async function generateCollectionInBatches(total, batchSize, layersOrder, settin
 
     await Promise.all(batchPromises);
     totalGenerated += end - current + 1;
+    memoryClearCounter += end - current + 1;
 
-    // Force garbage collection if available
-    if (global.gc) {
-      global.gc();
+    // Clear memory every 250 NFTs like the original ArtEngine
+    if (memoryClearCounter >= 250) {
+      console.log('Clearing memory after 250 NFTs...');
+      
+      // Force garbage collection if available
+      if (global.gc) {
+        global.gc();
+      }
+      
+      // Reset counter
+      memoryClearCounter = 0;
+      
+      // Small delay to allow memory cleanup
+      await new Promise(resolve => setTimeout(resolve, 100));
     }
 
     // Update progress more frequently for large collections

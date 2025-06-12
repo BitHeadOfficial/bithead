@@ -677,6 +677,38 @@
       transition: width 0.3s ease;
       width: 0%;
     }
+
+    /* Modal Actions */
+    .modal-actions {
+      margin-top: 2rem;
+      text-align: center;
+    }
+
+    .cancel-button {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .cancel-button:hover {
+      background: #c82333;
+      transform: translateY(-1px);
+    }
+
+    .cancel-button:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+      transform: none;
+    }
     </style>
   </head>
   <body>
@@ -849,6 +881,12 @@
               <div class="progress-details">
                 <p class="progress-message" id="modalProgressMessage">Preparing layers...</p>
                 <p class="progress-details-text" id="modalProgressDetails"></p>
+              </div>
+              <div class="modal-actions">
+                <button id="cancelGenerationBtn" class="cancel-button">
+                  <span class="button-text">Cancel Generation</span>
+                  <span class="button-icon">⏹️</span>
+                </button>
               </div>
             </div>
           </div>

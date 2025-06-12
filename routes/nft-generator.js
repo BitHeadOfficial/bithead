@@ -38,6 +38,73 @@ const upload = multer({
 // Store generation jobs
 const generationJobs = new Map();
 
+// Track active user sessions
+const activeSessions = new Map();
+
+// Cleanup function for abandoned jobs
+function cleanupAbandonedJobs() {
+  const now = new Date();
+  const maxAge = 30 * 60 * 1000; // 30 minutes
+  
+  generationJobs.forEach((job, id) => {
+    const age = now - job.createdAt;
+    if (age > maxAge) {
+      console.log(`NFT Generator: Cleaning up abandoned job ${id} (age: ${Math.round(age / 1000 / 60)} minutes)`);
+      cleanupGenerationJob(id);
+    }
+  });
+}
+
+// Cleanup function for specific job
+function cleanupGenerationJob(generationId) {
+  try {
+    const job = generationJobs.get(generationId);
+    if (job) {
+      // Remove temporary files
+      const tempDir = path.join(__dirname, '../temp', generationId);
+      if (fs.existsSync(tempDir)) {
+        fs.rmSync(tempDir, { recursive: true, force: true });
+        console.log(`NFT Generator: Cleaned up temp directory for job ${generationId}`);
+      }
+
+      // Remove job from memory
+      generationJobs.delete(generationId);
+      console.log(`NFT Generator: Cleaned up job ${generationId}`);
+    }
+  } catch (error) {
+    console.error(`NFT Generator: Cleanup error for job ${generationId}:`, error);
+  }
+}
+
+// Cancel generation endpoint
+router.post('/cancel/:generationId', (req, res) => {
+  try {
+    const { generationId } = req.params;
+    const job = generationJobs.get(generationId);
+
+    if (!job) {
+      return res.status(404).json({ error: 'Generation job not found' });
+    }
+
+    // Mark job as cancelled
+    job.status = 'cancelled';
+    job.message = 'Generation cancelled by user';
+    job.details = 'User cancelled the generation process';
+
+    // Clean up the job
+    cleanupGenerationJob(generationId);
+
+    res.json({ 
+      success: true, 
+      message: 'Generation cancelled successfully' 
+    });
+
+  } catch (error) {
+    console.error('Cancel generation error:', error);
+    res.status(500).json({ error: 'Failed to cancel generation' });
+  }
+});
+
 // Upload layers and start generation
 router.post('/generate', upload.any(), async (req, res) => {
   try {
@@ -410,36 +477,9 @@ function createZipArchive(sourceDir, outputPath) {
   });
 }
 
-// Cleanup generation job
-function cleanupGenerationJob(generationId) {
-  try {
-    const job = generationJobs.get(generationId);
-    if (job) {
-      // Remove temporary files
-      const tempDir = path.join(__dirname, '../temp', generationId);
-      if (fs.existsSync(tempDir)) {
-        fs.rmSync(tempDir, { recursive: true, force: true });
-      }
-
-      // Remove job from memory
-      generationJobs.delete(generationId);
-      console.log(`NFT Generator: Cleaned up job ${generationId}`);
-    }
-  } catch (error) {
-    console.error(`NFT Generator: Cleanup error for job ${generationId}:`, error);
-  }
-}
-
 // Cleanup old jobs periodically
 setInterval(() => {
-  const now = new Date();
-  generationJobs.forEach((job, id) => {
-    const age = now - job.createdAt;
-    const maxAge = 24 * 60 * 60 * 1000; // 24 hours
-    if (age > maxAge) {
-      cleanupGenerationJob(id);
-    }
-  });
-}, 60 * 60 * 1000); // Check every hour
+  cleanupAbandonedJobs();
+}, 10 * 60 * 1000); // Check every 10 minutes
 
 export default router; 
