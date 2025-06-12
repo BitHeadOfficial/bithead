@@ -684,7 +684,8 @@ class BitHeadzArtEngine {
   }
 
   updateModalProgress(current, total, target, message, details = '') {
-    const percentage = total > 0 ? Math.round((total / target) * 100) : 0;
+    // Calculate percentage based on actual NFT count, not the backend progress
+    const percentage = target > 0 ? Math.round((current / target) * 100) : 0;
     
     // Update modal elements
     this.modalProgressPercentage.textContent = `${percentage}%`;
@@ -767,11 +768,15 @@ class BitHeadzArtEngine {
   }
 
   updateProgress(status) {
+    // Calculate actual percentage based on NFT count
+    const collectionSize = parseInt(this.collectionSize.value);
+    const current = status.totalGenerated || 0;
+    const actualPercentage = collectionSize > 0 ? Math.round((current / collectionSize) * 100) : 0;
+    
     this.progressBar.style.display = 'block';
-    this.progressFill.style.width = `${status.progress || 0}%`;
+    this.progressFill.style.width = `${actualPercentage}%`;
     
     // Enhanced progress message
-    const collectionSize = parseInt(this.collectionSize.value);
     let progressMessage = status.message || 'Generating...';
     
     // Add NFT count if available
@@ -783,7 +788,6 @@ class BitHeadzArtEngine {
     this.statusDetails.textContent = status.details || '';
     
     // Update modal progress with real backend data
-    const current = status.totalGenerated || 0;
     const target = collectionSize;
     const percentage = status.progress || 0;
     
@@ -794,19 +798,19 @@ class BitHeadzArtEngine {
     let modalMessage = progressMessage;
     let modalDetails = status.details || '';
     
-    if (percentage < 10) {
+    if (actualPercentage < 10) {
       modalMessage = 'Preparing generation...';
       modalDetails = 'Organizing layers and validating structure';
-    } else if (percentage < 25) {
+    } else if (actualPercentage < 25) {
       modalMessage = 'Starting generation...';
       modalDetails = 'Initializing NFT creation process';
-    } else if (percentage < 50) {
+    } else if (actualPercentage < 50) {
       modalMessage = 'Generating NFTs...';
       modalDetails = `Processing batch - ${current} NFTs created`;
-    } else if (percentage < 75) {
+    } else if (actualPercentage < 75) {
       modalMessage = 'Continuing generation...';
       modalDetails = `Generated ${current} NFTs so far`;
-    } else if (percentage < 95) {
+    } else if (actualPercentage < 95) {
       modalMessage = 'Finalizing collection...';
       modalDetails = `Almost done! ${current} NFTs generated`;
     } else {
@@ -815,7 +819,6 @@ class BitHeadzArtEngine {
     }
     
     // Update modal with real progress - use actual NFT count for percentage
-    const actualPercentage = target > 0 ? Math.round((current / target) * 100) : 0;
     this.updateModalProgress(current, actualPercentage, target, modalMessage, modalDetails);
     
     // Add visual indicator for large collections
