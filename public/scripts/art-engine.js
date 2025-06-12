@@ -22,6 +22,7 @@ class BitHeadzArtEngine {
     this.collectionName = document.getElementById('collectionName');
     this.collectionSize = document.getElementById('collectionSize');
     this.collectionDescription = document.getElementById('collectionDescription');
+    this.customCID = document.getElementById('customCID');
     this.rarityMode = document.getElementById('rarityMode');
     this.optionalLayersContainer = document.getElementById('optionalLayers');
     
@@ -431,18 +432,10 @@ class BitHeadzArtEngine {
       return;
     }
 
-    // Create optional layer toggles for layers that might be optional
-    const optionalLayerNames = ['Gear', 'Accessories', 'Background', 'Effects'];
-    
+    // Make ALL layers optional
     this.uploadedLayers.forEach((files, layerName) => {
-      const isOptional = optionalLayerNames.some(name => 
-        layerName.toLowerCase().includes(name.toLowerCase())
-      );
-      
-      if (isOptional) {
-        const optionalItem = this.createOptionalLayerItem(layerName, files);
-        this.optionalLayersContainer.appendChild(optionalItem);
-      }
+      const optionalItem = this.createOptionalLayerItem(layerName, files);
+      this.optionalLayersContainer.appendChild(optionalItem);
     });
   }
 
@@ -518,6 +511,7 @@ class BitHeadzArtEngine {
       formData.append('collectionName', this.collectionName.value);
       formData.append('collectionSize', collectionSize);
       formData.append('collectionDescription', this.collectionDescription.value);
+      formData.append('customCID', this.customCID.value.trim());
       formData.append('rarityMode', this.rarityMode.value);
       
       // Add all files with their original paths
@@ -593,7 +587,26 @@ class BitHeadzArtEngine {
     }
 
     try {
-      const response = await fetch(`/api/nft-generator/status/${this.generationId}`);
+      const response = await fetch(`/api/nft-generator/status/${this.generationId}`, {
+        method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
+      
+      if (!response.ok) {
+        if (response.status === 504) {
+          // Gateway timeout - continue polling
+          console.log('Gateway timeout, continuing to poll...');
+          const collectionSize = parseInt(this.collectionSize.value);
+          const pollInterval = collectionSize > 1000 ? 5000 : collectionSize > 500 ? 4000 : 3000;
+          setTimeout(() => this.pollGenerationProgress(), pollInterval);
+          return;
+        }
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
       const status = await response.json();
       
       this.updateProgress(status);
@@ -605,21 +618,49 @@ class BitHeadzArtEngine {
       } else {
         // Continue polling with adaptive interval based on collection size
         const collectionSize = parseInt(this.collectionSize.value);
-        const pollInterval = collectionSize > 1000 ? 3000 : collectionSize > 500 ? 2500 : 2000;
+        const pollInterval = collectionSize > 1000 ? 5000 : collectionSize > 500 ? 4000 : 3000;
         setTimeout(() => this.pollGenerationProgress(), pollInterval);
       }
       
     } catch (error) {
       console.error('Progress polling error:', error);
-      this.generationFailed('Failed to check generation progress');
+      
+      // Don't immediately fail on network errors, continue polling
+      if (error.name === 'TypeError' || error.message.includes('Failed to fetch')) {
+        console.log('Network error, retrying in 5 seconds...');
+        setTimeout(() => this.pollGenerationProgress(), 5000);
+        return;
+      }
+      
+      // For other errors, show a warning but continue polling
+      console.log('Polling error, continuing to poll...');
+      const collectionSize = parseInt(this.collectionSize.value);
+      const pollInterval = collectionSize > 1000 ? 5000 : collectionSize > 500 ? 4000 : 3000;
+      setTimeout(() => this.pollGenerationProgress(), pollInterval);
     }
   }
 
   updateProgress(status) {
     this.progressBar.style.display = 'block';
     this.progressFill.style.width = `${status.progress || 0}%`;
-    this.statusText.textContent = status.message || 'Generating...';
+    
+    // Enhanced progress message
+    const collectionSize = parseInt(this.collectionSize.value);
+    let progressMessage = status.message || 'Generating...';
+    
+    // Add NFT count if available
+    if (status.totalGenerated && collectionSize) {
+      progressMessage = `${status.totalGenerated} of ${collectionSize} NFTs generated`;
+    }
+    
+    this.statusText.textContent = progressMessage;
     this.statusDetails.textContent = status.details || '';
+    
+    // Add visual indicator for large collections
+    if (collectionSize > 500) {
+      const percentage = Math.round((status.progress || 0));
+      this.statusDetails.textContent = `${percentage}% complete - ${status.details || ''}`;
+    }
   }
 
   generationCompleted(status) {

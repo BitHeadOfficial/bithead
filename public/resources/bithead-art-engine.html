@@ -64,6 +64,23 @@
       }
     });
     </script>
+
+    <style>
+    .form-group small {
+      display: block;
+      margin-top: 0.25rem;
+      font-size: 0.875rem;
+      color: #6b7280;
+      font-style: italic;
+    }
+    
+    .form-hint {
+      color: #6b7280;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+      display: block;
+    }
+    </style>
   </head>
   <body>
     <!-- Header -->
@@ -138,13 +155,18 @@
                   <label for="collectionDescription">Description</label>
                   <textarea id="collectionDescription" rows="3" placeholder="Describe your NFT collection...">A unique NFT collection generated with BitHeadzArtEngine</textarea>
                 </div>
+                <div class="form-group">
+                  <label for="customCID">Custom IPFS CID (Optional)</label>
+                  <input type="text" id="customCID" placeholder="QmYourCIDHere..." value="">
+                  <small class="form-hint">Leave empty to use placeholder CID. Format: Qm...</small>
+                </div>
               </div>
 
               <!-- Rarity Settings -->
               <div class="config-section">
                 <h3>Rarity Settings</h3>
                 <div class="form-group">
-                  <label for="rarityMode">Rarity Distribution</label>
+                  <label for="rarityMode">Rarity Mode</label>
                   <select id="rarityMode">
                     <option value="bell-curve">Bell Curve (Recommended)</option>
                     <option value="random">Random</option>

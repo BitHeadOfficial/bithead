@@ -96,7 +96,13 @@ async function generateOneNFT(edition, layersOrder, settings, onProgress) {
     combinationKey = "";
 
     for (const { folder } of layersOrder) {
-      // Skip optional layers based on settings
+      // Check if this layer is optional and should be skipped
+      const layerName = folder.replace(/^\d+_/, "");
+      if (settings.optionalLayers && settings.optionalLayers[layerName] === false) {
+        continue; // Skip this layer if it's marked as disabled
+      }
+      
+      // Legacy optional layer handling for backward compatibility
       if (folder === "05_Gear" && Math.random() > settings.gearChance) {
         continue;
       }
@@ -135,8 +141,6 @@ async function generateOneNFT(edition, layersOrder, settings, onProgress) {
         default:
           pickedFile = pickTraitBellCurve(files);
       }
-
-      const layerName = folder.replace(/^\d+_/, "");
 
       chosenLayers.push({
         layerName,
@@ -197,7 +201,7 @@ async function generateOneNFT(edition, layersOrder, settings, onProgress) {
   const metadata = {
     name: `${settings.collectionName} #${edition}`,
     description: settings.collectionDescription,
-    image: `ipfs://CID/${imageName}`, // placeholder for real IPFS link
+    image: settings.customCID ? `ipfs://${settings.customCID}/${imageName}` : `ipfs://CID/${imageName}`,
     attributes,
   };
 
@@ -269,6 +273,7 @@ async function generateCollectionWithLayers(config) {
     collectionSize = 100,
     collectionName = "MyNFT",
     collectionDescription = "A unique NFT collection",
+    customCID = "",
     rarityMode = "bell-curve",
     optionalLayers = {},
     onProgress
@@ -304,6 +309,7 @@ async function generateCollectionWithLayers(config) {
     outputDir,
     collectionName,
     collectionDescription,
+    customCID,
     rarityMode,
     optionalLayers
   };

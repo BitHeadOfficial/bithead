@@ -43,7 +43,7 @@ router.post('/generate', upload.any(), async (req, res) => {
   try {
     console.log('NFT Generator: Starting generation process');
     
-    const { collectionName, collectionSize, collectionDescription, rarityMode, optionalLayers } = req.body;
+    const { collectionName, collectionSize, collectionDescription, rarityMode, optionalLayers, customCID } = req.body;
     const files = req.files;
     const filePaths = req.body.filePaths;
 
@@ -87,6 +87,7 @@ router.post('/generate', upload.any(), async (req, res) => {
       collectionName,
       collectionSize: size,
       collectionDescription,
+      customCID: customCID || '',
       rarityMode,
       optionalLayers: JSON.parse(optionalLayers || '{}'),
       files: validFiles.map((f, index) => ({
@@ -237,6 +238,7 @@ async function generateCollection(job) {
       collectionSize: job.collectionSize,
       collectionName: job.collectionName,
       collectionDescription: job.collectionDescription,
+      customCID: job.customCID,
       rarityMode: job.rarityMode,
       optionalLayers: job.optionalLayers,
       onProgress: (progress, message, details) => {
