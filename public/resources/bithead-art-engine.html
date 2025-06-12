@@ -80,6 +80,209 @@
       margin-top: 0.25rem;
       display: block;
     }
+
+    /* Modal Styles */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+    }
+
+    .modal-content {
+      background: #1a1a1a;
+      border: 2px solid #4296d2;
+      border-radius: 12px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-header h3 {
+      color: #4296d2;
+      margin: 0 0 1.5rem 0;
+      font-size: 1.5rem;
+    }
+
+    /* Progress Circle */
+    .progress-circle {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: conic-gradient(#4296d2 0deg, #2a2a2a 0deg);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto 2rem auto;
+      position: relative;
+    }
+
+    .progress-circle-inner {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: #1a1a1a;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .progress-percentage {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #4296d2;
+      margin-bottom: 0.5rem;
+    }
+
+    .progress-counter {
+      font-size: 1.1rem;
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .progress-details {
+      text-align: center;
+    }
+
+    .progress-message {
+      font-size: 1.2rem;
+      color: #ffffff;
+      margin: 0 0 0.5rem 0;
+      font-weight: 600;
+    }
+
+    .progress-details-text {
+      color: #6b7280;
+      margin: 0;
+      font-size: 0.9rem;
+    }
+
+    /* Active Layers Styles */
+    .active-layers {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .active-layer-item {
+      background: #2a2a2a;
+      border: 1px solid #3a3a3a;
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    .active-layer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .active-layer-name {
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .active-layer-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .toggle-switch {
+      width: 50px;
+      height: 24px;
+      background: #3a3a3a;
+      border-radius: 12px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .toggle-switch.active {
+      background: #4296d2;
+    }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      background: #ffffff;
+      border-radius: 50%;
+      transition: transform 0.3s;
+    }
+
+    .toggle-switch.active::after {
+      transform: translateX(26px);
+    }
+
+    .active-layer-probability {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .probability-input {
+      width: 80px;
+      padding: 0.25rem 0.5rem;
+      border: 1px solid #3a3a3a;
+      border-radius: 4px;
+      background: #1a1a1a;
+      color: #ffffff;
+      text-align: center;
+    }
+
+    .probability-label {
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+
+    /* Improved Grid Layout */
+    .interface-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 1024px) {
+      .interface-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+    }
+
+    /* Enhanced Progress Bar */
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #2a2a2a;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 1rem 0;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4296d2, #5bb3ff);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+      width: 0%;
+    }
     </style>
   </head>
   <body>
@@ -133,7 +336,7 @@
                   <div class="upload-content">
                     <span class="upload-icon">📁</span>
                     <p>Drag & drop layer folders here or click to browse</p>
-                    <p class="upload-hint">Select the parent folder containing your layer folders (00_Background, 01_Body, etc.) or select individual PNG files if folder upload doesn't work.</p>
+                    <p class="upload-hint">Upload individual layer folders (00_Background, 01_Body, 02_Head, etc.) - not the parent folder containing all layers.</p>
                   </div>
                   <input type="file" id="layerInput" multiple webkitdirectory directory style="display: none;" data-testid="folder-upload">
                 </div>
@@ -173,11 +376,17 @@
                     <option value="equal">Equal Distribution</option>
                   </select>
                 </div>
+              </div>
+
+              <!-- Active Layers -->
+              <div class="config-section">
+                <h3>Active Layers</h3>
                 <div class="form-group">
-                  <label for="optionalLayers">Optional Layers</label>
-                  <div class="optional-layers" id="optionalLayers">
+                  <label>Layer Configuration</label>
+                  <div class="active-layers" id="activeLayers">
                     <!-- Will be populated dynamically -->
                   </div>
+                  <small class="form-hint">Toggle layers on/off and set probability percentages</small>
                 </div>
               </div>
 
@@ -229,6 +438,27 @@
           </div>
         </section>
 
+        <!-- Generation Progress Modal -->
+        <div id="progressModal" class="modal" style="display: none;">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3>Generating NFT Collection</h3>
+            </div>
+            <div class="modal-body">
+              <div class="progress-circle">
+                <div class="progress-circle-inner">
+                  <div class="progress-percentage" id="modalProgressPercentage">0%</div>
+                  <div class="progress-counter" id="modalProgressCounter">0 / 0</div>
+                </div>
+              </div>
+              <div class="progress-details">
+                <p class="progress-message" id="modalProgressMessage">Preparing layers...</p>
+                <p class="progress-details-text" id="modalProgressDetails"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Instructions Section -->
         <section class="instructions-section">
           <h2>How to Use</h2>
@@ -240,18 +470,18 @@
             </div>
             <div class="instruction-card">
               <div class="instruction-number">2</div>
-              <h3>Upload Layer Folders</h3>
-              <p>Drag and drop your entire layer folders (e.g., 00_Background, 01_Body) or click to browse and select folders. The tool will automatically detect the layer structure.</p>
+              <h3>Upload Individual Layer Folders</h3>
+              <p>Upload each layer folder separately (e.g., 00_Background, 01_Body, 02_Head). Do NOT upload the parent folder containing all layers.</p>
             </div>
             <div class="instruction-card">
               <div class="instruction-number">3</div>
-              <h3>Configure Settings</h3>
-              <p>Set your collection name, size, description, and rarity preferences. Adjust optional layers as needed.</p>
+              <h3>Configure Active Layers</h3>
+              <p>Toggle layers on/off and set probability percentages. For example: 100% for backgrounds, 50% for gear, 20% for accessories.</p>
             </div>
             <div class="instruction-card">
               <div class="instruction-number">4</div>
-              <h3>Generate & Download</h3>
-              <p>Click generate and wait for processing. Download your complete collection with images and metadata.</p>
+              <h3>Generate & Monitor Progress</h3>
+              <p>Click generate and watch the live progress modal showing "X of Y NFTs generated" with real-time updates.</p>
             </div>
           </div>
         </section>

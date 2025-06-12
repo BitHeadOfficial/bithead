@@ -24,7 +24,7 @@ class BitHeadzArtEngine {
     this.collectionDescription = document.getElementById('collectionDescription');
     this.customCID = document.getElementById('customCID');
     this.rarityMode = document.getElementById('rarityMode');
-    this.optionalLayersContainer = document.getElementById('optionalLayers');
+    this.activeLayersContainer = document.getElementById('activeLayers');
     
     // Generation elements
     this.generateBtn = document.getElementById('generateBtn');
@@ -37,6 +37,13 @@ class BitHeadzArtEngine {
     // Download elements
     this.downloadSection = document.getElementById('downloadSection');
     this.downloadBtn = document.getElementById('downloadBtn');
+    
+    // Modal elements
+    this.progressModal = document.getElementById('progressModal');
+    this.modalProgressPercentage = document.getElementById('modalProgressPercentage');
+    this.modalProgressCounter = document.getElementById('modalProgressCounter');
+    this.modalProgressMessage = document.getElementById('modalProgressMessage');
+    this.modalProgressDetails = document.getElementById('modalProgressDetails');
   }
 
   setupEventListeners() {
@@ -426,7 +433,7 @@ class BitHeadzArtEngine {
   }
 
   updateOptionalLayers() {
-    this.optionalLayersContainer.innerHTML = '';
+    this.activeLayersContainer.innerHTML = '';
     
     if (this.uploadedLayers.size === 0) {
       return;
@@ -435,46 +442,97 @@ class BitHeadzArtEngine {
     // Make ALL layers optional
     this.uploadedLayers.forEach((files, layerName) => {
       const optionalItem = this.createOptionalLayerItem(layerName, files);
-      this.optionalLayersContainer.appendChild(optionalItem);
+      this.activeLayersContainer.appendChild(optionalItem);
     });
   }
 
   createOptionalLayerItem(layerName, files) {
     const item = document.createElement('div');
-    item.className = 'optional-layer-item';
+    item.className = 'active-layer-item';
     
-    const layerInfo = document.createElement('div');
-    layerInfo.className = 'optional-layer-info';
+    const layerHeader = document.createElement('div');
+    layerHeader.className = 'active-layer-header';
     
     const layerNameEl = document.createElement('div');
-    layerNameEl.className = 'optional-layer-name';
+    layerNameEl.className = 'active-layer-name';
     layerNameEl.textContent = layerName;
     
-    const layerDescription = document.createElement('div');
-    layerDescription.className = 'optional-layer-description';
-    layerDescription.textContent = `${files.length} variants - Optional layer`;
-    
-    layerInfo.appendChild(layerNameEl);
-    layerInfo.appendChild(layerDescription);
-    
     const layerToggle = document.createElement('div');
-    layerToggle.className = 'optional-layer-toggle';
+    layerToggle.className = 'active-layer-toggle';
     
     const toggleSwitch = document.createElement('div');
     toggleSwitch.className = 'toggle-switch active';
     toggleSwitch.dataset.layer = layerName;
-    toggleSwitch.addEventListener('click', () => this.toggleOptionalLayer(toggleSwitch));
+    toggleSwitch.addEventListener('click', () => this.toggleActiveLayer(toggleSwitch));
+    
+    const toggleLabel = document.createElement('span');
+    toggleLabel.textContent = 'Active';
+    toggleLabel.style.color = '#4296d2';
+    toggleLabel.style.fontSize = '0.875rem';
     
     layerToggle.appendChild(toggleSwitch);
+    layerToggle.appendChild(toggleLabel);
     
-    item.appendChild(layerInfo);
-    item.appendChild(layerToggle);
+    layerHeader.appendChild(layerNameEl);
+    layerHeader.appendChild(layerToggle);
+    
+    const layerProbability = document.createElement('div');
+    layerProbability.className = 'active-layer-probability';
+    
+    const probabilityLabel = document.createElement('span');
+    probabilityLabel.className = 'probability-label';
+    probabilityLabel.textContent = 'Probability:';
+    
+    const probabilityInput = document.createElement('input');
+    probabilityInput.type = 'number';
+    probabilityInput.className = 'probability-input';
+    probabilityInput.min = '0';
+    probabilityInput.max = '100';
+    probabilityInput.value = '100';
+    probabilityInput.dataset.layer = layerName;
+    probabilityInput.addEventListener('change', () => this.updateLayerProbability(layerName, probabilityInput.value));
+    
+    const probabilitySuffix = document.createElement('span');
+    probabilitySuffix.className = 'probability-label';
+    probabilitySuffix.textContent = '%';
+    
+    layerProbability.appendChild(probabilityLabel);
+    layerProbability.appendChild(probabilityInput);
+    layerProbability.appendChild(probabilitySuffix);
+    
+    const layerDescription = document.createElement('div');
+    layerDescription.style.fontSize = '0.875rem';
+    layerDescription.style.color = '#6b7280';
+    layerDescription.style.marginTop = '0.5rem';
+    layerDescription.textContent = `${files.length} variants available`;
+    
+    item.appendChild(layerHeader);
+    item.appendChild(layerProbability);
+    item.appendChild(layerDescription);
     
     return item;
   }
 
-  toggleOptionalLayer(toggleSwitch) {
+  toggleActiveLayer(toggleSwitch) {
     toggleSwitch.classList.toggle('active');
+    const layerName = toggleSwitch.dataset.layer;
+    const isActive = toggleSwitch.classList.contains('active');
+    
+    // Update the label
+    const label = toggleSwitch.nextElementSibling;
+    label.textContent = isActive ? 'Active' : 'Inactive';
+    label.style.color = isActive ? '#4296d2' : '#6b7280';
+    
+    // Update probability input state
+    const probabilityInput = document.querySelector(`input[data-layer="${layerName}"]`);
+    if (probabilityInput) {
+      probabilityInput.disabled = !isActive;
+      probabilityInput.style.opacity = isActive ? '1' : '0.5';
+    }
+  }
+
+  updateLayerProbability(layerName, probability) {
+    console.log(`Layer ${layerName} probability updated to ${probability}%`);
   }
 
   async startGeneration() {
@@ -505,6 +563,9 @@ class BitHeadzArtEngine {
     this.generateBtn.disabled = true;
     this.generateBtn.innerHTML = '<span class="button-text">Generating...</span><span class="button-icon">⏳</span>';
 
+    // Show progress modal
+    this.showProgressModal();
+
     try {
       // Prepare form data
       const formData = new FormData();
@@ -515,17 +576,13 @@ class BitHeadzArtEngine {
       formData.append('rarityMode', this.rarityMode.value);
       
       // Add all files with their original paths
-      // We need to reconstruct the original file list with webkitRelativePath
       const allFiles = [];
       this.uploadedLayers.forEach((files, layerName) => {
         files.forEach(file => {
-          // Find the original file data that contains webkitRelativePath
-          // We need to search through our original file data to find the matching file
           const originalFileData = this.findOriginalFileData(file);
           if (originalFileData) {
             allFiles.push(originalFileData);
           } else {
-            // Fallback: create a path based on layer name
             const fallbackPath = `${this.getLayerOrder(layerName).toString().padStart(2, '0')}_${layerName}/${file.name}`;
             allFiles.push({
               file: file,
@@ -541,13 +598,20 @@ class BitHeadzArtEngine {
         formData.append(`filePaths`, fileData.webkitRelativePath);
       });
       
-      // Add optional layer settings
-      const optionalLayers = {};
+      // Add active layer settings with probabilities
+      const activeLayers = {};
       document.querySelectorAll('.toggle-switch').forEach(toggle => {
         const layerName = toggle.dataset.layer;
-        optionalLayers[layerName] = toggle.classList.contains('active');
+        const isActive = toggle.classList.contains('active');
+        const probabilityInput = document.querySelector(`input[data-layer="${layerName}"]`);
+        const probability = probabilityInput ? parseInt(probabilityInput.value) : 100;
+        
+        activeLayers[layerName] = {
+          active: isActive,
+          probability: probability
+        };
       });
-      formData.append('optionalLayers', JSON.stringify(optionalLayers));
+      formData.append('activeLayers', JSON.stringify(activeLayers));
 
       // Start generation
       const response = await fetch('/api/nft-generator/generate', {
@@ -568,9 +632,36 @@ class BitHeadzArtEngine {
     } catch (error) {
       console.error('Generation error:', error);
       this.showError(`Generation failed: ${error.message}`);
+      this.hideProgressModal();
       this.isGenerating = false;
       this.generateBtn.disabled = false;
       this.generateBtn.innerHTML = '<span class="button-text">Generate Collection</span><span class="button-icon">🚀</span>';
+    }
+  }
+
+  showProgressModal() {
+    this.progressModal.style.display = 'flex';
+    this.updateModalProgress(0, 0, parseInt(this.collectionSize.value), 'Preparing layers...');
+  }
+
+  hideProgressModal() {
+    this.progressModal.style.display = 'none';
+  }
+
+  updateModalProgress(current, total, target, message, details = '') {
+    const percentage = total > 0 ? Math.round((current / target) * 100) : 0;
+    
+    // Update modal elements
+    this.modalProgressPercentage.textContent = `${percentage}%`;
+    this.modalProgressCounter.textContent = `${current} / ${target}`;
+    this.modalProgressMessage.textContent = message;
+    this.modalProgressDetails.textContent = details;
+    
+    // Update progress circle
+    const progressCircle = document.querySelector('.progress-circle');
+    if (progressCircle) {
+      const degrees = (percentage / 100) * 360;
+      progressCircle.style.background = `conic-gradient(#4296d2 ${degrees}deg, #2a2a2a ${degrees}deg)`;
     }
   }
 
@@ -656,6 +747,11 @@ class BitHeadzArtEngine {
     this.statusText.textContent = progressMessage;
     this.statusDetails.textContent = status.details || '';
     
+    // Update modal progress
+    const current = status.totalGenerated || 0;
+    const target = collectionSize;
+    this.updateModalProgress(current, current, target, progressMessage, status.details || '');
+    
     // Add visual indicator for large collections
     if (collectionSize > 500) {
       const percentage = Math.round((status.progress || 0));
@@ -668,6 +764,16 @@ class BitHeadzArtEngine {
     this.progressFill.style.width = '100%';
     this.statusDetails.textContent = `Generated ${status.totalGenerated} NFTs`;
     this.downloadSection.style.display = 'block';
+    
+    // Update modal with completion
+    const collectionSize = parseInt(this.collectionSize.value);
+    this.updateModalProgress(status.totalGenerated, status.totalGenerated, collectionSize, 'Generation completed!', `Successfully generated ${status.totalGenerated} NFTs`);
+    
+    // Hide modal after a short delay
+    setTimeout(() => {
+      this.hideProgressModal();
+    }, 2000);
+    
     this.resetGenerationState();
   }
 
@@ -675,6 +781,15 @@ class BitHeadzArtEngine {
     this.statusText.textContent = 'Generation failed';
     this.statusDetails.textContent = error;
     this.showError(error);
+    
+    // Update modal with error
+    this.updateModalProgress(0, 0, parseInt(this.collectionSize.value), 'Generation failed', error);
+    
+    // Hide modal after a short delay
+    setTimeout(() => {
+      this.hideProgressModal();
+    }, 3000);
+    
     this.resetGenerationState();
   }
 
@@ -690,27 +805,111 @@ class BitHeadzArtEngine {
       return;
     }
 
+    // Disable download button to prevent multiple clicks
+    this.downloadBtn.disabled = true;
+    this.downloadBtn.innerHTML = '<span class="button-text">Preparing Download...</span><span class="button-icon">⏳</span>';
+
     try {
-      const response = await fetch(`/api/nft-generator/download/${this.generationId}`);
+      console.log('Starting download for generation:', this.generationId);
+      
+      const response = await fetch(`/api/nft-generator/download/${this.generationId}`, {
+        method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
       
       if (!response.ok) {
-        throw new Error('Download failed');
+        if (response.status === 404) {
+          throw new Error('Generated files not found. The files may have been cleaned up.');
+        } else if (response.status === 400) {
+          throw new Error('Generation not completed. Please wait for generation to finish.');
+        } else {
+          throw new Error(`Download failed: ${response.status} ${response.statusText}`);
+        }
+      }
+
+      console.log('Download response received, processing blob...');
+      
+      // Check if response is actually a blob
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/zip')) {
+        console.warn('Unexpected content type:', contentType);
       }
 
       const blob = await response.blob();
+      
+      if (blob.size === 0) {
+        throw new Error('Downloaded file is empty. Please try again.');
+      }
+
+      console.log('Blob created, size:', blob.size, 'bytes');
+
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `${this.collectionName.value}_collection.zip`;
+      a.style.display = 'none';
+      
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
+      
+      // Clean up the URL
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+      }, 1000);
+      
+      console.log('Download completed successfully');
+      
+      // Show success message
+      this.showSuccess('Download started successfully!');
       
     } catch (error) {
       console.error('Download error:', error);
-      this.showError('Download failed. Please try again.');
+      
+      // Show specific error messages
+      if (error.message.includes('files not found')) {
+        this.showError('Generated files not found. Please regenerate your collection.');
+      } else if (error.message.includes('not completed')) {
+        this.showError('Generation not completed. Please wait for the process to finish.');
+      } else if (error.message.includes('empty')) {
+        this.showError('Download failed: Empty file. Please try again.');
+      } else {
+        this.showError(`Download failed: ${error.message}. Please try again.`);
+      }
+    } finally {
+      // Re-enable download button
+      this.downloadBtn.disabled = false;
+      this.downloadBtn.innerHTML = '<span class="button-text">Download Collection</span><span class="button-icon">⬇️</span>';
     }
+  }
+
+  showSuccess(message) {
+    // Create a temporary success message
+    const successDiv = document.createElement('div');
+    successDiv.style.cssText = `
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      background: rgba(40, 167, 69, 0.9);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      z-index: 10000;
+      max-width: 300px;
+      font-weight: 600;
+    `;
+    successDiv.textContent = message;
+    
+    document.body.appendChild(successDiv);
+    
+    setTimeout(() => {
+      if (successDiv.parentNode) {
+        successDiv.parentNode.removeChild(successDiv);
+      }
+    }, 5000);
   }
 
   showError(message) {

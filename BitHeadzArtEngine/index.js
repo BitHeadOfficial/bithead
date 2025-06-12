@@ -96,10 +96,34 @@ async function generateOneNFT(edition, layersOrder, settings, onProgress) {
     combinationKey = "";
 
     for (const { folder } of layersOrder) {
-      // Check if this layer is optional and should be skipped
+      // Check if this layer is active and should be included
       const layerName = folder.replace(/^\d+_/, "");
-      if (settings.optionalLayers && settings.optionalLayers[layerName] === false) {
-        continue; // Skip this layer if it's marked as disabled
+      const layerConfig = settings.activeLayers[layerName];
+      
+      // Check if layer is active and determine probability
+      let shouldInclude = true;
+      let layerProbability = 1.0; // 100% by default
+      
+      if (layerConfig && typeof layerConfig === 'object') {
+        // New format with active and probability
+        if (layerConfig.active !== undefined) {
+          shouldInclude = layerConfig.active;
+          layerProbability = layerConfig.probability ? layerConfig.probability / 100 : 1.0;
+        }
+      } else if (settings.activeLayers[layerName] !== undefined) {
+        // Legacy format (boolean)
+        shouldInclude = settings.activeLayers[layerName];
+        layerProbability = shouldInclude ? 1.0 : 0.0;
+      }
+      
+      // Skip layer if not active
+      if (!shouldInclude) {
+        continue;
+      }
+      
+      // Apply probability (e.g., 50% chance for this layer)
+      if (Math.random() > layerProbability) {
+        continue;
       }
       
       // Legacy optional layer handling for backward compatibility
@@ -275,7 +299,7 @@ async function generateCollectionWithLayers(config) {
     collectionDescription = "A unique NFT collection",
     customCID = "",
     rarityMode = "bell-curve",
-    optionalLayers = {},
+    activeLayers = {},
     onProgress
   } = config;
 
@@ -311,18 +335,35 @@ async function generateCollectionWithLayers(config) {
     collectionDescription,
     customCID,
     rarityMode,
-    optionalLayers
+    activeLayers
   };
 
-  // Adjust optional layer chances based on config
-  if (optionalLayers) {
-    Object.keys(optionalLayers).forEach(layerName => {
-      const layerFolder = layersOrder.find(l => l.folder.includes(layerName));
-      if (layerFolder) {
-        if (layerFolder.folder.includes('Gear')) {
-          settings.gearChance = optionalLayers[layerName] ? 0.5 : 0;
-        } else if (layerFolder.folder.includes('Buttons')) {
-          settings.buttonsChance = optionalLayers[layerName] ? 0.3 : 0;
+  // Process active layers configuration
+  if (activeLayers) {
+    Object.keys(activeLayers).forEach(layerName => {
+      const layerConfig = activeLayers[layerName];
+      if (layerConfig && typeof layerConfig === 'object') {
+        // New format with active and probability
+        if (layerConfig.active !== undefined) {
+          // Convert probability percentage to decimal (e.g., 50% -> 0.5)
+          const probability = layerConfig.probability ? layerConfig.probability / 100 : 1;
+          
+          // Set the chance for this layer
+          if (layerName.toLowerCase().includes('gear')) {
+            settings.gearChance = layerConfig.active ? probability : 0;
+          } else if (layerName.toLowerCase().includes('buttons')) {
+            settings.buttonsChance = layerConfig.active ? probability : 0;
+          }
+        }
+      } else {
+        // Legacy format (boolean)
+        const layerFolder = layersOrder.find(l => l.folder.includes(layerName));
+        if (layerFolder) {
+          if (layerFolder.folder.includes('Gear')) {
+            settings.gearChance = activeLayers[layerName] ? 0.5 : 0;
+          } else if (layerFolder.folder.includes('Buttons')) {
+            settings.buttonsChance = activeLayers[layerName] ? 0.3 : 0;
+          }
         }
       }
     });
