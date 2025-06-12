@@ -206,6 +206,7 @@
       position: relative;
       cursor: pointer;
       transition: background 0.3s;
+      overflow: hidden;
     }
 
     .toggle-switch.active {
@@ -222,6 +223,7 @@
       background: #ffffff;
       border-radius: 50%;
       transition: transform 0.3s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
     .toggle-switch.active::after {
@@ -250,20 +252,62 @@
       color: #6b7280;
     }
 
-    /* Improved Grid Layout */
+    /* Single Column Layout */
     .interface-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+      display: flex;
+      flex-direction: column;
       gap: 2rem;
-      max-width: 1400px;
+      max-width: 800px;
       margin: 0 auto;
     }
 
-    @media (max-width: 1024px) {
-      .interface-grid {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-      }
+    .config-panel, .preview-panel {
+      width: 100%;
+    }
+
+    /* Donation Section */
+    .donation-section {
+      text-align: center;
+      padding: 3rem 0;
+      background: #1a1a1a;
+      border-top: 1px solid #3a3a3a;
+      margin-top: 3rem;
+    }
+
+    .donation-content {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .donation-title {
+      color: #4296d2;
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    .donation-address {
+      background: #2a2a2a;
+      border: 1px solid #4296d2;
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 1rem 0;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      color: #ffffff;
+      word-break: break-all;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .donation-address:hover {
+      background: #3a3a3a;
+    }
+
+    .donation-text {
+      color: #6b7280;
+      font-size: 0.9rem;
+      line-height: 1.5;
     }
 
     /* Enhanced Progress Bar */
@@ -325,116 +369,117 @@
         <!-- Main Tool Interface -->
         <section class="tool-interface">
           <div class="interface-grid">
-            <!-- Left Panel - Configuration -->
-            <div class="config-panel">
-              <h2>Configuration</h2>
-              
-              <!-- Layer Upload Section -->
-              <div class="config-section">
-                <h3>Layer Upload</h3>
-                <div class="upload-area" id="uploadArea">
-                  <div class="upload-content">
-                    <span class="upload-icon">📁</span>
-                    <p>Drag & drop layer folders here or click to browse</p>
-                    <p class="upload-hint">Upload individual layer folders (00_Background, 01_Body, 02_Head, etc.) - not the parent folder containing all layers.</p>
-                  </div>
-                  <input type="file" id="layerInput" multiple webkitdirectory directory style="display: none;" data-testid="folder-upload">
+            <!-- Layer Upload Section -->
+            <div class="config-section">
+              <h2>Layer Upload</h2>
+              <div class="upload-area" id="uploadArea">
+                <div class="upload-content">
+                  <span class="upload-icon">📁</span>
+                  <p>Drag & drop layer folders here or click to browse</p>
+                  <p class="upload-hint">Upload individual layer folders (00_Background, 01_Body, 02_Head, etc.) - not the parent folder containing all layers.</p>
                 </div>
-                <div class="uploaded-layers" id="uploadedLayers"></div>
+                <input type="file" id="layerInput" multiple webkitdirectory directory style="display: none;" data-testid="folder-upload">
               </div>
+              <div class="uploaded-layers" id="uploadedLayers"></div>
+            </div>
 
-              <!-- Collection Settings -->
-              <div class="config-section">
-                <h3>Collection Settings</h3>
-                <div class="form-group">
-                  <label for="collectionName">Collection Name</label>
-                  <input type="text" id="collectionName" placeholder="My NFT Collection" value="My NFT Collection">
-                </div>
-                <div class="form-group">
-                  <label for="collectionSize">Collection Size</label>
-                  <input type="number" id="collectionSize" min="1" max="10000" value="100">
-                </div>
-                <div class="form-group">
-                  <label for="collectionDescription">Description</label>
-                  <textarea id="collectionDescription" rows="3" placeholder="Describe your NFT collection...">A unique NFT collection generated with BitHeadzArtEngine</textarea>
-                </div>
-                <div class="form-group">
-                  <label for="customCID">Custom IPFS CID (Optional)</label>
-                  <input type="text" id="customCID" placeholder="QmYourCIDHere..." value="">
-                  <small class="form-hint">Leave empty to use placeholder CID. Format: Qm...</small>
-                </div>
+            <!-- Layer Preview -->
+            <div class="config-section">
+              <h2>Layer Structure</h2>
+              <div class="layer-preview" id="layerPreview">
+                <p class="no-layers">Upload layers to see preview</p>
               </div>
+            </div>
 
-              <!-- Rarity Settings -->
-              <div class="config-section">
-                <h3>Rarity Settings</h3>
-                <div class="form-group">
-                  <label for="rarityMode">Rarity Mode</label>
-                  <select id="rarityMode">
-                    <option value="bell-curve">Bell Curve (Recommended)</option>
-                    <option value="random">Random</option>
-                    <option value="equal">Equal Distribution</option>
-                  </select>
-                </div>
+            <!-- Collection Settings -->
+            <div class="config-section">
+              <h2>Collection Settings</h2>
+              <div class="form-group">
+                <label for="collectionName">Collection Name</label>
+                <input type="text" id="collectionName" placeholder="My NFT Collection" value="My NFT Collection">
               </div>
-
-              <!-- Active Layers -->
-              <div class="config-section">
-                <h3>Active Layers</h3>
-                <div class="form-group">
-                  <label>Layer Configuration</label>
-                  <div class="active-layers" id="activeLayers">
-                    <!-- Will be populated dynamically -->
-                  </div>
-                  <small class="form-hint">Toggle layers on/off and set probability percentages</small>
-                </div>
+              <div class="form-group">
+                <label for="collectionSize">Collection Size</label>
+                <input type="number" id="collectionSize" min="1" max="10000" value="100">
               </div>
+              <div class="form-group">
+                <label for="collectionDescription">Description</label>
+                <textarea id="collectionDescription" rows="3" placeholder="Describe your NFT collection...">A unique NFT collection generated with BitHeadzArtEngine</textarea>
+              </div>
+              <div class="form-group">
+                <label for="customCID">Custom IPFS CID (Optional)</label>
+                <input type="text" id="customCID" placeholder="QmYourCIDHere..." value="">
+                <small class="form-hint">Leave empty to use placeholder CID. Format: Qm...</small>
+              </div>
+            </div>
 
-              <!-- Generate Button -->
-              <div class="config-section">
-                <button id="generateBtn" class="generate-button">
-                  <span class="button-text">Generate Collection</span>
-                  <span class="button-icon">🚀</span>
+            <!-- Rarity Settings -->
+            <div class="config-section">
+              <h2>Rarity Settings</h2>
+              <div class="form-group">
+                <label for="rarityMode">Rarity Mode</label>
+                <select id="rarityMode">
+                  <option value="bell-curve">Bell Curve (Recommended)</option>
+                  <option value="random">Random</option>
+                  <option value="equal">Equal Distribution</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Active Layers -->
+            <div class="config-section">
+              <h2>Active Layers</h2>
+              <div class="form-group">
+                <label>Layer Configuration</label>
+                <div class="active-layers" id="activeLayers">
+                  <!-- Will be populated dynamically -->
+                </div>
+                <small class="form-hint">Toggle layers on/off and set probability percentages</small>
+              </div>
+            </div>
+
+            <!-- Generate Button -->
+            <div class="config-section">
+              <button id="generateBtn" class="generate-button">
+                <span class="button-text">Generate Collection</span>
+                <span class="button-icon">🚀</span>
+              </button>
+            </div>
+
+            <!-- Generation Status -->
+            <div class="config-section">
+              <h2>Generation Status</h2>
+              <div class="generation-status" id="generationStatus">
+                <p class="status-text">Ready to generate</p>
+                <div class="progress-bar" id="progressBar" style="display: none;">
+                  <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="status-details" id="statusDetails"></div>
+              </div>
+            </div>
+
+            <!-- Download Section -->
+            <div class="config-section" id="downloadSection" style="display: none;">
+              <h2>Download</h2>
+              <div class="download-content">
+                <p>Your collection is ready!</p>
+                <button id="downloadBtn" class="download-button">
+                  <span class="button-text">Download Collection</span>
+                  <span class="button-icon">⬇️</span>
                 </button>
               </div>
             </div>
+          </div>
+        </section>
 
-            <!-- Right Panel - Preview & Status -->
-            <div class="preview-panel">
-              <h2>Preview & Status</h2>
-              
-              <!-- Layer Preview -->
-              <div class="preview-section">
-                <h3>Layer Structure</h3>
-                <div class="layer-preview" id="layerPreview">
-                  <p class="no-layers">Upload layers to see preview</p>
-                </div>
-              </div>
-
-              <!-- Generation Status -->
-              <div class="preview-section">
-                <h3>Generation Status</h3>
-                <div class="generation-status" id="generationStatus">
-                  <p class="status-text">Ready to generate</p>
-                  <div class="progress-bar" id="progressBar" style="display: none;">
-                    <div class="progress-fill" id="progressFill"></div>
-                  </div>
-                  <div class="status-details" id="statusDetails"></div>
-                </div>
-              </div>
-
-              <!-- Download Section -->
-              <div class="preview-section" id="downloadSection" style="display: none;">
-                <h3>Download</h3>
-                <div class="download-content">
-                  <p>Your collection is ready!</p>
-                  <button id="downloadBtn" class="download-button">
-                    <span class="button-text">Download Collection</span>
-                    <span class="button-icon">⬇️</span>
-                  </button>
-                </div>
-              </div>
+        <!-- Donation Section -->
+        <section class="donation-section">
+          <div class="donation-content">
+            <h3 class="donation-title">Support the Cause</h3>
+            <div class="donation-address" onclick="copyDonationAddress()">
+              5Zd2EiC7S2DaT5mQyC1etYmusNPyEQtHDgojdf5oLHLE
             </div>
+            <p class="donation-text">Click the address above to copy it to your clipboard. Your support helps keep this tool free and accessible to everyone.</p>
           </div>
         </section>
 

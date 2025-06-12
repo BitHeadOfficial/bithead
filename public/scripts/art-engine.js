@@ -642,6 +642,34 @@ class BitHeadzArtEngine {
   showProgressModal() {
     this.progressModal.style.display = 'flex';
     this.updateModalProgress(0, 0, parseInt(this.collectionSize.value), 'Preparing layers...');
+    
+    // Start showing initial progress immediately
+    this.startModalProgressAnimation();
+  }
+
+  startModalProgressAnimation() {
+    let currentProgress = 0;
+    const targetProgress = parseInt(this.collectionSize.value);
+    
+    const animateProgress = () => {
+      if (!this.isGenerating) return;
+      
+      // Simulate progress during preparation phase
+      if (currentProgress < 5) {
+        currentProgress += 0.1;
+        this.updateModalProgress(0, currentProgress, targetProgress, 'Preparing layers...', 'Organizing uploaded files');
+      } else if (currentProgress < 10) {
+        currentProgress += 0.05;
+        this.updateModalProgress(0, currentProgress, targetProgress, 'Validating layer structure...', 'Checking layer compatibility');
+      } else if (currentProgress < 15) {
+        currentProgress += 0.03;
+        this.updateModalProgress(0, currentProgress, targetProgress, 'Initializing generation...', 'Setting up generation engine');
+      }
+      
+      requestAnimationFrame(animateProgress);
+    };
+    
+    animateProgress();
   }
 
   hideProgressModal() {
@@ -649,7 +677,7 @@ class BitHeadzArtEngine {
   }
 
   updateModalProgress(current, total, target, message, details = '') {
-    const percentage = total > 0 ? Math.round((current / target) * 100) : 0;
+    const percentage = total > 0 ? Math.round((total / target) * 100) : 0;
     
     // Update modal elements
     this.modalProgressPercentage.textContent = `${percentage}%`;
@@ -747,14 +775,39 @@ class BitHeadzArtEngine {
     this.statusText.textContent = progressMessage;
     this.statusDetails.textContent = status.details || '';
     
-    // Update modal progress
+    // Update modal progress with more detailed information
     const current = status.totalGenerated || 0;
     const target = collectionSize;
-    this.updateModalProgress(current, current, target, progressMessage, status.details || '');
+    const percentage = status.progress || 0;
+    
+    // Provide more detailed progress messages
+    let modalMessage = progressMessage;
+    let modalDetails = status.details || '';
+    
+    if (percentage < 20) {
+      modalMessage = 'Preparing generation...';
+      modalDetails = 'Organizing layers and validating structure';
+    } else if (percentage < 40) {
+      modalMessage = 'Starting generation...';
+      modalDetails = 'Initializing NFT creation process';
+    } else if (percentage < 60) {
+      modalMessage = 'Generating NFTs...';
+      modalDetails = `Processing batch ${Math.floor(percentage / 10) + 1}`;
+    } else if (percentage < 80) {
+      modalMessage = 'Continuing generation...';
+      modalDetails = `Generated ${current} NFTs so far`;
+    } else if (percentage < 95) {
+      modalMessage = 'Finalizing collection...';
+      modalDetails = `Almost done! ${current} NFTs generated`;
+    } else {
+      modalMessage = 'Creating download package...';
+      modalDetails = 'Preparing files for download';
+    }
+    
+    this.updateModalProgress(current, percentage, target, modalMessage, modalDetails);
     
     // Add visual indicator for large collections
     if (collectionSize > 500) {
-      const percentage = Math.round((status.progress || 0));
       this.statusDetails.textContent = `${percentage}% complete - ${status.details || ''}`;
     }
   }
@@ -947,4 +1000,72 @@ class BitHeadzArtEngine {
 // Initialize the art engine when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
   new BitHeadzArtEngine();
-}); 
+});
+
+// Global function for copying donation address
+window.copyDonationAddress = async function() {
+  const address = '5Zd2EiC7S2DaT5mQyC1etYmusNPyEQtHDgojdf5oLHLE';
+  
+  try {
+    await navigator.clipboard.writeText(address);
+    
+    // Show success message
+    const successDiv = document.createElement('div');
+    successDiv.style.cssText = `
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      background: rgba(40, 167, 69, 0.9);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      z-index: 10000;
+      max-width: 300px;
+      font-weight: 600;
+    `;
+    successDiv.textContent = 'Address copied to clipboard!';
+    
+    document.body.appendChild(successDiv);
+    
+    setTimeout(() => {
+      if (successDiv.parentNode) {
+        successDiv.parentNode.removeChild(successDiv);
+      }
+    }, 3000);
+    
+  } catch (error) {
+    console.error('Failed to copy address:', error);
+    
+    // Fallback for older browsers
+    const textArea = document.createElement('textarea');
+    textArea.value = address;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+    
+    // Show success message
+    const successDiv = document.createElement('div');
+    successDiv.style.cssText = `
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      background: rgba(40, 167, 69, 0.9);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      z-index: 10000;
+      max-width: 300px;
+      font-weight: 600;
+    `;
+    successDiv.textContent = 'Address copied to clipboard!';
+    
+    document.body.appendChild(successDiv);
+    
+    setTimeout(() => {
+      if (successDiv.parentNode) {
+        successDiv.parentNode.removeChild(successDiv);
+      }
+    }, 3000);
+  }
+}; 
