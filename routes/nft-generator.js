@@ -242,9 +242,14 @@ async function generateCollection(job) {
       rarityMode: job.rarityMode,
       activeLayers: job.activeLayers,
       onProgress: (progress, message, details) => {
-        job.progress = 30 + (progress * 0.6); // 30-90% for generation
+        job.progress = progress;
         job.message = message;
         job.details = details;
+        
+        // Calculate totalGenerated based on progress
+        job.totalGenerated = Math.floor((progress / 100) * job.collectionSize);
+        
+        console.log(`NFT Generator: Progress update - ${job.totalGenerated}/${job.collectionSize} (${progress.toFixed(1)}%)`);
       }
     });
 

@@ -249,14 +249,19 @@ async function generateCollectionInBatches(total, batchSize, layersOrder, settin
   // Dynamic batch sizing based on collection size
   let dynamicBatchSize = batchSize;
   if (total > 1000) {
-    dynamicBatchSize = 5; // Smaller batches for very large collections
+    dynamicBatchSize = 3; // Smaller batches for very large collections
   } else if (total > 500) {
-    dynamicBatchSize = 8; // Medium batches for large collections
+    dynamicBatchSize = 5; // Medium batches for large collections
   } else if (total > 200) {
-    dynamicBatchSize = 10; // Standard batches for medium collections
+    dynamicBatchSize = 8; // Standard batches for medium collections
   }
 
   console.log(`Using dynamic batch size: ${dynamicBatchSize} for collection of ${total} NFTs`);
+
+  // Report initial progress
+  if (onProgress) {
+    onProgress(0, 'Starting generation...', `Preparing to generate ${total} NFTs`);
+  }
 
   while (current <= total) {
     const end = Math.min(current + dynamicBatchSize - 1, total);
@@ -275,10 +280,16 @@ async function generateCollectionInBatches(total, batchSize, layersOrder, settin
       global.gc();
     }
 
-    // Update progress
+    // Update progress more frequently for large collections
     if (onProgress) {
       const progress = (totalGenerated / total) * 100;
-      onProgress(progress, `Generated ${totalGenerated}/${total} NFTs`, `Batch ${current}-${end} completed`);
+      const message = `Generated ${totalGenerated}/${total} NFTs`;
+      const details = `Batch ${current}-${end} completed`;
+      
+      onProgress(progress, message, details);
+      
+      // Log progress for debugging
+      console.log(`Progress: ${totalGenerated}/${total} (${progress.toFixed(1)}%)`);
     }
 
     current = end + 1;

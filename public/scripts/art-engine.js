@@ -770,7 +770,7 @@ class BitHeadzArtEngine {
     let progressMessage = status.message || 'Generating...';
     
     // Add NFT count if available
-    if (status.totalGenerated && collectionSize) {
+    if (status.totalGenerated !== undefined && collectionSize) {
       progressMessage = `${status.totalGenerated} of ${collectionSize} NFTs generated`;
     }
     
@@ -789,16 +789,16 @@ class BitHeadzArtEngine {
     let modalMessage = progressMessage;
     let modalDetails = status.details || '';
     
-    if (percentage < 20) {
+    if (percentage < 10) {
       modalMessage = 'Preparing generation...';
       modalDetails = 'Organizing layers and validating structure';
-    } else if (percentage < 40) {
+    } else if (percentage < 25) {
       modalMessage = 'Starting generation...';
       modalDetails = 'Initializing NFT creation process';
-    } else if (percentage < 60) {
+    } else if (percentage < 50) {
       modalMessage = 'Generating NFTs...';
-      modalDetails = `Processing batch ${Math.floor(percentage / 10) + 1}`;
-    } else if (percentage < 80) {
+      modalDetails = `Processing batch - ${current} NFTs created`;
+    } else if (percentage < 75) {
       modalMessage = 'Continuing generation...';
       modalDetails = `Generated ${current} NFTs so far`;
     } else if (percentage < 95) {
@@ -809,12 +809,13 @@ class BitHeadzArtEngine {
       modalDetails = 'Preparing files for download';
     }
     
-    // Update modal with real progress
-    this.updateModalProgress(current, percentage, target, modalMessage, modalDetails);
+    // Update modal with real progress - use actual NFT count for percentage
+    const actualPercentage = target > 0 ? Math.round((current / target) * 100) : 0;
+    this.updateModalProgress(current, actualPercentage, target, modalMessage, modalDetails);
     
     // Add visual indicator for large collections
     if (collectionSize > 500) {
-      this.statusDetails.textContent = `${percentage}% complete - ${status.details || ''}`;
+      this.statusDetails.textContent = `${actualPercentage}% complete - ${status.details || ''}`;
     }
   }
 

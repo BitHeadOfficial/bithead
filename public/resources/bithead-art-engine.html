@@ -266,100 +266,6 @@
         "rarity active"
         "generate generate"
         "status download";
-      position: relative;
-    }
-
-    /* Visual flow indicators */
-    .interface-grid::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 50%;
-      width: 2px;
-      height: 100%;
-      background: linear-gradient(to bottom, transparent, #4296d2, transparent);
-      opacity: 0.3;
-      z-index: -1;
-    }
-
-    /* Enhanced box styling */
-    .config-section {
-      background: #1a1a1a;
-      border: 1px solid #3a3a3a;
-      border-radius: 12px;
-      padding: 1.25rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      min-height: fit-content;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .config-section::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, #4296d2, #5bb3ff);
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    .config-section:hover::before {
-      opacity: 1;
-    }
-
-    .config-section:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-      border-color: #4296d2;
-    }
-
-    /* Special styling for generate button section */
-    .config-section[data-section="generate"] {
-      background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
-      border: 2px solid #4296d2;
-      box-shadow: 0 8px 25px rgba(66, 150, 210, 0.2);
-    }
-
-    .config-section[data-section="generate"]::before {
-      opacity: 1;
-      background: linear-gradient(90deg, #4296d2, #5bb3ff, #4296d2);
-      background-size: 200% 100%;
-      animation: shimmer 2s infinite;
-    }
-
-    @keyframes shimmer {
-      0% { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
-    }
-
-    /* Enhanced headers */
-    .config-section h2 {
-      color: #4296d2;
-      margin: 0 0 1rem 0;
-      font-size: 1.1rem;
-      font-weight: 600;
-      border-bottom: 1px solid #3a3a3a;
-      padding-bottom: 0.5rem;
-      position: relative;
-    }
-
-    .config-section h2::after {
-      content: '';
-      position: absolute;
-      bottom: -1px;
-      left: 0;
-      width: 0;
-      height: 2px;
-      background: #4296d2;
-      transition: width 0.3s ease;
-    }
-
-    .config-section:hover h2::after {
-      width: 100%;
     }
 
     /* Mobile responsive */
@@ -411,6 +317,31 @@
       grid-area: download;
     }
 
+    /* Clean, subtle box styling */
+    .config-section {
+      background: #1a1a1a;
+      border: 1px solid #3a3a3a;
+      border-radius: 8px;
+      padding: 1.25rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      min-height: fit-content;
+      transition: border-color 0.2s ease;
+    }
+
+    .config-section:hover {
+      border-color: #4296d2;
+    }
+
+    /* Simple headers */
+    .config-section h2 {
+      color: #4296d2;
+      margin: 0 0 1rem 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-bottom: 1px solid #3a3a3a;
+      padding-bottom: 0.5rem;
+    }
+
     /* Make upload and preview sections more compact */
     .config-section[data-section="upload"],
     .config-section[data-section="preview"] {
@@ -428,10 +359,12 @@
       grid-column: 1 / -1;
     }
 
-    /* Generate button section */
+    /* Generate button section - clean and simple */
     .config-section[data-section="generate"] {
       text-align: center;
       padding: 1.5rem;
+      background: #1a1a1a;
+      border: 1px solid #3a3a3a;
     }
 
     /* Status and download sections */
