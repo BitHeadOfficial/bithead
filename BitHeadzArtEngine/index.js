@@ -279,6 +279,18 @@ async function generateCollectionInBatches(total, batchSize, layersOrder, settin
     totalGenerated += end - current + 1;
     memoryClearCounter += end - current + 1;
 
+    // Update progress after EVERY batch completion
+    if (onProgress) {
+      const progress = (totalGenerated / total) * 100;
+      const message = `Generated ${totalGenerated}/${total} NFTs`;
+      const details = `Batch ${current}-${end} completed`;
+      
+      onProgress(progress, message, details);
+      
+      // Log progress for debugging
+      console.log(`Progress: ${totalGenerated}/${total} (${progress.toFixed(1)}%)`);
+    }
+
     // Clear memory every 250 NFTs like the original ArtEngine
     if (memoryClearCounter >= 250) {
       console.log('Clearing memory after 250 NFTs...');
@@ -293,18 +305,6 @@ async function generateCollectionInBatches(total, batchSize, layersOrder, settin
       
       // Small delay to allow memory cleanup
       await new Promise(resolve => setTimeout(resolve, 100));
-    }
-
-    // Update progress more frequently for large collections
-    if (onProgress) {
-      const progress = (totalGenerated / total) * 100;
-      const message = `Generated ${totalGenerated}/${total} NFTs`;
-      const details = `Batch ${current}-${end} completed`;
-      
-      onProgress(progress, message, details);
-      
-      // Log progress for debugging
-      console.log(`Progress: ${totalGenerated}/${total} (${progress.toFixed(1)}%)`);
     }
 
     current = end + 1;
