@@ -500,6 +500,14 @@ class BitHeadzArtEngine {
       return;
     }
 
+    // Show warning for large collections
+    if (collectionSize > 500) {
+      const confirmed = confirm(`You're generating a large collection of ${collectionSize} NFTs. This may take several minutes and use significant memory. Continue?`);
+      if (!confirmed) {
+        return;
+      }
+    }
+
     this.isGenerating = true;
     this.generateBtn.disabled = true;
     this.generateBtn.innerHTML = '<span class="button-text">Generating...</span><span class="button-icon">⏳</span>';
@@ -593,10 +601,12 @@ class BitHeadzArtEngine {
       if (status.status === 'completed') {
         this.generationCompleted(status);
       } else if (status.status === 'failed') {
-        this.generationFailed(status.error);
+        this.generationFailed(status.error || status.details || 'Generation failed');
       } else {
-        // Continue polling
-        setTimeout(() => this.pollGenerationProgress(), 2000);
+        // Continue polling with adaptive interval based on collection size
+        const collectionSize = parseInt(this.collectionSize.value);
+        const pollInterval = collectionSize > 1000 ? 3000 : collectionSize > 500 ? 2500 : 2000;
+        setTimeout(() => this.pollGenerationProgress(), pollInterval);
       }
       
     } catch (error) {

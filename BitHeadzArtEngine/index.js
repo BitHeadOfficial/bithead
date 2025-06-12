@@ -61,12 +61,26 @@ function pickTraitBellCurve(filenames) {
 async function drawLayers(chosenLayers, settings) {
   const canvas = createCanvas(settings.width, settings.height);
   const ctx = canvas.getContext("2d");
+  
+  // Clear canvas first
+  ctx.clearRect(0, 0, settings.width, settings.height);
 
-  for (const layerObj of chosenLayers) {
-    const img = await loadImage(layerObj.filepath);
-    ctx.drawImage(img, 0, 0, settings.width, settings.height);
+  try {
+    for (const layerObj of chosenLayers) {
+      const img = await loadImage(layerObj.filepath);
+      ctx.drawImage(img, 0, 0, settings.width, settings.height);
+      
+      // Clear image reference to help garbage collection
+      img.src = null;
+    }
+    
+    return canvas;
+  } catch (error) {
+    // Clean up canvas on error
+    canvas.width = 0;
+    canvas.height = 0;
+    throw error;
   }
-  return canvas;
 }
 
 /***************************************************************
@@ -161,7 +175,18 @@ async function generateOneNFT(edition, layersOrder, settings, onProgress) {
   // Save final image
   const imageName = `${settings.collectionName}_${edition}.png`;
   const imageOutPath = path.join(settings.outputDir, "images", imageName);
-  fs.writeFileSync(imageOutPath, canvas.toBuffer("image/png"));
+  
+  try {
+    const buffer = canvas.toBuffer("image/png");
+    fs.writeFileSync(imageOutPath, buffer);
+    
+    // Clear canvas to free memory
+    canvas.width = 0;
+    canvas.height = 0;
+  } catch (error) {
+    console.error(`Error saving image for NFT #${edition}:`, error);
+    throw error;
+  }
 
   // Build metadata using the chosen traits
   const attributes = chosenLayers.map((layerObj) => ({
@@ -187,14 +212,26 @@ async function generateOneNFT(edition, layersOrder, settings, onProgress) {
 }
 
 /***************************************************************
- * 5) generateCollectionInBatches - Process NFTs in batches
+ * 5) generateCollectionInBatches - Process NFTs in batches with dynamic sizing
  ***************************************************************/
 async function generateCollectionInBatches(total, batchSize, layersOrder, settings, onProgress) {
   let current = 1;
   let totalGenerated = 0;
 
+  // Dynamic batch sizing based on collection size
+  let dynamicBatchSize = batchSize;
+  if (total > 1000) {
+    dynamicBatchSize = 5; // Smaller batches for very large collections
+  } else if (total > 500) {
+    dynamicBatchSize = 8; // Medium batches for large collections
+  } else if (total > 200) {
+    dynamicBatchSize = 10; // Standard batches for medium collections
+  }
+
+  console.log(`Using dynamic batch size: ${dynamicBatchSize} for collection of ${total} NFTs`);
+
   while (current <= total) {
-    const end = Math.min(current + batchSize - 1, total);
+    const end = Math.min(current + dynamicBatchSize - 1, total);
     console.log(`Generating NFTs ${current} to ${end}...`);
 
     const batchPromises = [];
@@ -204,6 +241,11 @@ async function generateCollectionInBatches(total, batchSize, layersOrder, settin
 
     await Promise.all(batchPromises);
     totalGenerated += end - current + 1;
+
+    // Force garbage collection if available
+    if (global.gc) {
+      global.gc();
+    }
 
     // Update progress
     if (onProgress) {

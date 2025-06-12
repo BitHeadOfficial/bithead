@@ -73,6 +73,59 @@ Organize your PNG layers with numeric prefixes to define the composition order:
 - **Random**: Completely random selection of traits
 - **Equal Distribution**: Each trait has equal probability
 
+## Performance & Large Collections
+
+The BitHeadzArtEngine has been optimized for generating large collections (200+ NFTs) with the following improvements:
+
+### Memory Management
+- **Dynamic Batch Sizing**: Automatically adjusts batch size based on collection size
+  - 200-500 NFTs: 10 NFTs per batch
+  - 500-1000 NFTs: 8 NFTs per batch  
+  - 1000+ NFTs: 5 NFTs per batch
+- **Canvas Cleanup**: Proper disposal of canvas objects to prevent memory leaks
+- **Image Reference Clearing**: Clears loaded image references after use
+- **Garbage Collection**: Optional forced garbage collection between batches
+
+### Server Optimizations
+- **Extended Timeouts**: Server configured for long-running operations (5+ minutes)
+- **Adaptive Polling**: Frontend adjusts polling frequency based on collection size
+- **Error Recovery**: Automatic cleanup of temporary files on failure
+- **Progress Tracking**: Real-time progress updates with detailed status
+
+### Running with Optimizations
+For best performance with large collections, run the server with garbage collection enabled:
+
+```bash
+# Development with garbage collection
+npm run dev:gc
+
+# Production with garbage collection  
+npm run start:gc
+```
+
+### Testing Large Collections
+Test the optimizations with the included test script:
+
+```bash
+npm run test:large
+```
+
+This will generate a 300-NFT test collection to verify performance.
+
+### Collection Size Guidelines
+- **1-200 NFTs**: Standard performance, no special considerations
+- **200-500 NFTs**: Good performance with optimizations
+- **500-1000 NFTs**: May take 2-5 minutes, memory usage increases
+- **1000+ NFTs**: May take 5-15 minutes, ensure adequate server memory
+
+### Troubleshooting Large Collections
+If generation fails for large collections:
+
+1. **Memory Issues**: Restart server with `npm run start:gc`
+2. **Timeout Issues**: Check server logs for timeout errors
+3. **File System**: Ensure adequate disk space for output files
+4. **Layer Complexity**: Reduce number of layers or layer file sizes
+
 ## File Requirements
 
 - **Format**: PNG files only

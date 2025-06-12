@@ -930,6 +930,11 @@ async function startServer() {
         console.log('Creating HTTP server...');
         const server = http.createServer(app);
         
+        // Configure server timeouts for long-running operations
+        server.timeout = 300000; // 5 minutes for long operations
+        server.keepAliveTimeout = 65000; // 65 seconds
+        server.headersTimeout = 66000; // 66 seconds
+        
         // Get port from environment variable or use default
         const port = process.env.PORT || 3000;
         console.log('Attempting to listen on port:', port);

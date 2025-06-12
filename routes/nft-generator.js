@@ -184,7 +184,12 @@ async function generateCollection(job) {
   try {
     console.log(`NFT Generator: Starting generation for job ${job.id}`);
     console.log(`NFT Generator: Job files count: ${job.files.length}`);
+    console.log(`NFT Generator: Collection size: ${job.collectionSize}`);
     console.log(`NFT Generator: First few files:`, job.files.slice(0, 3).map(f => f.originalname));
+    
+    // Set a timeout for the entire generation process
+    const generationTimeout = Math.max(300000, job.collectionSize * 1000); // At least 5 minutes, or 1 second per NFT
+    console.log(`NFT Generator: Setting generation timeout to ${generationTimeout}ms`);
     
     // Update status
     job.message = 'Organizing layers...';
@@ -225,8 +230,8 @@ async function generateCollection(job) {
     // Import the BitHeadzArtEngine
     const { generateCollectionWithLayers } = await import('../BitHeadzArtEngine/index.js');
 
-    // Generate the collection
-    const generationResult = await generateCollectionWithLayers({
+    // Generate the collection with timeout
+    const generationPromise = generateCollectionWithLayers({
       layersDir,
       outputDir,
       collectionSize: job.collectionSize,
@@ -240,6 +245,15 @@ async function generateCollection(job) {
         job.details = details;
       }
     });
+
+    // Add timeout to generation
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => {
+        reject(new Error(`Generation timeout after ${generationTimeout}ms`));
+      }, generationTimeout);
+    });
+
+    const generationResult = await Promise.race([generationPromise, timeoutPromise]);
 
     job.message = 'Creating download package...';
     job.progress = 90;
@@ -262,6 +276,22 @@ async function generateCollection(job) {
     job.status = 'failed';
     job.message = 'Generation failed';
     job.details = error.message;
+    
+    // Clean up temporary files on failure
+    try {
+      const tempDir = path.join(__dirname, '../temp', job.id);
+      if (fs.existsSync(tempDir)) {
+        fs.rmSync(tempDir, { recursive: true, force: true });
+        console.log(`NFT Generator: Cleaned up temp directory for failed job ${job.id}`);
+      }
+    } catch (cleanupError) {
+      console.error(`NFT Generator: Cleanup error for failed job ${job.id}:`, cleanupError);
+    }
+    
+    // Force garbage collection if available
+    if (global.gc) {
+      global.gc();
+    }
   }
 }
 
