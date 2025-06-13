@@ -842,6 +842,15 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
+// Routes for Resources pages
+app.get('/resources', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'resources.html'));
+});
+
+app.get('/resources/bithead-art-engine', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'resources', 'bithead-art-engine.html'));
+});
+
 // Serve 404 page for all other unmatched routes
 app.use((req, res) => {
   res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
