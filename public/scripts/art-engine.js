@@ -829,18 +829,23 @@ class BitHeadzArtEngine {
 
   generationCompleted(status) {
     this.statusText.textContent = 'Generation completed!';
-    this.progressFill.style.width = '100%';
-    this.statusDetails.textContent = `Generated ${status.totalGenerated} NFTs`;
+    this.statusDetails.textContent = `Generated ${status.totalGenerated} NFTs successfully`;
+    
+    // Hide progress modal
+    this.hideProgressModal();
+    
+    // Show download section
     this.downloadSection.style.display = 'block';
     
-    // Update modal with completion
+    // Show success message with special warning for large collections
     const collectionSize = parseInt(this.collectionSize.value);
-    this.updateModalProgress(status.totalGenerated, status.totalGenerated, collectionSize, 'Generation completed!', `Successfully generated ${status.totalGenerated} NFTs`);
-    
-    // Hide modal after a short delay
-    setTimeout(() => {
-      this.hideProgressModal();
-    }, 2000);
+    if (collectionSize > 5000) {
+      this.showSuccess(`Generation completed! ⚠️ Large collection detected - files will be automatically cleaned up in 60 minutes. Please download now.`);
+    } else if (collectionSize > 1000) {
+      this.showSuccess(`Generation completed! ⚠️ Large collection detected - files will be automatically cleaned up in 60 minutes.`);
+    } else {
+      this.showSuccess('Generation completed successfully!');
+    }
     
     this.resetGenerationState();
   }
@@ -880,6 +885,25 @@ class BitHeadzArtEngine {
     try {
       console.log('Starting download for generation:', this.generationId);
       
+      // First check if the job is still available
+      const statusResponse = await fetch(`/api/nft-generator/status/${this.generationId}`, {
+        method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
+      
+      if (!statusResponse.ok) {
+        throw new Error('Generation job not found. The files may have been cleaned up due to timeout.');
+      }
+      
+      const status = await statusResponse.json();
+      
+      if (status.status !== 'completed') {
+        throw new Error('Generation not completed. Please wait for generation to finish.');
+      }
+      
       const response = await fetch(`/api/nft-generator/download/${this.generationId}`, {
         method: 'GET',
         headers: {
@@ -890,7 +914,7 @@ class BitHeadzArtEngine {
       
       if (!response.ok) {
         if (response.status === 404) {
-          throw new Error('Generated files not found. The files may have been cleaned up.');
+          throw new Error('Generated files not found. The files may have been cleaned up. Please regenerate your collection.');
         } else if (response.status === 400) {
           throw new Error('Generation not completed. Please wait for generation to finish.');
         } else {
@@ -931,15 +955,19 @@ class BitHeadzArtEngine {
       
       console.log('Download completed successfully');
       
-      // Show success message
-      this.showSuccess('Download started successfully!');
+      // Show success message with download count info
+      const downloadCount = status.downloadCount || 1;
+      const message = downloadCount === 1 
+        ? 'Download started successfully!' 
+        : `Download started successfully! (Attempt #${downloadCount})`;
+      this.showSuccess(message);
       
     } catch (error) {
       console.error('Download error:', error);
       
-      // Show specific error messages
-      if (error.message.includes('files not found')) {
-        this.showError('Generated files not found. Please regenerate your collection.');
+      // Show specific error messages with retry suggestions
+      if (error.message.includes('files not found') || error.message.includes('cleaned up')) {
+        this.showError('Generated files not found. For large collections, files are automatically cleaned up after 60 minutes. Please regenerate your collection.');
       } else if (error.message.includes('not completed')) {
         this.showError('Generation not completed. Please wait for the process to finish.');
       } else if (error.message.includes('empty')) {

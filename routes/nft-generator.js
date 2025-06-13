@@ -44,7 +44,7 @@ const activeSessions = new Map();
 // Cleanup function for abandoned jobs
 function cleanupAbandonedJobs() {
   const now = new Date();
-  const maxAge = 30 * 60 * 1000; // 30 minutes
+  const maxAge = 60 * 60 * 1000; // Extended to 60 minutes for large collections
   
   generationJobs.forEach((job, id) => {
     const age = now - job.createdAt;
@@ -163,7 +163,10 @@ router.post('/generate', upload.any(), async (req, res) => {
         webkitRelativePath: filePaths && filePaths[index] ? filePaths[index] : f.originalname
       })),
       createdAt: new Date(),
-      outputPath: null
+      outputPath: null,
+      downloadAttempted: false,
+      lastDownloadAttempt: null,
+      downloadCount: 0
     };
 
     generationJobs.set(generationId, job);
@@ -198,7 +201,11 @@ router.get('/status/:generationId', (req, res) => {
       progress: job.progress,
       message: job.message,
       details: job.details,
-      totalGenerated: job.totalGenerated
+      totalGenerated: job.totalGenerated,
+      downloadAttempted: job.downloadAttempted || false,
+      lastDownloadAttempt: job.lastDownloadAttempt,
+      downloadCount: job.downloadCount || 0,
+      collectionSize: job.collectionSize
     });
 
   } catch (error) {
@@ -225,6 +232,11 @@ router.get('/download/:generationId', (req, res) => {
       return res.status(404).json({ error: 'Generated files not found' });
     }
 
+    // Track download attempt
+    job.downloadAttempted = true;
+    job.lastDownloadAttempt = new Date();
+    job.downloadCount = (job.downloadCount || 0) + 1;
+
     // Set headers for file download
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader('Content-Disposition', `attachment; filename="${job.collectionName}_collection.zip"`);
@@ -233,12 +245,24 @@ router.get('/download/:generationId', (req, res) => {
     const fileStream = fs.createReadStream(job.outputPath);
     fileStream.pipe(res);
 
-    // Clean up after download
+    // Clean up after download with extended delay for large collections
     fileStream.on('end', () => {
-      // Clean up files after a delay
+      // Calculate cleanup delay based on collection size
+      const baseDelay = 5 * 60 * 1000; // 5 minutes base
+      const sizeMultiplier = Math.max(1, job.collectionSize / 1000); // 1 minute per 1000 NFTs
+      const cleanupDelay = Math.min(baseDelay * sizeMultiplier, 30 * 60 * 1000); // Max 30 minutes
+      
+      console.log(`NFT Generator: Scheduling cleanup for job ${generationId} in ${Math.round(cleanupDelay / 1000 / 60)} minutes`);
+      
       setTimeout(() => {
         cleanupGenerationJob(generationId);
-      }, 60000); // 1 minute delay
+      }, cleanupDelay);
+    });
+
+    // Handle download errors
+    fileStream.on('error', (error) => {
+      console.error(`NFT Generator: Download error for job ${generationId}:`, error);
+      // Don't cleanup on download error - let user retry
     });
 
   } catch (error) {
