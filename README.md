@@ -121,4 +121,41 @@ The application includes monitoring endpoints:
 
 ## Support
 
-For any issues or questions, please contact the administrator. 
+For any issues or questions, please contact the administrator.
+
+## Platform-Specific Setup for NFT Generation (canvas dependency)
+
+### macOS (Intel & Apple Silicon)
+
+1. Install [Homebrew](https://brew.sh/) if you haven't already.
+2. Run:
+   ```sh
+   brew install pkg-config cairo pango libpng jpeg giflib librsvg pixman
+   ```
+
+### Windows
+
+1. Install [Windows Build Tools](https://github.com/felixrieseberg/windows-build-tools):
+   ```sh
+   npm install --global --production windows-build-tools
+   ```
+2. Install GTK dependencies (see [node-canvas wiki](https://github.com/Automattic/node-canvas/wiki/Installation:-Windows)).
+
+### Linux (Debian/Ubuntu)
+
+1. Run:
+   ```sh
+   sudo apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+   ```
+
+---
+
+## Low Memory Mode
+
+If you are running on a system with less than 8GB RAM, or if you encounter out-of-memory errors, enable **Low Memory Mode** in the NFT Art Generator UI. This will:
+- Lower batch sizes and concurrency for image processing
+- Reduce RAM usage (at the cost of slower generation)
+
+You can also set the environment variable `LOW_MEMORY_MODE=true` on the server to force this mode for all users.
+
+--- 

@@ -7,6 +7,7 @@ class BitHeadzArtEngine {
     this.isGenerating = false;
     this.originalFileData = new Map(); // Store original file data with webkitRelativePath
     this.hasRealProgress = false;
+    this.lowMemoryMode = false;
     
     this.initializeElements();
     this.setupEventListeners();
@@ -47,6 +48,7 @@ class BitHeadzArtEngine {
     this.modalProgressMessage = document.getElementById('modalProgressMessage');
     this.modalProgressDetails = document.getElementById('modalProgressDetails');
     this.cancelGenerationBtn = document.getElementById('cancelGenerationBtn');
+    this.lowMemoryModeBtn = document.getElementById('lowMemoryModeBtn');
   }
 
   setupEventListeners() {
@@ -71,6 +73,9 @@ class BitHeadzArtEngine {
     
     // Cancel button
     this.cancelGenerationBtn.addEventListener('click', this.cancelGeneration.bind(this));
+    
+    // Low Memory Mode button
+    this.lowMemoryModeBtn.addEventListener('click', () => this.toggleLowMemoryMode());
   }
 
   handleDragOver(e) {
@@ -580,6 +585,7 @@ class BitHeadzArtEngine {
       formData.append('collectionDescription', this.collectionDescription.value);
       formData.append('customCID', this.customCID.value.trim());
       formData.append('rarityMode', this.rarityMode.value);
+      formData.append('lowMemoryMode', this.lowMemoryMode);
       
       // Add all files with their original paths
       const allFiles = [];
@@ -1089,6 +1095,21 @@ class BitHeadzArtEngine {
     } catch (error) {
       console.error('Cancellation error:', error);
       this.showError(`Cancellation failed: ${error.message}`);
+    }
+  }
+
+  toggleLowMemoryMode() {
+    this.lowMemoryMode = !this.lowMemoryMode;
+    this.updateLowMemoryModeUI();
+  }
+
+  updateLowMemoryModeUI() {
+    if (this.lowMemoryMode) {
+      this.lowMemoryModeBtn.classList.add('active');
+      this.lowMemoryModeBtn.title = 'Low Memory Mode is ON. Generation will be slower but use less RAM.';
+    } else {
+      this.lowMemoryModeBtn.classList.remove('active');
+      this.lowMemoryModeBtn.title = 'Low Memory Mode is OFF. Generation will be faster but use more RAM.';
     }
   }
 }

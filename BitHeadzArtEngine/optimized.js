@@ -14,6 +14,7 @@ import fs from "fs";
 import path from "path";
 import { createCanvas, loadImage } from "canvas";
 import { pipeline } from "stream/promises";
+import os from 'os';
 
 // Optimized settings for energy efficiency
 const optimizedSettings = {
@@ -469,6 +470,8 @@ async function generateCollectionWithLayersOptimized(config) {
   console.log(`Optimized Engine: Starting generation of ${collectionSize} NFTs...`);
   console.log(`Optimized Engine: Layers detected: ${layersOrder.map(l => l.folder).join(', ')}`);
 
+  setOptimizedSettings({ lowMemoryMode: config.lowMemoryMode || process.env.LOW_MEMORY_MODE === 'true' });
+
   // Generate collection with optimized processing
   const totalGenerated = await generateCollectionOptimized(
     collectionSize,
@@ -508,6 +511,24 @@ function detectLayerStructure(layersDir) {
     .map(folder => ({ folder }));
 
   return layerFolders;
+}
+
+export function setOptimizedSettings({ lowMemoryMode = false } = {}) {
+  const totalMemGB = os.totalmem() / (1024 ** 3);
+  const cpuCount = os.cpus().length;
+  if (lowMemoryMode || totalMemGB < 8) {
+    optimizedSettings.maxConcurrentImages = 2;
+    optimizedSettings.memoryClearThreshold = 50;
+    optimizedSettings.batchSize = { small: 2, medium: 4, large: 6, xlarge: 8 };
+  } else if (totalMemGB < 16 || cpuCount <= 4) {
+    optimizedSettings.maxConcurrentImages = 3;
+    optimizedSettings.memoryClearThreshold = 75;
+    optimizedSettings.batchSize = { small: 3, medium: 6, large: 10, xlarge: 12 };
+  } else {
+    optimizedSettings.maxConcurrentImages = 4;
+    optimizedSettings.memoryClearThreshold = 100;
+    optimizedSettings.batchSize = { small: 5, medium: 10, large: 15, xlarge: 20 };
+  }
 }
 
 export {

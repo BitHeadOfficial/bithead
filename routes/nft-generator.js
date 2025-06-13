@@ -110,7 +110,7 @@ router.post('/generate', upload.any(), async (req, res) => {
   try {
     console.log('NFT Generator: Starting generation process');
     
-    const { collectionName, collectionSize, collectionDescription, rarityMode, activeLayers, customCID } = req.body;
+    const { collectionName, collectionSize, collectionDescription, rarityMode, activeLayers, customCID, lowMemoryMode } = req.body;
     const files = req.files;
     const filePaths = req.body.filePaths;
 
@@ -166,7 +166,8 @@ router.post('/generate', upload.any(), async (req, res) => {
       outputPath: null,
       downloadAttempted: false,
       lastDownloadAttempt: null,
-      downloadCount: 0
+      downloadCount: 0,
+      lowMemoryMode
     };
 
     generationJobs.set(generationId, job);
@@ -360,6 +361,7 @@ async function generateCollectionOptimized(job) {
       customCID: job.customCID,
       rarityMode: job.rarityMode,
       activeLayers: job.activeLayers,
+      lowMemoryMode: job.lowMemoryMode,
       onProgress: (progress, message, details) => {
         job.progress = progress;
         job.message = message;
@@ -399,8 +401,14 @@ async function generateCollectionOptimized(job) {
 
   } catch (error) {
     console.error(`NFT Generator: Generation failed for job ${job.id}:`, error);
+    let userMessage = 'Generation failed';
+    if (error.message && (error.message.includes('ENOMEM') || error.message.includes('out of memory'))) {
+      userMessage = 'Generation failed: Out of memory. Try enabling Low Memory Mode or reducing collection size.';
+    } else if (error.message && error.message.includes('canvas')) {
+      userMessage = 'Generation failed: Canvas dependency error. Please ensure all native dependencies are installed (see README).';
+    }
     job.status = 'failed';
-    job.message = 'Generation failed';
+    job.message = userMessage;
     job.details = error.message;
     
     // Clean up temporary files on failure
