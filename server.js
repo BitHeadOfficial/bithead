@@ -981,4 +981,15 @@ startServer().catch(error => {
     process.exit(1);
 });
 
-export default app;
+// Increase timeout for large file operations
+app.use((req, res, next) => {
+  // Set longer timeout for download requests
+  if (req.path.includes('/download/')) {
+    req.setTimeout(600000); // 10 minutes for downloads
+    res.setTimeout(600000);
+  } else {
+    req.setTimeout(300000); // 5 minutes for other requests
+    res.setTimeout(300000);
+  }
+  next();
+});

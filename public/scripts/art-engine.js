@@ -909,89 +909,118 @@ class BitHeadzArtEngine {
       if (status.status !== 'completed') {
         throw new Error('Generation not completed. Please wait for generation to finish.');
       }
+
+      // Show download starting message
+      this.downloadBtn.innerHTML = '<span class="button-text">Starting Download...</span><span class="button-icon">📥</span>';
       
-      const response = await fetch(`/api/nft-generator/download/${this.generationId}`, {
-        method: 'GET',
-        headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        }
-      });
+      // Start download with retry logic
+      let retryCount = 0;
+      const maxRetries = 3;
       
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('Generated files not found. The files may have been cleaned up. Please regenerate your collection.');
-        } else if (response.status === 400) {
-          throw new Error('Generation not completed. Please wait for generation to finish.');
-        } else if (response.status === 500) {
-          const errorText = await response.text();
-          if (errorText.includes('corrupted') || errorText.includes('empty')) {
-            throw new Error('Generated zip file is corrupted. Please regenerate your collection.');
-          } else {
-            throw new Error(`Download failed: ${response.status} ${response.statusText}`);
+      while (retryCount < maxRetries) {
+        try {
+          const response = await fetch(`/api/nft-generator/download/${this.generationId}`, {
+            method: 'GET',
+            headers: {
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache'
+            }
+          });
+
+          if (!response.ok) {
+            if (response.status === 404) {
+              throw new Error('Download file not found. The files may have been cleaned up.');
+            } else if (response.status === 500) {
+              throw new Error('Server error during download. Please try again.');
+            } else {
+              throw new Error(`Download failed: ${response.status} ${response.statusText}`);
+            }
           }
-        } else {
-          throw new Error(`Download failed: ${response.status} ${response.statusText}`);
+
+          // Check if response is actually a file
+          const contentType = response.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/zip')) {
+            throw new Error('Invalid response format. Expected zip file.');
+          }
+
+          // Get file size for progress tracking
+          const contentLength = response.headers.get('content-length');
+          const fileSize = contentLength ? parseInt(contentLength) : 0;
+          
+          if (fileSize > 0) {
+            console.log(`Downloading file: ${Math.round(fileSize / 1024 / 1024)}MB`);
+          }
+
+          // Create blob from response
+          const blob = await response.blob();
+          
+          if (blob.size === 0) {
+            throw new Error('Downloaded file is empty.');
+          }
+
+          // Create download link
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = url;
+          a.download = `${status.collectionName || 'collection'}_collection.zip`;
+          
+          // Trigger download
+          document.body.appendChild(a);
+          a.click();
+          
+          // Cleanup
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+
+          // Success!
+          this.downloadBtn.innerHTML = '<span class="button-text">Download Complete!</span><span class="button-icon">✅</span>';
+          this.showSuccess('Download completed successfully!');
+          
+          // Reset button after a delay
+          setTimeout(() => {
+            this.downloadBtn.disabled = false;
+            this.downloadBtn.innerHTML = '<span class="button-text">Download Collection</span><span class="button-icon">📥</span>';
+          }, 3000);
+          
+          return; // Success, exit retry loop
+          
+        } catch (downloadError) {
+          retryCount++;
+          console.error(`Download attempt ${retryCount} failed:`, downloadError);
+          
+          if (retryCount >= maxRetries) {
+            throw downloadError; // Re-throw on final attempt
+          }
+          
+          // Wait before retry (exponential backoff)
+          const waitTime = Math.min(1000 * Math.pow(2, retryCount - 1), 10000);
+          this.downloadBtn.innerHTML = `<span class="button-text">Retrying... (${retryCount}/${maxRetries})</span><span class="button-icon">🔄</span>`;
+          
+          await new Promise(resolve => setTimeout(resolve, waitTime));
         }
       }
-
-      console.log('Download response received, processing blob...');
-      
-      // Check if response is actually a blob
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/zip')) {
-        console.warn('Unexpected content type:', contentType);
-      }
-
-      const blob = await response.blob();
-      
-      if (blob.size === 0) {
-        throw new Error('Downloaded file is empty. Please try again.');
-      }
-
-      console.log('Blob created, size:', blob.size, 'bytes');
-
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${this.collectionName.value}_collection.zip`;
-      a.style.display = 'none';
-      
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      
-      // Clean up the URL
-      setTimeout(() => {
-        window.URL.revokeObjectURL(url);
-      }, 1000);
-      
-      console.log('Download completed successfully');
-      
-      // Show success message with download count info
-      const downloadCount = status.downloadCount || 1;
-      const message = downloadCount === 1 
-        ? 'Download started successfully!' 
-        : `Download started successfully! (Attempt #${downloadCount})`;
-      this.showSuccess(message);
       
     } catch (error) {
       console.error('Download error:', error);
       
-      // Show specific error messages with retry suggestions
-      if (error.message.includes('files not found') || error.message.includes('cleaned up')) {
-        this.showError('Generated files not found. For large collections, files are automatically cleaned up after 60 minutes. Please regenerate your collection.');
-      } else if (error.message.includes('not completed')) {
-        this.showError('Generation not completed. Please wait for the process to finish.');
-      } else if (error.message.includes('empty')) {
-        this.showError('Download failed: Empty file. Please try again.');
-      } else {
-        this.showError(`Download failed: ${error.message}. Please try again.`);
-      }
-    } finally {
-      // Re-enable download button
+      // Reset button
       this.downloadBtn.disabled = false;
-      this.downloadBtn.innerHTML = '<span class="button-text">Download Collection</span><span class="button-icon">⬇️</span>';
+      this.downloadBtn.innerHTML = '<span class="button-text">Download Collection</span><span class="button-icon">📥</span>';
+      
+      // Show specific error messages
+      let errorMessage = 'Download failed';
+      if (error.message.includes('not found') || error.message.includes('cleaned up')) {
+        errorMessage = 'Download failed: Files have been cleaned up. Please regenerate your collection.';
+      } else if (error.message.includes('timeout') || error.message.includes('fetch')) {
+        errorMessage = 'Download failed: Connection timeout. Please check your internet connection and try again.';
+      } else if (error.message.includes('empty')) {
+        errorMessage = 'Download failed: Generated file is corrupted. Please regenerate your collection.';
+      } else {
+        errorMessage = `Download failed: ${error.message}`;
+      }
+      
+      this.showError(errorMessage);
     }
   }
 

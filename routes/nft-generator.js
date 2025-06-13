@@ -256,14 +256,36 @@ router.get('/download/:generationId', (req, res) => {
     job.lastDownloadAttempt = new Date();
     job.downloadCount = (job.downloadCount || 0) + 1;
 
-    // Set headers for file download
+    // Set headers for file download with better caching
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader('Content-Disposition', `attachment; filename="${job.collectionName}_collection.zip"`);
     res.setHeader('Content-Length', fs.statSync(job.outputPath).size);
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
 
-    // Stream the zip file with error handling
-    const fileStream = fs.createReadStream(job.outputPath);
+    // Increase timeout for large files
+    const fileSize = fs.statSync(job.outputPath).size;
+    const timeoutMs = Math.max(300000, fileSize / 1000); // 5 minutes minimum, 1ms per byte
+    req.setTimeout(timeoutMs);
+    res.setTimeout(timeoutMs);
+
+    // Stream the zip file with error handling and progress tracking
+    const fileStream = fs.createReadStream(job.outputPath, { 
+      highWaterMark: 64 * 1024 // 64KB chunks for better memory management
+    });
     
+    let bytesSent = 0;
+    const totalBytes = fs.statSync(job.outputPath).size;
+    
+    // Track progress
+    fileStream.on('data', (chunk) => {
+      bytesSent += chunk.length;
+      if (bytesSent % (1024 * 1024) === 0) { // Log every MB
+        console.log(`NFT Generator: Download progress for job ${generationId}: ${Math.round(bytesSent / 1024 / 1024)}MB / ${Math.round(totalBytes / 1024 / 1024)}MB`);
+      }
+    });
+
     // Handle stream errors
     fileStream.on('error', (error) => {
       console.error(`NFT Generator: File stream error for job ${generationId}:`, error);
@@ -278,11 +300,18 @@ router.get('/download/:generationId', (req, res) => {
       fileStream.destroy();
     });
 
+    // Handle response errors
+    res.on('error', (error) => {
+      console.error(`NFT Generator: Response error for job ${generationId}:`, error);
+      fileStream.destroy();
+    });
+
+    // Pipe with error handling
     fileStream.pipe(res);
 
     // Clean up after download with extended delay for large collections
     fileStream.on('end', () => {
-      console.log(`NFT Generator: Download completed for job ${generationId}`);
+      console.log(`NFT Generator: Download completed for job ${generationId} (${Math.round(totalBytes / 1024 / 1024)}MB)`);
       
       // Calculate cleanup delay based on collection size
       const baseDelay = 5 * 60 * 1000; // 5 minutes base
