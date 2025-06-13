@@ -917,6 +917,13 @@ class BitHeadzArtEngine {
           throw new Error('Generated files not found. The files may have been cleaned up. Please regenerate your collection.');
         } else if (response.status === 400) {
           throw new Error('Generation not completed. Please wait for generation to finish.');
+        } else if (response.status === 500) {
+          const errorText = await response.text();
+          if (errorText.includes('corrupted') || errorText.includes('empty')) {
+            throw new Error('Generated zip file is corrupted. Please regenerate your collection.');
+          } else {
+            throw new Error(`Download failed: ${response.status} ${response.statusText}`);
+          }
         } else {
           throw new Error(`Download failed: ${response.status} ${response.statusText}`);
         }

@@ -232,6 +232,24 @@ router.get('/download/:generationId', (req, res) => {
       return res.status(404).json({ error: 'Generated files not found' });
     }
 
+    // Validate zip file integrity before serving
+    try {
+      const stats = fs.statSync(job.outputPath);
+      if (stats.size === 0) {
+        return res.status(500).json({ error: 'Generated zip file is corrupted (empty)' });
+      }
+      
+      // Check if file is reasonably sized (at least 1KB for a valid zip)
+      if (stats.size < 1024) {
+        console.warn(`NFT Generator: Suspiciously small zip file: ${stats.size} bytes for job ${generationId}`);
+      }
+      
+      console.log(`NFT Generator: Serving zip file: ${stats.size} bytes for job ${generationId}`);
+    } catch (statError) {
+      console.error(`NFT Generator: Error checking zip file stats:`, statError);
+      return res.status(500).json({ error: 'Generated zip file is corrupted' });
+    }
+
     // Track download attempt
     job.downloadAttempted = true;
     job.lastDownloadAttempt = new Date();
@@ -240,13 +258,31 @@ router.get('/download/:generationId', (req, res) => {
     // Set headers for file download
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader('Content-Disposition', `attachment; filename="${job.collectionName}_collection.zip"`);
+    res.setHeader('Content-Length', fs.statSync(job.outputPath).size);
 
-    // Stream the zip file
+    // Stream the zip file with error handling
     const fileStream = fs.createReadStream(job.outputPath);
+    
+    // Handle stream errors
+    fileStream.on('error', (error) => {
+      console.error(`NFT Generator: File stream error for job ${generationId}:`, error);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Download failed due to file corruption' });
+      }
+    });
+
+    // Handle client disconnect
+    req.on('close', () => {
+      console.log(`NFT Generator: Client disconnected during download for job ${generationId}`);
+      fileStream.destroy();
+    });
+
     fileStream.pipe(res);
 
     // Clean up after download with extended delay for large collections
     fileStream.on('end', () => {
+      console.log(`NFT Generator: Download completed for job ${generationId}`);
+      
       // Calculate cleanup delay based on collection size
       const baseDelay = 5 * 60 * 1000; // 5 minutes base
       const sizeMultiplier = Math.max(1, job.collectionSize / 1000); // 1 minute per 1000 NFTs
@@ -257,12 +293,6 @@ router.get('/download/:generationId', (req, res) => {
       setTimeout(() => {
         cleanupGenerationJob(generationId);
       }, cleanupDelay);
-    });
-
-    // Handle download errors
-    fileStream.on('error', (error) => {
-      console.error(`NFT Generator: Download error for job ${generationId}:`, error);
-      // Don't cleanup on download error - let user retry
     });
 
   } catch (error) {
@@ -487,31 +517,107 @@ function extractLayerInfo(fileName) {
 // Optimized zip creation with streaming for large collections
 function createZipArchiveOptimized(sourceDir, outputPath, collectionSize) {
   return new Promise((resolve, reject) => {
+    let output, archive;
+    
     try {
-      const output = fs.createWriteStream(outputPath);
-      const archive = archiver('zip', {
-        zlib: { level: 6 } // Balanced compression level for speed vs size
+      // Create write stream
+      output = fs.createWriteStream(outputPath);
+      
+      // Create archive with better settings
+      archive = archiver('zip', {
+        zlib: { level: 6 }, // Balanced compression level for speed vs size
+        store: false // Ensure compression is used
       });
 
+      // Handle write stream events
       output.on('close', () => {
-        console.log(`NFT Generator: Archive created successfully: ${archive.pointer()} total bytes`);
+        const totalBytes = archive.pointer();
+        console.log(`NFT Generator: Archive created successfully: ${totalBytes} total bytes`);
+        
+        // Validate the zip file was created properly
+        if (totalBytes === 0) {
+          reject(new Error('Generated zip file is empty'));
+          return;
+        }
+        
+        // Check if file exists and has content
+        if (!fs.existsSync(outputPath)) {
+          reject(new Error('Zip file was not created'));
+          return;
+        }
+        
+        const stats = fs.statSync(outputPath);
+        if (stats.size === 0) {
+          reject(new Error('Zip file is empty'));
+          return;
+        }
+        
+        console.log(`NFT Generator: Zip file validated: ${stats.size} bytes`);
         resolve();
       });
 
+      output.on('error', (err) => {
+        console.error('NFT Generator: Write stream error:', err);
+        reject(err);
+      });
+
+      // Handle archive events
       archive.on('error', (err) => {
         console.error('NFT Generator: Archive error:', err);
         reject(err);
       });
 
+      archive.on('warning', (err) => {
+        if (err.code === 'ENOENT') {
+          console.warn('NFT Generator: Archive warning:', err);
+        } else {
+          console.error('NFT Generator: Archive warning:', err);
+          reject(err);
+        }
+      });
+
+      // Pipe archive to output
       archive.pipe(output);
 
-      // Add directories with optimized settings
-      archive.directory(path.join(sourceDir, 'images'), 'images');
-      archive.directory(path.join(sourceDir, 'metadata'), 'metadata');
+      // Add directories with error checking
+      const imagesPath = path.join(sourceDir, 'images');
+      const metadataPath = path.join(sourceDir, 'metadata');
+      
+      if (fs.existsSync(imagesPath)) {
+        archive.directory(imagesPath, 'images');
+      } else {
+        console.warn('NFT Generator: Images directory not found:', imagesPath);
+      }
+      
+      if (fs.existsSync(metadataPath)) {
+        archive.directory(metadataPath, 'metadata');
+      } else {
+        console.warn('NFT Generator: Metadata directory not found:', metadataPath);
+      }
 
+      // Finalize the archive
       archive.finalize();
+      
     } catch (error) {
       console.error('NFT Generator: Zip creation error:', error);
+      
+      // Clean up on error
+      if (output) {
+        output.destroy();
+      }
+      if (archive) {
+        archive.destroy();
+      }
+      
+      // Remove partial file if it exists
+      if (fs.existsSync(outputPath)) {
+        try {
+          fs.unlinkSync(outputPath);
+        } catch (unlinkError) {
+          console.error('NFT Generator: Failed to remove partial zip file:', unlinkError);
+        }
+      }
+      
       reject(error);
     }
   });
