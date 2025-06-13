@@ -10,10 +10,10 @@
  * - Parallel processing with controlled concurrency
  *************************************************************/
 
-const fs = require("fs");
-const path = require("path");
-const { createCanvas, loadImage } = require("canvas");
-const { pipeline } = require("stream/promises");
+import fs from "fs";
+import path from "path";
+import { createCanvas, loadImage } from "canvas";
+import { pipeline } from "stream/promises";
 
 // Optimized settings for energy efficiency
 const optimizedSettings = {
@@ -510,6 +510,6 @@ function detectLayerStructure(layersDir) {
   return layerFolders;
 }
 
-module.exports = {
+export {
   generateCollectionWithLayersOptimized
 }; 
