@@ -148,14 +148,14 @@ For any issues or questions, please contact the administrator.
    sudo apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
    ```
 
----
-
 ## Low Memory Mode
 
-If you are running on a system with less than 8GB RAM, or if you encounter out-of-memory errors, enable **Low Memory Mode** in the NFT Art Generator UI. This will:
+The NFT Art Generator automatically uses **Low Memory Mode** for optimal compatibility across all hardware types. This ensures:
 - Lower batch sizes and concurrency for image processing
-- Reduce RAM usage (at the cost of slower generation)
+- Reduced RAM usage for better stability
+- Works reliably on systems with 8GB or less RAM
+- Compatible with all platforms (macOS, Windows, Linux)
 
-You can also set the environment variable `LOW_MEMORY_MODE=true` on the server to force this mode for all users.
+**Note:** The system is optimized for memory efficiency by default, so no manual configuration is needed.
 
 --- 
