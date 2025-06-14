@@ -377,13 +377,6 @@ async function generateCollectionOptimized(job) {
     job.message = 'Generating NFTs...';
     job.progress = 30;
 
-    // Create ZIP file immediately for streaming
-    const zipPath = path.join(tempDir, `${job.collectionName}_collection.zip`);
-    job.outputPath = zipPath; // Set output path early so download can start
-    
-    // Start streaming ZIP creation immediately
-    const zipCreationPromise = createStreamingZipArchive(outputDir, zipPath, job.collectionSize);
-    
     // Import the optimized BitHeadzArtEngine
     const { generateCollectionWithLayersOptimized } = await import('../BitHeadzArtEngine/optimized.js');
 
@@ -414,16 +407,21 @@ async function generateCollectionOptimized(job) {
       }, generationTimeout);
     });
 
-    // Wait for both generation and ZIP creation to complete
-    const [generationResult] = await Promise.all([
-      Promise.race([generationPromise, timeoutPromise]),
-      zipCreationPromise
-    ]);
+    // Wait for generation to complete
+    const generationResult = await Promise.race([generationPromise, timeoutPromise]);
+
+    job.message = 'Preparing download package...';
+    job.progress = 90;
+
+    // Create ZIP file after generation is complete
+    const zipPath = path.join(tempDir, `${job.collectionName}_collection.zip`);
+    await createZipArchiveOptimized(outputDir, zipPath, job.collectionSize);
 
     job.message = 'Generation completed!';
     job.progress = 100;
     job.status = 'completed';
     job.totalGenerated = generationResult.totalGenerated;
+    job.outputPath = zipPath;
     job.details = `Generated ${generationResult.totalGenerated} NFTs successfully`;
 
     console.log(`NFT Generator: Generation completed for job ${job.id}`);
@@ -458,8 +456,8 @@ async function generateCollectionOptimized(job) {
   }
 }
 
-// New streaming ZIP creation function
-function createStreamingZipArchive(sourceDir, outputPath, collectionSize) {
+// Optimized zip creation with streaming for large collections
+function createZipArchiveOptimized(sourceDir, outputPath, collectionSize) {
   return new Promise((resolve, reject) => {
     let output, archive;
     
@@ -469,20 +467,22 @@ function createStreamingZipArchive(sourceDir, outputPath, collectionSize) {
       
       // Create archive with better settings
       archive = archiver('zip', {
-        zlib: { level: 6 },
-        store: false
+        zlib: { level: 6 }, // Balanced compression level for speed vs size
+        store: false // Ensure compression is used
       });
 
       // Handle write stream events
       output.on('close', () => {
         const totalBytes = archive.pointer();
-        console.log(`NFT Generator: Streaming archive created successfully: ${totalBytes} total bytes`);
+        console.log(`NFT Generator: Archive created successfully: ${totalBytes} total bytes`);
         
+        // Validate the zip file was created properly
         if (totalBytes === 0) {
           reject(new Error('Generated zip file is empty'));
           return;
         }
         
+        // Check if file exists and has content
         if (!fs.existsSync(outputPath)) {
           reject(new Error('Zip file was not created'));
           return;
@@ -494,7 +494,7 @@ function createStreamingZipArchive(sourceDir, outputPath, collectionSize) {
           return;
         }
         
-        console.log(`NFT Generator: Streaming zip file validated: ${stats.size} bytes`);
+        console.log(`NFT Generator: Zip file validated: ${stats.size} bytes`);
         resolve();
       });
 
@@ -541,8 +541,9 @@ function createStreamingZipArchive(sourceDir, outputPath, collectionSize) {
       archive.finalize();
       
     } catch (error) {
-      console.error('NFT Generator: Streaming zip creation error:', error);
+      console.error('NFT Generator: Zip creation error:', error);
       
+      // Clean up on error
       if (output) {
         output.destroy();
       }
@@ -550,6 +551,7 @@ function createStreamingZipArchive(sourceDir, outputPath, collectionSize) {
         archive.destroy();
       }
       
+      // Remove partial file if it exists
       if (fs.existsSync(outputPath)) {
         try {
           fs.unlinkSync(outputPath);
