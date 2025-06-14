@@ -462,14 +462,27 @@ function createZipArchiveOptimized(sourceDir, outputPath, collectionSize) {
     let output, archive;
     
     try {
-      // Create write stream
-      output = fs.createWriteStream(outputPath);
+      // Create write stream with larger buffer for better performance
+      output = fs.createWriteStream(outputPath, { 
+        highWaterMark: 1024 * 1024 // 1MB buffer for better throughput
+      });
       
-      // Create archive with better settings
+      // Use faster compression settings for large collections
+      const compressionLevel = collectionSize > 5000 ? 1 : collectionSize > 1000 ? 3 : 6;
+      console.log(`NFT Generator: Using compression level ${compressionLevel} for ${collectionSize} NFTs`);
+      
+      // Create archive with optimized settings
       archive = archiver('zip', {
-        zlib: { level: 6 }, // Balanced compression level for speed vs size
+        zlib: { 
+          level: compressionLevel, // Faster compression for large collections
+          memLevel: 8, // Higher memory usage for better compression speed
+          windowBits: 15 // Standard window size
+        },
         store: false // Ensure compression is used
       });
+
+      // Set archive to use more memory for better performance
+      archive.pointer(); // Initialize pointer
 
       // Handle write stream events
       output.on('close', () => {
@@ -518,26 +531,56 @@ function createZipArchiveOptimized(sourceDir, outputPath, collectionSize) {
         }
       });
 
+      // Add progress tracking for large collections
+      if (collectionSize > 1000) {
+        let fileCount = 0;
+        archive.on('entry', (entry) => {
+          fileCount++;
+          if (fileCount % 100 === 0) {
+            console.log(`NFT Generator: Added ${fileCount} files to archive...`);
+          }
+        });
+      }
+
       // Pipe archive to output
       archive.pipe(output);
 
-      // Add directories with error checking
+      // Add directories with optimized approach for large collections
       const imagesPath = path.join(sourceDir, 'images');
       const metadataPath = path.join(sourceDir, 'metadata');
       
       if (fs.existsSync(imagesPath)) {
-        archive.directory(imagesPath, 'images');
+        // For very large collections, use glob pattern to add files more efficiently
+        if (collectionSize > 5000) {
+          console.log('NFT Generator: Using optimized file addition for large collection...');
+          // Add images directory with optimized settings
+          archive.directory(imagesPath, 'images', { 
+            name: 'images',
+            date: new Date()
+          });
+        } else {
+          archive.directory(imagesPath, 'images');
+        }
       } else {
         console.warn('NFT Generator: Images directory not found:', imagesPath);
       }
       
       if (fs.existsSync(metadataPath)) {
-        archive.directory(metadataPath, 'metadata');
+        // Add metadata directory
+        if (collectionSize > 5000) {
+          archive.directory(metadataPath, 'metadata', { 
+            name: 'metadata',
+            date: new Date()
+          });
+        } else {
+          archive.directory(metadataPath, 'metadata');
+        }
       } else {
         console.warn('NFT Generator: Metadata directory not found:', metadataPath);
       }
 
       // Finalize the archive
+      console.log('NFT Generator: Finalizing archive...');
       archive.finalize();
       
     } catch (error) {

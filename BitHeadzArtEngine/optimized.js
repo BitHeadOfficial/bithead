@@ -360,21 +360,26 @@ async function saveBatchResultsOptimized(batchResults, settings) {
   fs.mkdirSync(imagesDir, { recursive: true });
   fs.mkdirSync(metadataDir, { recursive: true });
   
-  // Save results in parallel with controlled concurrency
+  // Use Promise.allSettled for better error handling and parallel processing
   const savePromises = batchResults.map(async ({ edition, canvas, metadata }) => {
     try {
-      // Save image
+      // Save image with optimized settings
       const imagePath = path.join(imagesDir, `${edition}.png`);
-      const imageStream = canvas.createPNGStream({ compressionLevel: 6 });
-      const writeStream = fs.createWriteStream(imagePath);
+      const imageStream = canvas.createPNGStream({ 
+        compressionLevel: 6, // Balanced compression
+        filters: canvas.PNG_FILTER_NONE // Faster encoding
+      });
+      const writeStream = fs.createWriteStream(imagePath, {
+        highWaterMark: 64 * 1024 // 64KB buffer for better performance
+      });
       
       await pipeline(imageStream, writeStream);
       
-      // Save metadata
+      // Save metadata with synchronous write for small files (faster)
       const metadataPath = path.join(metadataDir, `${edition}.json`);
       fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
       
-      // Clear canvas to free memory
+      // Clear canvas to free memory immediately
       canvas.width = 0;
       canvas.height = 0;
       
@@ -384,7 +389,15 @@ async function saveBatchResultsOptimized(batchResults, settings) {
     }
   });
   
-  await Promise.all(savePromises);
+  // Wait for all saves to complete with better error handling
+  const results = await Promise.allSettled(savePromises);
+  
+  // Check for any failures
+  const failures = results.filter(result => result.status === 'rejected');
+  if (failures.length > 0) {
+    console.error(`NFT Generator: ${failures.length} files failed to save`);
+    throw new Error(`${failures.length} files failed to save`);
+  }
 }
 
 /***************************************************************
