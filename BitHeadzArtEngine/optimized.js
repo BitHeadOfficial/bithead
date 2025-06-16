@@ -1,5 +1,89 @@
 /*************************************************************
- * optimized.js - Energy-Efficient NFT Art Generator
+ * BitHeadzArtEngine - Optimized NFT Art Generator
+ * 
+ * CURRENT FUNCTIONALITY & FEATURES:
+ * 
+ * 1. LAYER ORGANIZATION:
+ *    - Expects layers in folders with numeric prefixes (e.g., "01_Background", "02_Base")
+ *    - Automatically detects layer order from folder names
+ *    - Supports any number of layers and trait categories
+ * 
+ * 2. TRAIT SELECTION & RARITY:
+ *    - Bell-curve distribution for natural rarity distribution
+ *    - Configurable layer probabilities (0-100%)
+ *    - Optional layers (Gear, Buttons) with configurable chances
+ *    - Duplicate prevention with combination tracking
+ *    - Maximum 5 attempts per NFT to ensure uniqueness
+ * 
+ * 3. IMAGE PROCESSING:
+ *    - 1000x1000 pixel output resolution
+ *    - PNG format with optimized compression
+ *    - Memory-efficient image caching
+ *    - Streaming image processing for large collections
+ * 
+ * 4. PERFORMANCE OPTIMIZATIONS:
+ *    - Batch processing with adaptive batch sizes:
+ *      * Small collections (1-500): 2 NFTs per batch
+ *      * Medium collections (501-2000): 4 NFTs per batch
+ *      * Large collections (2001-5000): 6 NFTs per batch
+ *      * Extra large (5000+): 8 NFTs per batch
+ *    - Memory management with automatic cleanup
+ *    - Parallel processing with controlled concurrency
+ *    - Optimized file I/O with streaming
+ * 
+ * 5. CONFIGURATION OPTIONS:
+ *    - Collection size (1-10,000 NFTs)
+ *    - Collection name and description
+ *    - Custom CID for metadata
+ *    - Active layer configuration with probabilities
+ *    - Rarity mode selection
+ *    - Progress callback for real-time updates
+ * 
+ * 6. OUTPUT STRUCTURE:
+ *    - /images/ - Generated NFT images (1.png, 2.png, etc.)
+ *    - /metadata/ - JSON metadata files (1.json, 2.json, etc.)
+ *    - Metadata includes: name, description, image URI, attributes
+ * 
+ * 7. ERROR HANDLING:
+ *    - Graceful failure handling for missing layers
+ *    - Memory cleanup on errors
+ *    - Detailed error logging
+ *    - Fallback mechanisms for corrupted images
+ * 
+ * 8. MEMORY MANAGEMENT:
+ *    - Automatic memory clearing every 50 operations
+ *    - Image cache with size limits
+ *    - Canvas cleanup after each NFT
+ *    - Garbage collection when available
+ * 
+ * USAGE EXAMPLE:
+ * const result = await generateCollectionWithLayersOptimized({
+ *   layersDir: "/path/to/layers",
+ *   outputDir: "/path/to/output",
+ *   collectionSize: 100,
+ *   collectionName: "My Collection",
+ *   collectionDescription: "A unique NFT collection",
+ *   activeLayers: {
+ *     "Background": { active: true, probability: 100 },
+ *     "Gear": { active: true, probability: 50 }
+ *   },
+ *   onProgress: (progress, message, details) => {
+ *     console.log(`${progress}% - ${message}`);
+ *   }
+ * });
+ * 
+ * LAYER STRUCTURE EXPECTED:
+ * /layers/
+ *   01_Background/
+ *     - background1.png
+ *     - background2.png
+ *   02_Base/
+ *     - base1.png
+ *     - base2.png
+ *   03_Eyes/
+ *     - eyes1.png
+ *     - eyes2.png
+ *   ... (any number of layers)
  * 
  * Key optimizations:
  * - Streaming image processing
