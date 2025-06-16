@@ -121,7 +121,7 @@ The application includes monitoring endpoints:
 
 ## Support
 
-For any issues or questions, please contact the administrator.
+For any issues or questions, please contact the administrator. 
 
 ## Platform-Specific Setup for NFT Generation (canvas dependency)
 

@@ -903,7 +903,7 @@ class BitHeadzArtEngine {
       if (status.status !== 'completed') {
         throw new Error('Generation not completed. Please wait for generation to finish.');
       }
-
+      
       // Show download starting message
       this.downloadBtn.innerHTML = '<span class="button-text">Starting Download...</span><span class="button-icon">📥</span>';
       
@@ -913,27 +913,27 @@ class BitHeadzArtEngine {
       
       while (retryCount < maxRetries) {
         try {
-          const response = await fetch(`/api/nft-generator/download/${this.generationId}`, {
-            method: 'GET',
-            headers: {
-              'Cache-Control': 'no-cache',
-              'Pragma': 'no-cache'
-            }
-          });
-
-          if (!response.ok) {
-            if (response.status === 404) {
+      const response = await fetch(`/api/nft-generator/download/${this.generationId}`, {
+        method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
+      
+      if (!response.ok) {
+        if (response.status === 404) {
               throw new Error('Download file not found. The files may have been cleaned up.');
-            } else if (response.status === 500) {
+        } else if (response.status === 500) {
               throw new Error('Server error during download. Please try again.');
-            } else {
-              throw new Error(`Download failed: ${response.status} ${response.statusText}`);
-            }
-          }
+        } else {
+          throw new Error(`Download failed: ${response.status} ${response.statusText}`);
+        }
+      }
 
           // Check if response is actually a file
-          const contentType = response.headers.get('content-type');
-          if (!contentType || !contentType.includes('application/zip')) {
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/zip')) {
             throw new Error('Invalid response format. Expected zip file.');
           }
 
@@ -943,36 +943,36 @@ class BitHeadzArtEngine {
           
           if (fileSize > 0) {
             console.log(`Downloading file: ${Math.round(fileSize / 1024 / 1024)}MB`);
-          }
+      }
 
           // Create blob from response
-          const blob = await response.blob();
-          
-          if (blob.size === 0) {
+      const blob = await response.blob();
+      
+      if (blob.size === 0) {
             throw new Error('Downloaded file is empty.');
-          }
+      }
 
           // Create download link
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.style.display = 'none';
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
           a.href = url;
           a.download = `${status.collectionName || 'collection'}_collection.zip`;
-          
+      
           // Trigger download
-          document.body.appendChild(a);
-          a.click();
+      document.body.appendChild(a);
+      a.click();
           
           // Cleanup
           window.URL.revokeObjectURL(url);
-          document.body.removeChild(a);
-
+      document.body.removeChild(a);
+      
           // Success!
           this.downloadBtn.innerHTML = '<span class="button-text">Download Complete!</span><span class="button-icon">✅</span>';
           this.showSuccess('Download completed successfully!');
           
           // Reset button after a delay
-          setTimeout(() => {
+      setTimeout(() => {
             this.downloadBtn.disabled = false;
             this.downloadBtn.innerHTML = '<span class="button-text">Download Collection</span><span class="button-icon">📥</span>';
           }, 3000);
