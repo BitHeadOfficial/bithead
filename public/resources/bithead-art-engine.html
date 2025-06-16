@@ -758,7 +758,7 @@
                 <div class="upload-content">
                   <span class="upload-icon">📁</span>
                   <p>Drag & drop layer folders here or click to browse</p>
-                  <p class="upload-hint">Upload individual layer folders (00_Background, 01_Body, 02_Head, etc.) - not the parent folder containing all layers.</p>
+                  <p class="upload-hint">Upload individual layer folders (Background, Body, Eyes, etc.) - not the parent folder containing all layers.</p>
                 </div>
                 <input type="file" id="layerInput" multiple webkitdirectory directory style="display: none;" data-testid="folder-upload">
               </div>
@@ -903,17 +903,17 @@
               <div class="instruction-card">
                 <div class="instruction-number">1</div>
                 <h3>Prepare Your Layers</h3>
-                <p>Create PNG layers for each trait (background, body, eyes, etc.). Organize them in folders with prefixes like 00_Background, 01_Body, 02_Head, etc.</p>
+                <p>Create PNG layers for each trait (background, body, eyes, etc.). Organize them in folders with specific names.</p>
               </div>
               <div class="instruction-card">
                 <div class="instruction-number">2</div>
                 <h3>Upload Individual Layer Folders</h3>
-                <p>Upload each layer folder separately (e.g., 00_Background, 01_Body, 02_Head). Do NOT upload the parent folder containing all layers.</p>
+                <p>Upload each layer folder separately. The system recognizes specific folder names for proper ordering.</p>
               </div>
               <div class="instruction-card">
                 <div class="instruction-number">3</div>
                 <h3>Configure Active Layers</h3>
-                <p>Toggle layers on/off and set probability percentages. For example: 100% for backgrounds, 50% for gear, 20% for accessories.</p>
+                <p>Toggle layers on/off and set probability percentages. For example: 100% for backgrounds, 50% for gear.</p>
               </div>
               <div class="instruction-card">
                 <div class="instruction-number">4</div>
@@ -925,40 +925,46 @@
 
           <!-- Layer Organization -->
           <div class="doc-section">
-            <h3>📁 Layer Organization & Smart Trait Detection</h3>
+            <h3>📁 Layer Organization & Folder Structure</h3>
             <div class="feature-grid">
               <div class="feature-card">
-                <h4>🎯 Automatic Trait Detection</h4>
-                <p>The system automatically detects trait categories from your folder structure and assigns proper layer orders:</p>
+                <h4>🎯 Flexible Folder Naming</h4>
+                <p>The system works with any folder names you choose. You have two options for controlling layer order:</p>
                 <ul>
-                  <li><strong>Background</strong> (Order 1) - Base backgrounds for all NFTs</li>
-                  <li><strong>Base</strong> (Order 2) - Main character/base layer</li>
-                  <li><strong>Body</strong> (Order 3) - Body variations</li>
-                  <li><strong>Head</strong> (Order 4) - Head/face variations</li>
-                  <li><strong>Eyes</strong> (Order 5) - Eye expressions</li>
-                  <li><strong>Mouth</strong> (Order 6) - Mouth expressions</li>
-                  <li><strong>Accessories</strong> (Order 7) - Hats, glasses, etc.</li>
-                  <li><strong>Gear</strong> (Order 8) - Clothing, armor, etc.</li>
+                  <li><strong>Automatic Ordering:</strong> Use any folder names (Background, Body, Eyes, etc.) - they'll be ordered alphabetically</li>
+                  <li><strong>Custom Ordering:</strong> Use numeric prefixes (01_Background, 02_Body, 03_Eyes) to specify exact layer order</li>
+                  <li><strong>Any Names Work:</strong> Hats, Clothing, Weapons, Accessories, etc. - all supported</li>
+                  <li><strong>Smart Detection:</strong> System automatically detects your folder structure and organizes layers</li>
                 </ul>
               </div>
               <div class="feature-card">
                 <h4>📂 Folder Structure Examples</h4>
                 <div class="code-example">
                   <code>
-                    00_Background/<br>
+                    Background/<br>
                     ├── background1.png<br>
                     ├── background2.png<br>
                     └── background3.png<br><br>
-                    01_Body/<br>
+                    Body/<br>
                     ├── body1.png<br>
                     ├── body2.png<br>
                     └── body3.png<br><br>
-                    02_Head/<br>
-                    ├── head1.png<br>
-                    ├── head2.png<br>
-                    └── head3.png
+                    Eyes/<br>
+                    ├── eyes1.png<br>
+                    ├── eyes2.png<br>
+                    └── eyes3.png
                   </code>
                 </div>
+                <p><strong>Or with custom ordering:</strong></p>
+                <div class="code-example">
+                  <code>
+                    01_Background/<br>
+                    02_Body/<br>
+                    03_Eyes/<br>
+                    04_Accessories/
+                  </code>
+                </div>
+                <p><strong>Important:</strong> Upload each folder individually, not the parent folder containing all layers.</p>
               </div>
             </div>
           </div>
@@ -969,12 +975,13 @@
             <div class="feature-grid">
               <div class="feature-card">
                 <h4>⚡ Automatic Compression</h4>
-                <p>Large images are automatically compressed to 1024x1024 pixels for optimal performance:</p>
+                <p>Large images are automatically processed for optimal performance:</p>
                 <ul>
+                  <li>Images larger than 1MB are compressed to 1024x1024 pixels</li>
                   <li>Maintains aspect ratio during compression</li>
+                  <li>Smaller images (under 1MB) are used as-is</li>
                   <li>Sequential processing to avoid memory issues</li>
                   <li>Fallback to original images if compression fails</li>
-                  <li>Significantly improves generation speed</li>
                 </ul>
               </div>
               <div class="feature-card">
@@ -984,7 +991,8 @@
                   <li>Low memory mode enabled by default</li>
                   <li>Automatic garbage collection</li>
                   <li>Sequential image processing</li>
-                  <li>Background job management</li>
+                  <li>Background job management with cleanup</li>
+                  <li>30-second timeout per image compression</li>
                 </ul>
               </div>
             </div>
@@ -1099,7 +1107,7 @@
                   <li><strong>File Size:</strong> Up to 10MB per image</li>
                   <li><strong>Total Files:</strong> Up to 10,000 files per upload</li>
                   <li><strong>Image Format:</strong> PNG with transparency</li>
-                  <li><strong>Resolution:</strong> Auto-compressed to 1024x1024</li>
+                  <li><strong>Compression:</strong> Auto-compressed to 1024x1024 if >1MB</li>
                 </ul>
               </div>
             </div>
@@ -1116,6 +1124,7 @@
                   <li>Include transparent backgrounds for overlays</li>
                   <li>Test layer combinations before generating</li>
                   <li>Use descriptive filenames for better organization</li>
+                  <li>Keep images under 1MB to avoid compression delays</li>
                 </ul>
               </div>
               <div class="feature-card">
@@ -1125,6 +1134,8 @@
                   <li>Use Bell Curve rarity for natural distribution</li>
                   <li>Set appropriate layer probabilities</li>
                   <li>Monitor generation progress in real-time</li>
+                  <li>Use descriptive folder names for better organization</li>
+                  <li>Use numeric prefixes (01_, 02_, etc.) for custom layer ordering</li>
                 </ul>
               </div>
               <div class="feature-card">
@@ -1132,8 +1143,10 @@
                 <ul>
                   <li>Large collections may take several minutes</li>
                   <li>Ensure all images are valid PNG files</li>
-                  <li>Check layer folder structure is correct</li>
+                  <li>Check that folder names are descriptive and clear</li>
                   <li>Use browser refresh if upload fails</li>
+                  <li>Monitor memory usage for very large collections</li>
+                  <li>Test layer combinations before generating large collections</li>
                 </ul>
               </div>
             </div>

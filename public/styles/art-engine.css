@@ -519,128 +519,214 @@
 /* Instructions Section */
 .instructions-section {
   margin-top: 4rem;
-  padding: 3rem 0;
+  padding: 4rem 0;
   border-top: 1px solid rgba(66, 150, 210, 0.2);
+  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(66, 150, 210, 0.02) 100%);
 }
 
 .instructions-section h2 {
-  font-size: 2.5rem;
-  font-weight: 600;
-  font-style: oblique;
+  font-size: 2.8rem;
+  font-weight: 700;
   text-align: center;
-  margin-bottom: 3rem;
+  margin-bottom: 4rem;
   color: #fff;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
+  position: relative;
+}
+
+.instructions-section h2::after {
+  content: '';
+  position: absolute;
+  bottom: -1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, #4296d2, #2a5a8a);
+  border-radius: 2px;
 }
 
 .instructions-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
-  margin-bottom: 3rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2.5rem;
+  margin-bottom: 4rem;
 }
 
 .instruction-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(66, 150, 210, 0.2);
-  border-radius: 12px;
-  padding: 2rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(66, 150, 210, 0.15);
+  border-radius: 16px;
+  padding: 2.5rem;
   text-align: center;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.instruction-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #4296d2, #2a5a8a);
+  transform: scaleX(0);
+  transition: transform 0.4s ease;
 }
 
 .instruction-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-8px);
   border-color: rgba(66, 150, 210, 0.4);
-  box-shadow: 0 10px 30px rgba(66, 150, 210, 0.2);
+  box-shadow: 0 20px 40px rgba(66, 150, 210, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.instruction-card:hover::before {
+  transform: scaleX(1);
 }
 
 .instruction-number {
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   background: linear-gradient(135deg, #4296d2, #2a5a8a);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 1.8rem;
+  font-weight: 700;
   color: #fff;
-  margin: 0 auto 1.5rem auto;
-  box-shadow: 0 4px 15px rgba(66, 150, 210, 0.3);
+  margin: 0 auto 2rem auto;
+  box-shadow: 0 8px 25px rgba(66, 150, 210, 0.3);
+  position: relative;
+}
+
+.instruction-number::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4296d2, #2a5a8a);
+  opacity: 0.3;
+  z-index: -1;
 }
 
 .instruction-card h3 {
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   font-weight: 600;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
   color: #fff;
+  line-height: 1.3;
 }
 
 .instruction-card p {
-  color: #ccc;
-  line-height: 1.6;
+  color: #b0b0b0;
+  line-height: 1.7;
   margin: 0;
+  font-size: 1rem;
 }
 
 /* Documentation Sections */
 .doc-section {
-  margin-bottom: 4rem;
-  padding: 2rem;
+  margin-bottom: 5rem;
+  padding: 3rem;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(66, 150, 210, 0.1);
-  border-radius: 16px;
-  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  backdrop-filter: blur(20px);
+  position: relative;
+}
+
+.doc-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(66, 150, 210, 0.3), transparent);
 }
 
 .doc-section h3 {
-  font-size: 2rem;
-  font-weight: 600;
-  font-style: oblique;
-  margin-bottom: 2rem;
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 3rem;
   color: #4296d2;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  border-bottom: 2px solid rgba(66, 150, 210, 0.3);
-  padding-bottom: 1rem;
+  letter-spacing: 2px;
+  position: relative;
+  padding-bottom: 1.5rem;
+}
+
+.doc-section h3::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #4296d2, #2a5a8a);
+  border-radius: 2px;
 }
 
 .feature-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: 3rem;
 }
 
 .feature-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(66, 150, 210, 0.15);
-  border-radius: 12px;
-  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(66, 150, 210, 0.1);
+  border-radius: 16px;
+  padding: 2rem;
   transition: all 0.3s ease;
+  position: relative;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #4296d2, #2a5a8a);
+  border-radius: 16px 16px 0 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .feature-card:hover {
-  border-color: rgba(66, 150, 210, 0.3);
-  background: rgba(255, 255, 255, 0.05);
-  transform: translateY(-2px);
+  border-color: rgba(66, 150, 210, 0.25);
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateY(-4px);
+  box-shadow: 0 15px 35px rgba(66, 150, 210, 0.1);
+}
+
+.feature-card:hover::before {
+  opacity: 1;
 }
 
 .feature-card h4 {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   font-weight: 600;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
   color: #fff;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.8rem;
+  line-height: 1.3;
 }
 
 .feature-card p {
-  color: #ccc;
-  line-height: 1.6;
-  margin-bottom: 1rem;
+  color: #b0b0b0;
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
 }
 
 .feature-card ul {
@@ -650,11 +736,12 @@
 }
 
 .feature-card li {
-  color: #ccc;
-  line-height: 1.6;
-  margin-bottom: 0.5rem;
-  padding-left: 1.5rem;
+  color: #b0b0b0;
+  line-height: 1.7;
+  margin-bottom: 0.8rem;
+  padding-left: 2rem;
   position: relative;
+  font-size: 0.95rem;
 }
 
 .feature-card li:before {
@@ -662,7 +749,8 @@
   color: #4296d2;
   position: absolute;
   left: 0;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
+  top: 0.2rem;
 }
 
 .feature-card strong {
@@ -670,170 +758,149 @@
   font-weight: 600;
 }
 
+.feature-card em {
+  color: #888;
+  font-style: italic;
+}
+
 /* Code Examples */
 .code-example {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(66, 150, 210, 0.2);
-  border-radius: 8px;
-  padding: 1rem;
-  margin-top: 1rem;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+  position: relative;
+}
+
+.code-example::before {
+  content: '📁';
+  position: absolute;
+  top: -10px;
+  left: 20px;
+  background: #000;
+  padding: 0 10px;
+  font-size: 0.9rem;
 }
 
 .code-example code {
   color: #4296d2;
-  font-family: 'Courier New', monospace;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
   font-size: 0.9rem;
-  line-height: 1.4;
+  line-height: 1.6;
   white-space: pre-line;
+  display: block;
 }
 
 /* Usage Examples */
 .usage-example {
-  background: rgba(66, 150, 210, 0.05);
-  border: 1px solid rgba(66, 150, 210, 0.2);
-  border-radius: 8px;
-  padding: 1rem;
-  margin-top: 1rem;
+  background: rgba(66, 150, 210, 0.03);
+  border: 1px solid rgba(66, 150, 210, 0.15);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+  position: relative;
+}
+
+.usage-example::before {
+  content: '💡';
+  position: absolute;
+  top: -10px;
+  left: 20px;
+  background: rgba(66, 150, 210, 0.1);
+  padding: 0 10px;
+  font-size: 0.9rem;
 }
 
 .usage-example p {
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  color: #fff;
 }
 
 .usage-example ul {
   margin: 0;
-  padding-left: 1rem;
+  padding-left: 1.5rem;
 }
 
 .usage-example li {
-  color: #ccc;
-  line-height: 1.5;
-  margin-bottom: 0.3rem;
-}
-
-/* Performance Metrics */
-.performance-metrics {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.metric-item {
-  background: rgba(66, 150, 210, 0.1);
-  border: 1px solid rgba(66, 150, 210, 0.2);
-  border-radius: 8px;
-  padding: 1rem;
-  text-align: center;
-}
-
-.metric-value {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #4296d2;
+  color: #b0b0b0;
+  line-height: 1.6;
   margin-bottom: 0.5rem;
+  font-size: 0.95rem;
 }
 
-.metric-label {
-  font-size: 0.9rem;
-  color: #ccc;
+/* Responsive Design for Documentation */
+@media (max-width: 1200px) {
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .doc-section {
+    padding: 2.5rem;
+  }
 }
 
-/* Responsive Design */
 @media (max-width: 1024px) {
-  .interface-grid {
+  .instructions-section h2 {
+    font-size: 2.4rem;
+  }
+  
+  .doc-section h3 {
+    font-size: 1.8rem;
+  }
+  
+  .feature-grid {
     grid-template-columns: 1fr;
     gap: 2rem;
+  }
+  
+  .doc-section {
+    padding: 2rem;
+    margin-bottom: 3rem;
   }
 }
 
 @media (max-width: 768px) {
-  .container {
-    padding: 0 1rem;
+  .instructions-section {
+    padding: 3rem 0;
   }
   
-  .tool-hero h1 {
-    font-size: 2.5rem;
-  }
-  
-  .tool-hero p {
-    font-size: 1rem;
-  }
-  
-  .config-panel,
-  .preview-panel {
-    padding: 1.5rem;
-  }
-  
-  .upload-area {
-    padding: 1.5rem;
+  .instructions-section h2 {
+    font-size: 2rem;
+    margin-bottom: 3rem;
   }
   
   .instructions-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    margin-bottom: 3rem;
+  }
+  
+  .feature-grid {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
   
-  .instruction-card {
-    padding: 1.5rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .tool-hero h1 {
-    font-size: 2rem;
-  }
-  
-  .config-panel,
-  .preview-panel {
-    padding: 1rem;
-  }
-  
-  .upload-area {
-    padding: 1rem;
-  }
-  
-  .generate-button,
-  .download-button {
-    padding: 1rem 1.5rem;
-    font-size: 1rem;
-  }
-}
-
-/* Responsive Design for Documentation */
-@media (max-width: 1024px) {
-  .feature-grid {
-    grid-template-columns: 1fr;
-  }
-  
   .doc-section {
     padding: 1.5rem;
+    margin-bottom: 2.5rem;
   }
   
   .doc-section h3 {
     font-size: 1.5rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .instructions-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .feature-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .doc-section {
-    padding: 1rem;
     margin-bottom: 2rem;
   }
   
-  .doc-section h3 {
-    font-size: 1.3rem;
+  .feature-card {
+    padding: 1.5rem;
   }
   
-  .feature-card {
+  .instruction-card {
+    padding: 2rem;
+  }
+  
+  .code-example {
     padding: 1rem;
   }
   
@@ -844,15 +911,21 @@
 
 @media (max-width: 480px) {
   .instructions-section h2 {
-    font-size: 2rem;
+    font-size: 1.8rem;
+    letter-spacing: 2px;
   }
   
   .doc-section h3 {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
   }
   
   .feature-card {
-    padding: 0.8rem;
+    padding: 1rem;
+  }
+  
+  .instruction-card {
+    padding: 1.5rem;
   }
   
   .code-example {
@@ -861,5 +934,9 @@
   
   .code-example code {
     font-size: 0.75rem;
+  }
+  
+  .usage-example {
+    padding: 1rem;
   }
 } 
