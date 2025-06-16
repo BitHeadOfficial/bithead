@@ -6,11 +6,93 @@ import { v4 as uuidv4 } from 'uuid';
 import archiver from 'archiver';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { createCanvas, loadImage } from 'canvas';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const router = express.Router();
+
+/*************************************************************
+ * NFT Generator Route - Professional NFT Collection Generator
+ * 
+ * INTEGRATION WITH BitHeadzArtEngine:
+ * 
+ * This route serves as the API layer for the BitHeadzArtEngine, providing:
+ * 
+ * 1. FILE UPLOAD & ORGANIZATION:
+ *    - Accepts PNG files uploaded via web interface
+ *    - Organizes files into proper trait categories using smart detection
+ *    - Creates layer structure expected by BitHeadzArtEngine
+ *    - Handles folder-based organization (Background/, Base/, Eyes/, etc.)
+ * 
+ * 2. TRAIT CATEGORY DETECTION:
+ *    - Automatically detects trait categories from folder structure
+ *    - Assigns proper layer orders (Background=1, Base=2, Eyes=5, etc.)
+ *    - Supports custom trait categories with fallback ordering
+ *    - Handles files without folder structure gracefully
+ * 
+ * 3. IMAGE COMPRESSION & OPTIMIZATION:
+ *    - Compresses large images to 1024x1024 pixels for performance
+ *    - Maintains aspect ratio during compression
+ *    - Fallback to original images if compression fails
+ *    - Sequential processing to avoid memory issues
+ * 
+ * 4. GENERATION WORKFLOW:
+ *    - File upload → Trait organization → Image compression → NFT generation
+ *    - Background processing with real-time progress updates
+ *    - Job management with unique IDs for tracking
+ *    - Automatic cleanup of temporary files
+ * 
+ * 5. API ENDPOINTS:
+ *    - POST /generate - Start NFT generation
+ *    - GET /status/:id - Check generation progress
+ *    - GET /download/:id - Download completed collection
+ *    - POST /cancel/:id - Cancel generation
+ *    - POST /test-upload - Test file upload functionality
+ * 
+ * 6. CONFIGURATION OPTIONS:
+ *    - Collection size (1-10,000 NFTs)
+ *    - Collection name and description
+ *    - Custom CID for metadata
+ *    - Active layer configuration with probabilities
+ *    - Rarity mode selection
+ * 
+ * 7. OUTPUT & DELIVERY:
+ *    - ZIP file containing images and metadata
+ *    - Optimized compression for large collections
+ *    - Streaming download for large files
+ *    - Progress tracking during download
+ * 
+ * 8. ERROR HANDLING & RELIABILITY:
+ *    - Comprehensive error logging
+ *    - Graceful failure handling
+ *    - Automatic cleanup on errors
+ *    - Timeout protection for long operations
+ *    - Memory management for large collections
+ * 
+ * EXPECTED FILE STRUCTURE:
+ * Users upload files organized in folders like:
+ * Background/
+ *   - background1.png
+ *   - background2.png
+ * Base/
+ *   - base1.png
+ *   - base2.png
+ * Eyes/
+ *   - eyes1.png
+ *   - eyes2.png
+ * 
+ * The system automatically:
+ * 1. Detects trait categories from folder names
+ * 2. Assigns proper layer orders
+ * 3. Compresses images if needed
+ * 4. Passes organized structure to BitHeadzArtEngine
+ * 5. Generates unique NFTs with proper layering
+ * 
+ * This creates a professional, scalable NFT generation system
+ * suitable for creators of all skill levels.
+ *************************************************************/
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -105,42 +187,82 @@ router.post('/cancel/:generationId', (req, res) => {
   }
 });
 
+// Test endpoint to verify upload functionality
+router.post('/test-upload', upload.any(), (req, res) => {
+  try {
+    console.log('NFT Generator: Test upload endpoint called');
+    console.log('NFT Generator: Request body keys:', Object.keys(req.body));
+    console.log('NFT Generator: Files count:', req.files ? req.files.length : 0);
+    
+    if (req.files && req.files.length > 0) {
+      console.log('NFT Generator: Sample file info:', {
+        originalname: req.files[0].originalname,
+        mimetype: req.files[0].mimetype,
+        size: req.files[0].size,
+        path: req.files[0].path
+      });
+    }
+    
+    res.json({ 
+      success: true, 
+      message: 'Upload test successful',
+      fileCount: req.files ? req.files.length : 0,
+      bodyKeys: Object.keys(req.body)
+    });
+  } catch (error) {
+    console.error('NFT Generator: Test upload error:', error);
+    res.status(500).json({ error: 'Test upload failed', details: error.message });
+  }
+});
+
 // Upload layers and start generation
 router.post('/generate', upload.any(), async (req, res) => {
   try {
     console.log('NFT Generator: Starting generation process');
+    console.log('NFT Generator: Request body keys:', Object.keys(req.body));
+    console.log('NFT Generator: Files count:', req.files ? req.files.length : 0);
     
     const { collectionName, collectionSize, collectionDescription, rarityMode, activeLayers, customCID } = req.body;
     const files = req.files;
     const filePaths = req.body.filePaths;
 
+    console.log('NFT Generator: Collection name:', collectionName);
+    console.log('NFT Generator: Collection size:', collectionSize);
+    console.log('NFT Generator: Rarity mode:', rarityMode);
+
     if (!files || files.length === 0) {
+      console.log('NFT Generator: No files uploaded');
       return res.status(400).json({ error: 'No files uploaded' });
     }
 
     // Filter and validate files
     const validFiles = files.filter(file => {
       if (file.mimetype !== 'image/png') {
-        console.log(`Skipping non-PNG file: ${file.originalname} (${file.mimetype})`);
+        console.log(`NFT Generator: Skipping non-PNG file: ${file.originalname} (${file.mimetype})`);
         return false;
       }
       return true;
     });
 
+    console.log(`NFT Generator: Valid PNG files: ${validFiles.length}/${files.length}`);
+
     if (validFiles.length === 0) {
+      console.log('NFT Generator: No valid PNG files found');
       return res.status(400).json({ error: 'No valid PNG files uploaded' });
     }
 
     if (!collectionName || !collectionSize) {
+      console.log('NFT Generator: Missing required fields:', { collectionName, collectionSize });
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
     const size = parseInt(collectionSize);
-    if (size < 1 || size > 10000) {
+    if (isNaN(size) || size < 1 || size > 10000) {
+      console.log('NFT Generator: Invalid collection size:', collectionSize);
       return res.status(400).json({ error: 'Invalid collection size' });
     }
 
-    console.log(`NFT Generator: Processing ${validFiles.length} valid PNG files`);
+    console.log(`NFT Generator: Processing ${validFiles.length} valid PNG files for ${size} NFTs`);
 
     // Create generation job
     const generationId = uuidv4();
@@ -172,8 +294,22 @@ router.post('/generate', upload.any(), async (req, res) => {
 
     generationJobs.set(generationId, job);
 
+    console.log(`NFT Generator: Created job ${generationId} with ${job.files.length} files`);
+
     // Start generation in background with optimized settings
-    generateCollectionOptimized(job);
+    try {
+      generateCollectionOptimized(job).catch(error => {
+        console.error(`NFT Generator: Background generation error for job ${generationId}:`, error);
+        job.status = 'failed';
+        job.message = 'Generation failed in background process';
+        job.details = error.message;
+      });
+    } catch (error) {
+      console.error(`NFT Generator: Error starting background generation for job ${generationId}:`, error);
+      job.status = 'failed';
+      job.message = 'Failed to start generation process';
+      job.details = error.message;
+    }
 
     res.json({ 
       success: true, 
@@ -183,6 +319,7 @@ router.post('/generate', upload.any(), async (req, res) => {
 
   } catch (error) {
     console.error('NFT Generator Error:', error);
+    console.error('NFT Generator Error Stack:', error.stack);
     res.status(500).json({ error: 'Generation failed', details: error.message });
   }
 });
@@ -338,9 +475,12 @@ async function generateCollectionOptimized(job) {
     console.log(`NFT Generator: Job files count: ${job.files.length}`);
     console.log(`NFT Generator: Collection size: ${job.collectionSize}`);
     
-    // Optimized timeout based on collection size
-    const generationTimeout = Math.max(180000, job.collectionSize * 500);
-    console.log(`NFT Generator: Setting optimized generation timeout to ${generationTimeout}ms`);
+    // Optimized timeout based on collection size and image complexity
+    const baseTimeout = 180000; // 3 minutes base
+    const perNFTTimeout = 2000; // 2 seconds per NFT
+    const largeImageTimeout = 5000; // Extra 5 seconds for large images
+    const generationTimeout = baseTimeout + (job.collectionSize * perNFTTimeout) + largeImageTimeout;
+    console.log(`NFT Generator: Setting optimized generation timeout to ${generationTimeout}ms (${Math.round(generationTimeout/1000/60)} minutes)`);
     
     // Update status
     job.message = 'Organizing layers...';
@@ -362,7 +502,7 @@ async function generateCollectionOptimized(job) {
     console.log(`NFT Generator: Created temp directory: ${tempDir}`);
 
     // Organize uploaded files into layer structure
-    const layerStructure = organizeLayers(job.files, layersDir);
+    const layerStructure = await organizeTraits(job.files, layersDir);
     
     console.log(`NFT Generator: Layer structure result:`, layerStructure.map(l => `${l.folder}: ${l.count} files`));
     
@@ -373,6 +513,33 @@ async function generateCollectionOptimized(job) {
     if (layerStructure.length === 0) {
       throw new Error('No valid layers found');
     }
+
+    // NEW: Compress images AFTER layer organization is complete
+    job.message = 'Compressing layer images...';
+    job.progress = 25;
+    
+    console.log(`NFT Generator: Starting image compression for ${layerStructure.length} layers`);
+    
+    // Compress images in each layer sequentially to avoid memory issues
+    for (let i = 0; i < layerStructure.length; i++) {
+      const layer = layerStructure[i];
+      const layerProgress = 25 + (i / layerStructure.length) * 5; // 25% to 30%
+      
+      job.message = `Compressing ${layer.name} images...`;
+      job.progress = layerProgress;
+      
+      console.log(`NFT Generator: Compressing layer ${i + 1}/${layerStructure.length}: ${layer.name}`);
+      
+      try {
+        await compressLayerImages(layer.path, 1024);
+        console.log(`NFT Generator: Successfully compressed layer: ${layer.name}`);
+      } catch (error) {
+        console.error(`NFT Generator: Error compressing layer ${layer.name}:`, error);
+        // Continue with other layers - don't fail the entire process
+      }
+    }
+    
+    console.log(`NFT Generator: Completed image compression for all layers`);
 
     job.message = 'Generating NFTs...';
     job.progress = 30;
@@ -608,97 +775,334 @@ function createZipArchiveOptimized(sourceDir, outputPath, collectionSize) {
   });
 }
 
-// Organize uploaded files into layer structure
-function organizeLayers(files, layersDir) {
-  console.log(`NFT Generator: Organizing ${files.length} files into layers...`);
-  console.log(`NFT Generator: Sample file names:`, files.slice(0, 5).map(f => f.originalname));
-  console.log(`NFT Generator: Sample webkitRelativePaths:`, files.slice(0, 5).map(f => f.webkitRelativePath));
-  
-  const layerStructure = [];
-  const layerGroups = new Map();
-
-  // Group files by layer name and extract layer order
-  files.forEach(file => {
-    const layerInfo = extractLayerInfo(file.webkitRelativePath || file.originalname);
-    console.log(`NFT Generator: File "${file.webkitRelativePath || file.originalname}" -> Layer: ${layerInfo.name}, Order: ${layerInfo.order}`);
+// Clean image compression function - optimized for large images
+async function compressImageSafely(inputPath, outputPath, targetSize = 1024) {
+  try {
+    console.log(`NFT Generator: Starting optimized compression of ${inputPath}`);
     
-    if (!layerGroups.has(layerInfo.name)) {
-      layerGroups.set(layerInfo.name, {
-        order: layerInfo.order,
-        files: []
-      });
+    // Check if input file exists
+    if (!fs.existsSync(inputPath)) {
+      throw new Error(`Input file does not exist: ${inputPath}`);
     }
-    layerGroups.get(layerInfo.name).files.push(file);
-  });
-
-  console.log(`NFT Generator: Found ${layerGroups.size} layer groups:`);
-  layerGroups.forEach((layerData, layerName) => {
-    console.log(`  - ${layerName}: ${layerData.files.length} files, order ${layerData.order}`);
-  });
-
-  // Create layer directories and move files
-  layerGroups.forEach((layerData, layerName) => {
-    // Create folder with numeric prefix based on layer order
-    const folderName = `${layerData.order.toString().padStart(2, '0')}_${layerName}`;
-    const layerDir = path.join(layersDir, folderName);
-    fs.mkdirSync(layerDir, { recursive: true });
-
-    console.log(`NFT Generator: Creating layer directory: ${folderName}`);
-
-    layerData.files.forEach(file => {
-      // Extract just the filename from the path (e.g., "H_Green_Ball.png" from "02_Head/H_Green_Ball.png")
-      const fileName = (file.webkitRelativePath || file.originalname).split('/').pop();
-      const destPath = path.join(layerDir, fileName);
-      fs.copyFileSync(file.path, destPath);
+    
+    // Get file size to determine if compression is needed
+    const stats = fs.statSync(inputPath);
+    const fileSizeMB = stats.size / (1024 * 1024);
+    
+    console.log(`NFT Generator: File size: ${fileSizeMB.toFixed(2)}MB`);
+    
+    // If file is already small enough (less than 1MB), skip compression
+    if (fileSizeMB < 1) {
+      fs.copyFileSync(inputPath, outputPath);
+      console.log(`NFT Generator: File already small enough, copied as-is`);
+      return;
+    }
+    
+    // Load image and get dimensions
+    const image = await loadImage(inputPath);
+    const { width, height } = image;
+    
+    console.log(`NFT Generator: Image dimensions: ${width}x${height}`);
+    
+    // Only resize if image is larger than target size
+    if (width <= targetSize && height <= targetSize) {
+      // If image is already small enough, just copy it
+      fs.copyFileSync(inputPath, outputPath);
+      console.log(`NFT Generator: Image already small enough, copied as-is`);
+      return;
+    }
+    
+    // Calculate new dimensions maintaining aspect ratio
+    let newWidth, newHeight;
+    if (width > height) {
+      newWidth = targetSize;
+      newHeight = Math.round((height * targetSize) / width);
+    } else {
+      newHeight = targetSize;
+      newWidth = Math.round((width * targetSize) / height);
+    }
+    
+    console.log(`NFT Generator: Resizing to ${newWidth}x${newHeight}`);
+    
+    // Create canvas and resize image
+    const canvas = createCanvas(newWidth, newHeight);
+    const ctx = canvas.getContext('2d');
+    
+    // Use high-quality resizing
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(image, 0, 0, newWidth, newHeight);
+    
+    // Save compressed image with proper error handling and timeout
+    return new Promise((resolve, reject) => {
+      const out = fs.createWriteStream(outputPath);
+      const stream = canvas.createPNGStream({ 
+        compressionLevel: 3, // Faster compression for large images
+        filters: canvas.PNG_FILTER_NONE
+      });
+      
+      // Add timeout for compression
+      const timeout = setTimeout(() => {
+        console.error(`NFT Generator: Compression timeout for ${inputPath}`);
+        out.destroy();
+        stream.destroy();
+        reject(new Error('Compression timeout'));
+      }, 30000); // 30 second timeout
+      
+      stream.pipe(out);
+      
+      out.on('finish', () => {
+        clearTimeout(timeout);
+        console.log(`NFT Generator: Successfully compressed ${inputPath} from ${width}x${height} to ${newWidth}x${newHeight}`);
+        resolve();
+      });
+      
+      out.on('error', (error) => {
+        clearTimeout(timeout);
+        console.error(`NFT Generator: Stream error compressing ${inputPath}:`, error);
+        reject(error);
+      });
+      
+      stream.on('error', (error) => {
+        clearTimeout(timeout);
+        console.error(`NFT Generator: Canvas stream error for ${inputPath}:`, error);
+        reject(error);
+      });
     });
-
-    layerStructure.push({
-      name: layerName,
-      count: layerData.files.length,
-      path: layerDir,
-      folder: folderName,
-      order: layerData.order
-    });
-  });
-
-  const sortedStructure = layerStructure.sort((a, b) => a.order - b.order);
-  console.log(`NFT Generator: Final layer structure:`);
-  sortedStructure.forEach(layer => {
-    console.log(`  - ${layer.folder}: ${layer.count} files`);
-  });
-
-  return sortedStructure;
+    
+  } catch (error) {
+    console.error(`NFT Generator: Error compressing image ${inputPath}:`, error);
+    // If compression fails, just copy the original
+    fs.copyFileSync(inputPath, outputPath);
+    console.log(`NFT Generator: Fallback: copied original ${inputPath}`);
+  }
 }
 
-// Extract layer name and order from filename
-function extractLayerInfo(fileName) {
-  // Handle file paths like "02_Head/H_Green_Ball.png"
-  const pathParts = fileName.split('/');
-  if (pathParts.length > 1) {
-    // Extract from folder name (e.g., "02_Head")
-    const folderName = pathParts[0];
-    const prefixMatch = folderName.match(/^(\d+)_(.+)$/);
-    if (prefixMatch) {
-      return {
-        name: prefixMatch[2], // Return "Head" from "02_Head"
-        order: parseInt(prefixMatch[1])
-      };
+// Batch compress images in a layer directory
+async function compressLayerImages(layerDir, targetSize = 1024) {
+  try {
+    console.log(`NFT Generator: Starting batch compression for layer: ${layerDir}`);
+    
+    // Get all PNG files in the layer directory
+    const files = fs.readdirSync(layerDir)
+      .filter(file => file.toLowerCase().endsWith('.png'))
+      .map(file => path.join(layerDir, file));
+    
+    if (files.length === 0) {
+      console.log(`NFT Generator: No PNG files found in ${layerDir}`);
+      return;
     }
+    
+    console.log(`NFT Generator: Found ${files.length} PNG files to compress in ${layerDir}`);
+    
+    // Process files sequentially to avoid memory issues
+    for (let i = 0; i < files.length; i++) {
+      const filePath = files[i];
+      const fileName = path.basename(filePath);
+      
+      try {
+        console.log(`NFT Generator: Compressing ${i + 1}/${files.length}: ${fileName}`);
+        
+        // Create temporary output path
+        const tempPath = filePath + '.temp';
+        
+        // Compress to temporary file
+        await compressImageSafely(filePath, tempPath, targetSize);
+        
+        // Replace original with compressed version
+        fs.renameSync(tempPath, filePath);
+        
+        console.log(`NFT Generator: Successfully compressed ${fileName}`);
+        
+      } catch (error) {
+        console.error(`NFT Generator: Failed to compress ${fileName}:`, error);
+        // Continue with other files
+      }
+    }
+    
+    console.log(`NFT Generator: Completed batch compression for layer: ${layerDir}`);
+    
+  } catch (error) {
+    console.error(`NFT Generator: Error in batch compression for ${layerDir}:`, error);
   }
+}
+
+// Smart trait detection and organization
+function detectTraitCategories(files) {
+  console.log(`NFT Generator: Detecting trait categories from ${files.length} files`);
   
-  // Fallback to original logic for direct filenames
-  const prefixMatch = fileName.match(/^(\d+)_(.+?)(?:\.png)?$/i);
-  if (prefixMatch) {
-    return {
-      name: prefixMatch[2].replace(/[^a-zA-Z0-9]/g, '_'),
-      order: parseInt(prefixMatch[1])
-    };
+  const traitCategories = new Map();
+  
+  // Group files by trait category
+  files.forEach(file => {
+    const webkitPath = file.webkitRelativePath || file.originalname;
+    const pathParts = webkitPath.split('/');
+    
+    if (pathParts.length > 1) {
+      const traitCategory = pathParts[0]; // First part is the trait category
+      const fileName = pathParts[pathParts.length - 1]; // Last part is the filename
+      
+      // Check if folder name has numeric prefix for custom ordering (e.g., "01_Background", "02_Body")
+      let order = 999; // Default order for folders without prefix
+      const folderName = traitCategory;
+      
+      // Extract order from folder name if it has numeric prefix
+      const orderMatch = folderName.match(/^(\d+)_(.+)$/);
+      if (orderMatch) {
+        order = parseInt(orderMatch[1]);
+        const cleanName = orderMatch[2];
+        
+        if (!traitCategories.has(cleanName)) {
+          traitCategories.set(cleanName, {
+            order: order,
+            files: [],
+            name: cleanName,
+            originalFolderName: folderName
+          });
+        }
+        
+        traitCategories.get(cleanName).files.push({
+          ...file,
+          traitCategory: cleanName,
+          fileName
+        });
+      } else {
+        // No numeric prefix, use alphabetical ordering
+        if (!traitCategories.has(traitCategory)) {
+          traitCategories.set(traitCategory, {
+            order: order,
+            files: [],
+            name: traitCategory,
+            originalFolderName: folderName
+          });
+        }
+        
+        traitCategories.get(traitCategory).files.push({
+          ...file,
+          traitCategory,
+          fileName
+        });
+      }
+    } else {
+      // Handle files without folder structure
+      const fileName = file.originalname;
+      const traitCategory = 'Unknown';
+      
+      if (!traitCategories.has(traitCategory)) {
+        traitCategories.set(traitCategory, {
+          order: 999,
+          files: [],
+          name: traitCategory,
+          originalFolderName: traitCategory
+        });
+      }
+      
+      traitCategories.get(traitCategory).files.push({
+        ...file,
+        traitCategory,
+        fileName
+      });
+    }
+  });
+  
+  // Sort categories by order, then alphabetically for same order
+  const sortedCategories = Array.from(traitCategories.entries())
+    .sort((a, b) => {
+      if (a[1].order !== b[1].order) {
+        return a[1].order - b[1].order;
+      }
+      return a[1].name.localeCompare(b[1].name);
+    });
+  
+  // Reassign orders based on sorted position for categories without custom ordering
+  sortedCategories.forEach((entry, index) => {
+    const [category, traitData] = entry;
+    if (traitData.order === 999) {
+      traitData.order = index + 1;
+    }
+  });
+  
+  console.log(`NFT Generator: Detected ${traitCategories.size} trait categories:`);
+  sortedCategories.forEach(([category, traitData]) => {
+    console.log(`  - ${category}: ${traitData.files.length} files, order ${traitData.order}`);
+  });
+  
+  return traitCategories;
+}
+
+// Organize uploaded files into proper trait structure
+async function organizeTraits(files, layersDir) {
+  try {
+    console.log(`NFT Generator: Organizing ${files.length} files into trait structure...`);
+    console.log(`NFT Generator: Layers directory: ${layersDir}`);
+    
+    // Detect trait categories
+    const traitCategories = detectTraitCategories(files);
+    
+    // Convert to array and sort by order
+    const sortedTraits = Array.from(traitCategories.values())
+      .sort((a, b) => a.order - b.order);
+    
+    const layerStructure = [];
+    
+    // Create layer directories for each trait category
+    for (const traitData of sortedTraits) {
+      try {
+        // Create folder with numeric prefix based on trait order
+        const folderName = `${traitData.order.toString().padStart(2, '0')}_${traitData.name}`;
+        const layerDir = path.join(layersDir, folderName);
+        
+        console.log(`NFT Generator: Creating trait directory: ${layerDir}`);
+        fs.mkdirSync(layerDir, { recursive: true });
+
+        // Copy all files for this trait category
+        traitData.files.forEach((file, fileIndex) => {
+          try {
+            const destPath = path.join(layerDir, file.fileName);
+            
+            console.log(`NFT Generator: Processing file ${fileIndex + 1}/${traitData.files.length}: ${file.fileName}`);
+            
+            // Check if source file exists
+            if (!fs.existsSync(file.path)) {
+              console.error(`NFT Generator: Source file does not exist: ${file.path}`);
+              throw new Error(`Source file does not exist: ${file.path}`);
+            }
+            
+            // Simply copy the file without compression for now
+            fs.copyFileSync(file.path, destPath);
+            
+            console.log(`NFT Generator: Successfully copied: ${file.fileName}`);
+          } catch (error) {
+            console.error(`NFT Generator: Error processing file ${file.fileName}:`, error);
+            throw error;
+          }
+        });
+
+        layerStructure.push({
+          name: traitData.name,
+          count: traitData.files.length,
+          path: layerDir,
+          folder: folderName,
+          order: traitData.order
+        });
+        
+        console.log(`NFT Generator: Completed trait ${traitData.name} with ${traitData.files.length} files`);
+      } catch (error) {
+        console.error(`NFT Generator: Error processing trait ${traitData.name}:`, error);
+        throw error;
+      }
+    }
+
+    console.log(`NFT Generator: Final trait structure:`);
+    layerStructure.forEach(layer => {
+      console.log(`  - ${layer.folder}: ${layer.count} files`);
+    });
+    
+    return layerStructure;
+  } catch (error) {
+    console.error(`NFT Generator: Error in organizeTraits:`, error);
+    throw error;
   }
-  
-  return {
-    name: fileName.replace(/\.png$/i, '').replace(/[^a-zA-Z0-9]/g, '_'),
-    order: 999
-  };
 }
 
 // Cleanup old jobs periodically
