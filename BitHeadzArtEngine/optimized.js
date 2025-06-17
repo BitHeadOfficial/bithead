@@ -521,6 +521,16 @@ async function generateCollectionWithLayersOptimized(config) {
     onProgress
   } = config;
 
+  console.log(`Optimized Engine: Starting generation with config:`, {
+    layersDir,
+    outputDir,
+    collectionSize,
+    collectionName,
+    rarityMode,
+    allowDuplicates,
+    activeLayersKeys: Object.keys(activeLayers)
+  });
+
   // Reset global state
   usedCombinations.clear();
   Object.keys(usageCounts).forEach(key => delete usageCounts[key]);
@@ -536,6 +546,8 @@ async function generateCollectionWithLayersOptimized(config) {
   // Detect layer structure
   const layersOrder = detectLayerStructure(layersDir);
   
+  console.log(`Optimized Engine: Detected layers:`, layersOrder.map(l => l.folder));
+  
   if (layersOrder.length === 0) {
     throw new Error("No valid layers found in the layers directory");
   }
@@ -544,6 +556,7 @@ async function generateCollectionWithLayersOptimized(config) {
   layersOrder.forEach(({ folder }) => {
     const layerName = folder.replace(/^\d+_/, "");
     usageCounts[layerName] = {};
+    console.log(`Optimized Engine: Initialized usage counts for layer: ${layerName} (from folder: ${folder})`);
   });
 
   // Settings object
@@ -558,10 +571,13 @@ async function generateCollectionWithLayersOptimized(config) {
     activeLayers
   };
 
+  console.log(`Optimized Engine: Active layers configuration:`, activeLayers);
+
   // Process active layers configuration
   if (activeLayers) {
     Object.keys(activeLayers).forEach(layerName => {
       const layerConfig = activeLayers[layerName];
+      console.log(`Optimized Engine: Processing layer config for ${layerName}:`, layerConfig);
       if (layerConfig && typeof layerConfig === 'object') {
         // New probability-based system is handled in generateOneNFTOptimized
         // No need for legacy gear/buttons handling here
@@ -574,6 +590,8 @@ async function generateCollectionWithLayersOptimized(config) {
 
   // Strict uniqueness enforcement
   const maxCombinations = calculateMaxCombinations(layersOrder, settings);
+  console.log(`Optimized Engine: Max combinations possible: ${maxCombinations}`);
+  
   if (!allowDuplicates && collectionSize > maxCombinations) {
     throw new Error(`Requested collection size (${collectionSize}) exceeds the maximum number of unique combinations possible with the uploaded layers (${maxCombinations}). Please upload more trait variations or reduce the collection size.`);
   }
@@ -600,11 +618,16 @@ async function generateCollectionWithLayersOptimized(config) {
  * Detect layer structure from directory
  ***************************************************************/
 function detectLayerStructure(layersDir) {
+  console.log(`Optimized Engine: Detecting layer structure in: ${layersDir}`);
+  
   if (!fs.existsSync(layersDir)) {
+    console.error(`Optimized Engine: Layers directory does not exist: ${layersDir}`);
     return [];
   }
 
   const items = fs.readdirSync(layersDir, { withFileTypes: true });
+  console.log(`Optimized Engine: Found ${items.length} items in layers directory:`, items.map(item => item.name));
+  
   const layerFolders = items
     .filter(item => item.isDirectory())
     .map(item => item.name)
@@ -629,6 +652,7 @@ function detectLayerStructure(layersDir) {
     })
     .map(folder => ({ folder }));
 
+  console.log(`Optimized Engine: Detected ${layerFolders.length} layer folders:`, layerFolders.map(l => l.folder));
   return layerFolders;
 }
 
