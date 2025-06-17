@@ -1219,15 +1219,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const arrow = btn.querySelector('.arrow');
         const label = btn.querySelector('span');
         if (target.classList.contains('active')) {
-          arrow.textContent = '▲';
-          label.textContent = btn.textContent.replace('Show', 'Hide').replace('▼', '▲');
-        } else {
           arrow.textContent = '▼';
-          label.textContent = btn.textContent.replace('Hide', 'Show').replace('▲', '▼');
+          label.textContent = label.textContent.replace('Show', 'Hide');
+        } else {
+          arrow.textContent = '▶';
+          label.textContent = label.textContent.replace('Hide', 'Show');
         }
       }
     });
   });
+
+  // Initialize Advanced Details in How To Use as collapsed by default
+  const advancedDetailsToggle = document.querySelector('.advanced-details-section .collapse-toggle');
+  const advancedDetailsContent = document.getElementById('advancedDetailsContent');
+  const advancedDetailsArrow = advancedDetailsToggle ? advancedDetailsToggle.querySelector('.arrow') : null;
+
+  if (advancedDetailsContent && advancedDetailsToggle && advancedDetailsArrow) {
+    advancedDetailsContent.classList.remove('active'); // Ensure it starts collapsed
+    advancedDetailsArrow.textContent = '▶';
+    advancedDetailsToggle.querySelector('span').textContent = advancedDetailsToggle.querySelector('span').textContent.replace('Hide', 'Show');
+  }
 });
 
 // Global function for copying donation address
@@ -1296,36 +1307,4 @@ window.copyDonationAddress = async function() {
       }
     }, 3000);
   }
-};
-
-// Toggle Advanced Configuration section
-function toggleAdvancedConfig() {
-  const content = document.getElementById('advancedConfigContent');
-  const header = document.querySelector('.collapsible-header');
-  const arrow = document.getElementById('advancedConfigArrow');
-  
-  if (content.classList.contains('collapsed')) {
-    // Expand
-    content.classList.remove('collapsed');
-    header.classList.remove('collapsed');
-    arrow.textContent = '▼';
-  } else {
-    // Collapse
-    content.classList.add('collapsed');
-    header.classList.add('collapsed');
-    arrow.textContent = '▶';
-  }
-}
-
-// Initialize Advanced Configuration as collapsed by default
-document.addEventListener('DOMContentLoaded', function() {
-  const content = document.getElementById('advancedConfigContent');
-  const header = document.querySelector('.collapsible-header');
-  const arrow = document.getElementById('advancedConfigArrow');
-  
-  if (content && header && arrow) {
-    content.classList.add('collapsed');
-    header.classList.add('collapsed');
-    arrow.textContent = '▶';
-  }
-}); 
+}; 
