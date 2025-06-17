@@ -797,8 +797,10 @@
 
             <!-- Advanced Configuration (Combined Rarity & Active Layers) -->
             <div class="config-section" data-section="advanced-config">
-              <h2>Advanced Configuration</h2>
-              <div class="advanced-config-content">
+              <h2 class="collapsible-header" onclick="toggleAdvancedConfig()">
+                Advanced Configuration <span class="arrow" id="advancedConfigArrow">▼</span>
+              </h2>
+              <div class="advanced-config-content" id="advancedConfigContent">
                 <!-- Rarity Settings -->
                 <div class="config-subsection">
                   <h3>Rarity Settings</h3>

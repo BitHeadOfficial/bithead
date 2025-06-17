@@ -1296,4 +1296,36 @@ window.copyDonationAddress = async function() {
       }
     }, 3000);
   }
-}; 
+};
+
+// Toggle Advanced Configuration section
+function toggleAdvancedConfig() {
+  const content = document.getElementById('advancedConfigContent');
+  const header = document.querySelector('.collapsible-header');
+  const arrow = document.getElementById('advancedConfigArrow');
+  
+  if (content.classList.contains('collapsed')) {
+    // Expand
+    content.classList.remove('collapsed');
+    header.classList.remove('collapsed');
+    arrow.textContent = '▼';
+  } else {
+    // Collapse
+    content.classList.add('collapsed');
+    header.classList.add('collapsed');
+    arrow.textContent = '▶';
+  }
+}
+
+// Initialize Advanced Configuration as collapsed by default
+document.addEventListener('DOMContentLoaded', function() {
+  const content = document.getElementById('advancedConfigContent');
+  const header = document.querySelector('.collapsible-header');
+  const arrow = document.getElementById('advancedConfigArrow');
+  
+  if (content && header && arrow) {
+    content.classList.add('collapsed');
+    header.classList.add('collapsed');
+    arrow.textContent = '▶';
+  }
+}); 
