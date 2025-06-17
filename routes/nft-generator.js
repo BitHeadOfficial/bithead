@@ -598,12 +598,26 @@ async function generateCollectionOptimized(job) {
 
   } catch (error) {
     console.error(`NFT Generator: Generation failed for job ${job.id}:`, error);
+    console.error(`NFT Generator: Error stack:`, error.stack);
+    console.error(`NFT Generator: Job details:`, {
+      id: job.id,
+      collectionSize: job.collectionSize,
+      filesCount: job.files?.length,
+      activeLayers: job.activeLayers,
+      rarityMode: job.rarityMode
+    });
+    
     let userMessage = 'Generation failed';
     if (error.message && (error.message.includes('ENOMEM') || error.message.includes('out of memory'))) {
       userMessage = 'Generation failed: Out of memory. Try reducing collection size.';
     } else if (error.message && error.message.includes('canvas')) {
       userMessage = 'Generation failed: Canvas dependency error. Please ensure all native dependencies are installed (see README).';
+    } else if (error.message && error.message.includes('No valid layers')) {
+      userMessage = 'Generation failed: No valid layers found. Please check your uploaded files.';
+    } else if (error.message && error.message.includes('exceeds the maximum number')) {
+      userMessage = error.message;
     }
+    
     job.status = 'failed';
     job.message = userMessage;
     job.details = error.message;
@@ -1039,12 +1053,22 @@ async function organizeTraits(files, layersDir) {
     console.log(`NFT Generator: Organizing ${files.length} files into trait structure...`);
     console.log(`NFT Generator: Layers directory: ${layersDir}`);
     
+    if (!files || files.length === 0) {
+      throw new Error('No files provided for organization');
+    }
+    
     // Detect trait categories
     const traitCategories = detectTraitCategories(files);
+    
+    if (traitCategories.size === 0) {
+      throw new Error('No valid trait categories detected from uploaded files');
+    }
     
     // Convert to array and sort by order
     const sortedTraits = Array.from(traitCategories.values())
       .sort((a, b) => a.order - b.order);
+    
+    console.log(`NFT Generator: Sorted traits:`, sortedTraits.map(t => `${t.name}: ${t.files.length} files`));
     
     const layerStructure = [];
     
@@ -1104,6 +1128,7 @@ async function organizeTraits(files, layersDir) {
     return layerStructure;
   } catch (error) {
     console.error(`NFT Generator: Error in organizeTraits:`, error);
+    console.error(`NFT Generator: organizeTraits error stack:`, error.stack);
     throw error;
   }
 }
