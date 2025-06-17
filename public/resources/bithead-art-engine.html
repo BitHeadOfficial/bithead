@@ -895,261 +895,225 @@
         <!-- Instructions Section -->
         <section class="instructions-section">
           <h2>📚 How To Use</h2>
-          
           <!-- Quick Start Guide -->
-          <div class="doc-section">
-            <h3>🚀 Quick Start Guide</h3>
-            <div class="instructions-grid">
-              <div class="instruction-card">
-                <div class="instruction-number">1</div>
-                <h3>Prepare Your Layers</h3>
-                <p>Create PNG layers for each trait (background, body, eyes, etc.). Organize them in folders with specific names.</p>
+          <div class="quickstart-grid">
+            <div class="quickstep">
+              <span class="quickstep-icon">🖼️</span>
+              <div>
+                <strong>1. Prepare Layers</strong>
+                <p>Organize your PNG trait images in folders (e.g. <code>01_Background</code>, <code>02_Body</code>).</p>
               </div>
-              <div class="instruction-card">
-                <div class="instruction-number">2</div>
-                <h3>Upload Individual Layer Folders</h3>
-                <p>Upload each layer folder separately. The system recognizes specific folder names for proper ordering.</p>
+            </div>
+            <div class="quickstep">
+              <span class="quickstep-icon">⬆️</span>
+              <div>
+                <strong>2. Upload Folders</strong>
+                <p>Upload each layer folder. The engine auto-detects order and structure.</p>
               </div>
-              <div class="instruction-card">
-                <div class="instruction-number">3</div>
-                <h3>Configure Active Layers</h3>
-                <p>Toggle layers on/off and set probability percentages. For example: 100% for backgrounds, 50% for gear.</p>
+            </div>
+            <div class="quickstep">
+              <span class="quickstep-icon">🎛️</span>
+              <div>
+                <strong>3. Configure Layers</strong>
+                <p>Toggle layers on/off and set rarity probabilities (1–100%).</p>
               </div>
-              <div class="instruction-card">
-                <div class="instruction-number">4</div>
-                <h3>Generate & Monitor Progress</h3>
-                <p>Click generate and watch the live progress modal showing "X of Y NFTs generated" with real-time updates.</p>
+            </div>
+            <div class="quickstep">
+              <span class="quickstep-icon">⚠️</span>
+              <div>
+                <strong>4. Uniqueness Check</strong>
+                <p>If you request more NFTs than possible unique combinations, you'll see a warning. Choose to upload more traits, reduce collection size, or "generate anyway" (with duplicates).</p>
+              </div>
+            </div>
+            <div class="quickstep">
+              <span class="quickstep-icon">🚀</span>
+              <div>
+                <strong>5. Generate & Download</strong>
+                <p>Click <b>Generate</b>, watch the progress, and download your ready-to-mint collection!</p>
               </div>
             </div>
           </div>
 
-          <!-- Layer Organization -->
-          <div class="doc-section">
-            <h3>📁 Layer Organization & Folder Structure</h3>
-            <div class="feature-grid">
-              <div class="feature-card">
-                <h4>🎯 Flexible Folder Naming</h4>
-                <p>The system works with any folder names you choose. You have two options for controlling layer order:</p>
-                <ul>
-                  <li><strong>Automatic Ordering:</strong> Use any folder names (Background, Body, Eyes, etc.) - they'll be ordered alphabetically</li>
-                  <li><strong>Custom Ordering:</strong> Use numeric prefixes (01_Background, 02_Body, 03_Eyes) to specify exact layer order</li>
-                  <li><strong>Any Names Work:</strong> Hats, Clothing, Weapons, Accessories, etc. - all supported</li>
-                  <li><strong>Smart Detection:</strong> System automatically detects your folder structure and organizes layers</li>
-                </ul>
-              </div>
-              <div class="feature-card">
-                <h4>📂 Folder Structure Examples</h4>
-                <div class="code-example">
-                  <code>
-                    Background/<br>
-                    ├── background1.png<br>
-                    ├── background2.png<br>
-                    └── background3.png<br><br>
-                    Body/<br>
-                    ├── body1.png<br>
-                    ├── body2.png<br>
-                    └── body3.png<br><br>
-                    Eyes/<br>
-                    ├── eyes1.png<br>
-                    ├── eyes2.png<br>
-                    └── eyes3.png
-                  </code>
-                </div>
-                <p><strong>Or with custom ordering:</strong></p>
-                <div class="code-example">
-                  <code>
-                    01_Background/<br>
-                    02_Body/<br>
-                    03_Eyes/<br>
-                    04_Accessories/
-                  </code>
-                </div>
-                <p><strong>Important:</strong> Upload each folder individually, not the parent folder containing all layers.</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Image Processing -->
-          <div class="doc-section">
-            <h3>🖼️ Image Processing & Optimization</h3>
-            <div class="feature-grid">
-              <div class="feature-card">
-                <h4>⚡ Automatic Compression</h4>
-                <p>Large images are automatically processed for optimal performance:</p>
-                <ul>
-                  <li>Images larger than 1MB are compressed to 1024x1024 pixels</li>
-                  <li>Maintains aspect ratio during compression</li>
-                  <li>Smaller images (under 1MB) are used as-is</li>
-                  <li>Sequential processing to avoid memory issues</li>
-                  <li>Fallback to original images if compression fails</li>
-                </ul>
-              </div>
-              <div class="feature-card">
-                <h4>💾 Memory Management</h4>
-                <p>Built-in optimizations for efficient resource usage:</p>
-                <ul>
-                  <li>Low memory mode enabled by default</li>
-                  <li>Automatic garbage collection</li>
-                  <li>Sequential image processing</li>
-                  <li>Background job management with cleanup</li>
-                  <li>30-second timeout per image compression</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <!-- Rarity Systems -->
-          <div class="doc-section">
-            <h3>🎲 Rarity & Distribution Systems</h3>
-            <div class="feature-grid">
-              <div class="feature-card">
-                <h4>📊 Bell Curve Distribution (Recommended)</h4>
-                <p>Creates natural rarity distribution where:</p>
-                <ul>
-                  <li>Common traits appear frequently</li>
-                  <li>Rare traits appear occasionally</li>
-                  <li>Very rare traits appear seldom</li>
-                  <li>Mimics real-world trait distribution</li>
-                </ul>
-              </div>
-              <div class="feature-card">
-                <h4>🎯 Random Distribution</h4>
-                <p>Pure random selection where:</p>
-                <ul>
-                  <li>All traits have equal chance</li>
-                  <li>No rarity weighting</li>
-                  <li>Good for experimental collections</li>
-                </ul>
-              </div>
-              <div class="feature-card">
-                <h4>⚖️ Equal Distribution</h4>
-                <p>Balanced distribution ensuring:</p>
-                <ul>
-                  <li>Each trait appears roughly the same number of times</li>
-                  <li>Perfect for limited trait sets</li>
-                  <li>Predictable rarity structure</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <!-- Layer Configuration -->
-          <div class="doc-section">
-            <h3>⚙️ Advanced Layer Configuration</h3>
-            <div class="feature-grid">
-              <div class="feature-card">
-                <h4>🎛️ Layer Toggles & Probabilities</h4>
-                <p>Fine-tune your collection with precise controls:</p>
-                <ul>
-                  <li><strong>Toggle On/Off:</strong> Enable or disable entire layers</li>
-                  <li><strong>Probability %:</strong> Set appearance chance (1-100%)</li>
-                  <li><strong>Real-time Preview:</strong> See layer structure instantly</li>
-                  <li><strong>Smart Defaults:</strong> Backgrounds at 100%, accessories at lower %</li>
-                </ul>
-              </div>
-              <div class="feature-card">
-                <h4>📈 Usage Examples</h4>
-                <div class="usage-example">
-                  <p><strong>Standard Collection:</strong></p>
-                  <ul>
-                    <li>Background: 100% (every NFT gets a background)</li>
-                    <li>Body: 100% (every NFT gets a body)</li>
-                    <li>Accessories: 30% (only 30% of NFTs get accessories)</li>
-                    <li>Rare Items: 5% (very rare special items)</li>
-                  </ul>
+          <!-- Advanced Details (Individually Collapsible) -->
+          <section class="advanced-details-section">
+            <button class="collapse-toggle" data-target="#layerOrgDetails"><span>Show Layer Organization Details</span> <span class="arrow">▼</span></button>
+            <div id="layerOrgDetails" class="collapsible-content">
+              <!-- Layer Organization -->
+              <div class="doc-section">
+                <h3>📁 Layer Organization & Folder Structure</h3>
+                <div class="feature-grid">
+                  <div class="feature-card">
+                    <h4>🎯 Flexible Folder Naming</h4>
+                    <p>The system works with any folder names you choose. You have two options for controlling layer order:</p>
+                    <ul>
+                      <li><strong>Automatic Ordering:</strong> Use any folder names (Background, Body, Eyes, etc.) - they'll be ordered alphabetically</li>
+                      <li><strong>Custom Ordering:</strong> Use numeric prefixes (01_Background, 02_Body, 03_Eyes) to specify exact layer order</li>
+                      <li><strong>Any Names Work:</strong> Hats, Clothing, Weapons, Accessories, etc. - all supported</li>
+                      <li><strong>Smart Detection:</strong> System automatically detects your folder structure and organizes layers</li>
+                    </ul>
+                  </div>
+                  <div class="feature-card">
+                    <h4>📂 Folder Structure Examples</h4>
+                    <div class="code-example">
+                      <code>
+                        Background/<br>
+                        ├── background1.png<br>
+                        ├── background2.png<br>
+                        └── background3.png<br><br>
+                        Body/<br>
+                        ├── body1.png<br>
+                        ├── body2.png<br>
+                        └── body3.png<br><br>
+                        Eyes/<br>
+                        ├── eyes1.png<br>
+                        ├── eyes2.png<br>
+                        └── eyes3.png
+                      </code>
+                    </div>
+                    <p><strong>Or with custom ordering:</strong></p>
+                    <div class="code-example">
+                      <code>
+                        01_Background/<br>
+                        02_Body/<br>
+                        03_Eyes/<br>
+                        04_Accessories/
+                      </code>
+                    </div>
+                    <p><strong>Important:</strong> Upload each folder individually, not the parent folder containing all layers.</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Collection Settings -->
-          <div class="doc-section">
-            <h3>🏷️ Collection Configuration</h3>
-            <div class="feature-grid">
-              <div class="feature-card">
-                <h4>📝 Metadata Settings</h4>
-                <ul>
-                  <li><strong>Collection Name:</strong> Appears in NFT metadata</li>
-                  <li><strong>Description:</strong> Detailed collection description</li>
-                  <li><strong>Custom IPFS CID:</strong> For custom image hosting</li>
-                  <li><strong>Collection Size:</strong> 1-10,000 NFTs supported</li>
-                </ul>
-              </div>
-              <div class="feature-card">
-                <h4>📦 Output Structure</h4>
-                <p>Generated collections include:</p>
-                <ul>
-                  <li><strong>images/</strong> - All generated NFT images (1.png, 2.png, etc.)</li>
-                  <li><strong>metadata/</strong> - JSON metadata for each NFT (1.json, 2.json, etc.)</li>
-                </ul>
-                <p><em>Each metadata file contains: name, description, image URI, and trait attributes</em></p>
+            <button class="collapse-toggle" data-target="#imageProcDetails"><span>Show Image Processing Details</span> <span class="arrow">▼</span></button>
+            <div id="imageProcDetails" class="collapsible-content">
+              <!-- Image Processing -->
+              <div class="doc-section">
+                <h3>🖼️ Image Processing & Optimization</h3>
+                <div class="feature-grid">
+                  <div class="feature-card">
+                    <h4>⚡ Automatic Compression</h4>
+                    <p>Large images are automatically processed for optimal performance:</p>
+                    <ul>
+                      <li>Images larger than 1MB are compressed to 1000x1000 pixels</li>
+                      <li>Maintains aspect ratio during compression</li>
+                      <li>Smaller images (under 1MB) are used as-is</li>
+                      <li>Sequential processing to avoid memory issues</li>
+                      <li>Fallback to original images if compression fails</li>
+                    </ul>
+                  </div>
+                  <div class="feature-card">
+                    <h4>💾 Memory Management</h4>
+                    <p>Built-in optimizations for efficient resource usage:</p>
+                    <ul>
+                      <li>Low memory mode enabled by default</li>
+                      <li>Automatic garbage collection</li>
+                      <li>Sequential image processing</li>
+                      <li>Background job management with cleanup</li>
+                      <li>30-second timeout per image compression</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Performance & Limits -->
-          <div class="doc-section">
-            <h3>⚡ Performance & Technical Limits</h3>
-            <div class="feature-grid">
-              <div class="feature-card">
-                <h4>🚀 Generation Performance</h4>
-                <ul>
-                  <li><strong>Small Collections (1-100):</strong> ~30 seconds</li>
-                  <li><strong>Medium Collections (100-1000):</strong> 2-5 minutes</li>
-                  <li><strong>Large Collections (1000-5000):</strong> 5-15 minutes</li>
-                  <li><strong>Very Large (5000-10000):</strong> 15-30 minutes</li>
-                </ul>
-              </div>
-              <div class="feature-card">
-                <h4>📊 System Requirements</h4>
-                <ul>
-                  <li><strong>File Size:</strong> Up to 10MB per image (compressed if >1MB)</li>
-                  <li><strong>Total Files:</strong> Up to 10,000 files per upload</li>
-                  <li><strong>Image Format:</strong> PNG with transparency</li>
-                  <li><strong>Compression:</strong> Auto-compressed to 1024x1024 if >1MB</li>
-                </ul>
+            <button class="collapse-toggle" data-target="#rarityDetails"><span>Show Rarity & Distribution Details</span> <span class="arrow">▼</span></button>
+            <div id="rarityDetails" class="collapsible-content">
+              <!-- Rarity Systems -->
+              <div class="doc-section">
+                <h3>🎲 Rarity & Distribution Systems</h3>
+                <div class="feature-grid">
+                  <div class="feature-card">
+                    <h4>📊 Bell Curve Distribution (Recommended)</h4>
+                    <p>Creates natural rarity distribution where:</p>
+                    <ul>
+                      <li>Common traits appear frequently</li>
+                      <li>Rare traits appear occasionally</li>
+                      <li>Very rare traits appear seldom</li>
+                      <li>Mimics real-world trait distribution</li>
+                    </ul>
+                  </div>
+                  <div class="feature-card">
+                    <h4>🎯 Random Distribution</h4>
+                    <p>Pure random selection where:</p>
+                    <ul>
+                      <li>All traits have equal chance</li>
+                      <li>No rarity weighting</li>
+                      <li>Good for experimental collections</li>
+                    </ul>
+                  </div>
+                  <div class="feature-card">
+                    <h4>⚖️ Equal Distribution</h4>
+                    <p>Balanced distribution ensuring:</p>
+                    <ul>
+                      <li>Each trait appears roughly the same number of times</li>
+                      <li>Perfect for limited trait sets</li>
+                      <li>Predictable rarity structure</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Best Practices -->
-          <div class="doc-section">
-            <h3>💡 Best Practices & Tips</h3>
-            <div class="feature-grid">
-              <div class="feature-card">
-                <h4>🎨 Design Guidelines</h4>
-                <ul>
-                  <li>Use consistent canvas sizes (1024x1024 recommended)</li>
-                  <li>Include transparent backgrounds for overlays</li>
-                  <li>Test layer combinations before generating</li>
-                  <li>Use descriptive filenames for better organization</li>
-                  <li>Keep images under 1MB to avoid compression delays</li>
-                </ul>
-              </div>
-              <div class="feature-card">
-                <h4>⚙️ Optimization Tips</h4>
-                <ul>
-                  <li>Start with small collections to test</li>
-                  <li>Use Bell Curve rarity for natural distribution</li>
-                  <li>Set appropriate layer probabilities</li>
-                  <li>Monitor generation progress in real-time</li>
-                  <li>Use descriptive folder names for better organization</li>
-                  <li>Use numeric prefixes (01_, 02_, etc.) for custom layer ordering</li>
-                </ul>
-              </div>
-              <div class="feature-card">
-                <h4>🔧 Troubleshooting</h4>
-                <ul>
-                  <li>Large collections may take several minutes</li>
-                  <li>Ensure all images are valid PNG files</li>
-                  <li>Check that folder names are descriptive and clear</li>
-                  <li>Use browser refresh if upload fails</li>
-                  <li>Monitor memory usage for very large collections</li>
-                  <li>Test layer combinations before generating large collections</li>
-                </ul>
+            <button class="collapse-toggle" data-target="#layerConfigDetails"><span>Show Layer Configuration Details</span> <span class="arrow">▼</span></button>
+            <div id="layerConfigDetails" class="collapsible-content">
+              <!-- Layer Configuration -->
+              <div class="doc-section">
+                <h3>⚙️ Advanced Layer Configuration</h3>
+                <div class="feature-grid">
+                  <div class="feature-card">
+                    <h4>🎛️ Layer Toggles & Probabilities</h4>
+                    <p>Fine-tune your collection with precise controls:</p>
+                    <ul>
+                      <li><strong>Toggle On/Off:</strong> Enable or disable entire layers</li>
+                      <li><strong>Probability %:</strong> Set appearance chance (1-100%)</li>
+                      <li><strong>Real-time Preview:</strong> See layer structure instantly</li>
+                      <li><strong>Smart Defaults:</strong> Backgrounds at 100%, accessories at lower %</li>
+                    </ul>
+                  </div>
+                  <div class="feature-card">
+                    <h4>📈 Usage Examples</h4>
+                    <div class="usage-example">
+                      <p><strong>Standard Collection:</strong></p>
+                      <ul>
+                        <li>Background: 100% (every NFT gets a background)</li>
+                        <li>Body: 100% (every NFT gets a body)</li>
+                        <li>Accessories: 30% (only 30% of NFTs get accessories)</li>
+                        <li>Rare Items: 5% (very rare special items)</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+
+            <button class="collapse-toggle" data-target="#collectionConfigDetails"><span>Show Collection Settings Details</span> <span class="arrow">▼</span></button>
+            <div id="collectionConfigDetails" class="collapsible-content">
+              <!-- Collection Settings -->
+              <div class="doc-section">
+                <h3>🏷️ Collection Configuration</h3>
+                <div class="feature-grid">
+                  <div class="feature-card">
+                    <h4>📝 Metadata Settings</h4>
+                    <ul>
+                      <li><strong>Collection Name:</strong> Appears in NFT metadata</li>
+                      <li><strong>Description:</strong> Detailed collection description</li>
+                      <li><strong>Custom IPFS CID:</strong> For custom image hosting</li>
+                      <li><strong>Collection Size:</strong> 1-10,000 NFTs supported</li>
+                    </ul>
+                  </div>
+                  <div class="feature-card">
+                    <h4>📦 Output Structure</h4>
+                    <ul>
+                      <li><strong>Images:</strong> PNGs in <code>/images/</code></li>
+                      <li><strong>Metadata:</strong> JSON files in <code>/metadata/</code></li>
+                      <li><strong>Download:</strong> All files in a single ZIP</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
         </section>
       </div>
     </main>

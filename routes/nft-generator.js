@@ -222,7 +222,7 @@ router.post('/generate', upload.any(), async (req, res) => {
     console.log('NFT Generator: Request body keys:', Object.keys(req.body));
     console.log('NFT Generator: Files count:', req.files ? req.files.length : 0);
     
-    const { collectionName, collectionSize, collectionDescription, rarityMode, activeLayers, customCID } = req.body;
+    const { collectionName, collectionSize, collectionDescription, rarityMode, activeLayers, customCID, allowDuplicates } = req.body;
     const files = req.files;
     const filePaths = req.body.filePaths;
 
@@ -290,6 +290,7 @@ router.post('/generate', upload.any(), async (req, res) => {
       lastDownloadAttempt: null,
       downloadCount: 0,
       lowMemoryMode: true,
+      allowDuplicates: allowDuplicates === 'true',
     };
 
     generationJobs.set(generationId, job);
@@ -531,7 +532,8 @@ async function generateCollectionOptimized(job) {
       console.log(`NFT Generator: Compressing layer ${i + 1}/${layerStructure.length}: ${layer.name}`);
       
       try {
-        await compressLayerImages(layer.path, 1024);
+        // Use 1000x1000 to match BitHeadzArtEngine output size
+        await compressLayerImages(layer.path, 1000);
         console.log(`NFT Generator: Successfully compressed layer: ${layer.name}`);
       } catch (error) {
         console.error(`NFT Generator: Error compressing layer ${layer.name}:`, error);
@@ -557,6 +559,7 @@ async function generateCollectionOptimized(job) {
       customCID: job.customCID,
       rarityMode: job.rarityMode,
       activeLayers: job.activeLayers,
+      allowDuplicates: job.allowDuplicates,
       lowMemoryMode: true,
       onProgress: (progress, message, details) => {
         job.progress = progress;
@@ -776,7 +779,7 @@ function createZipArchiveOptimized(sourceDir, outputPath, collectionSize) {
 }
 
 // Clean image compression function - optimized for large images
-async function compressImageSafely(inputPath, outputPath, targetSize = 1024) {
+async function compressImageSafely(inputPath, outputPath, targetSize = 1000) {
   try {
     console.log(`NFT Generator: Starting optimized compression of ${inputPath}`);
     
@@ -879,7 +882,7 @@ async function compressImageSafely(inputPath, outputPath, targetSize = 1024) {
 }
 
 // Batch compress images in a layer directory
-async function compressLayerImages(layerDir, targetSize = 1024) {
+async function compressLayerImages(layerDir, targetSize = 1000) {
   try {
     console.log(`NFT Generator: Starting batch compression for layer: ${layerDir}`);
     

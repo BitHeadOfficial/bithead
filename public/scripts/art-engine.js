@@ -541,6 +541,78 @@ class BitHeadzArtEngine {
     console.log(`Layer ${layerName} probability updated to ${probability}%`);
   }
 
+  // Calculate maximum possible unique combinations
+  calculateMaxCombinations() {
+    let total = 1;
+    this.uploadedLayers.forEach((files, layerName) => {
+      const toggle = document.querySelector(`.toggle-switch[data-layer="${layerName}"]`);
+      const isActive = toggle && toggle.classList.contains('active');
+      
+      if (!isActive) return;
+      
+      const probabilityInput = document.querySelector(`input[data-layer="${layerName}"]`);
+      const probability = probabilityInput ? parseInt(probabilityInput.value) : 100;
+      
+      if (probability === 0) return;
+      
+      total *= files.length;
+    });
+    return total;
+  }
+
+  // Show uniqueness warning modal
+  showUniquenessWarning(maxCombinations, requestedSize) {
+    return new Promise((resolve) => {
+      // Create modal HTML
+      const modalHTML = `
+        <div class="modal" id="uniquenessWarningModal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3>⚠️ Uniqueness Warning</h3>
+            </div>
+            <div class="modal-body">
+              <p>You're requesting <strong>${requestedSize} NFTs</strong>, but your uploaded layers can only generate <strong>${maxCombinations} unique combinations</strong>.</p>
+              <p>This means some NFTs will be duplicates, which may not be desirable for your collection.</p>
+              <div class="warning-options">
+                <p><strong>Options:</strong></p>
+                <ul>
+                  <li>📁 Upload more trait variations to increase unique combinations</li>
+                  <li>📊 Reduce your collection size to ${maxCombinations} or fewer</li>
+                  <li>⚙️ Adjust layer probabilities to include more variations</li>
+                </ul>
+              </div>
+            </div>
+            <div class="modal-actions">
+              <button class="btn btn-secondary" id="cancelGeneration">Cancel</button>
+              <button class="btn btn-warning" id="generateAnyway">Generate Anyway</button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Add modal to page
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+      
+      const modal = document.getElementById('uniquenessWarningModal');
+      const cancelBtn = document.getElementById('cancelGeneration');
+      const generateBtn = document.getElementById('generateAnyway');
+      
+      // Handle button clicks
+      cancelBtn.addEventListener('click', () => {
+        modal.remove();
+        resolve(false);
+      });
+      
+      generateBtn.addEventListener('click', () => {
+        modal.remove();
+        resolve(true);
+      });
+      
+      // Show modal
+      modal.style.display = 'flex';
+    });
+  }
+
   async startGeneration() {
     if (this.isGenerating) {
       return;
@@ -563,6 +635,17 @@ class BitHeadzArtEngine {
       if (!confirmed) {
         return;
       }
+    }
+
+    // Check for uniqueness before generation
+    const maxCombinations = this.calculateMaxCombinations();
+    let allowDuplicates = false;
+    if (collectionSize > maxCombinations) {
+      const proceed = await this.showUniquenessWarning(maxCombinations, collectionSize);
+      if (!proceed) {
+        return;
+      }
+      allowDuplicates = true;
     }
 
     this.isGenerating = true;
@@ -618,6 +701,9 @@ class BitHeadzArtEngine {
         };
       });
       formData.append('activeLayers', JSON.stringify(activeLayers));
+
+      // Add flag to allow duplicates if user chose to proceed anyway
+      formData.append('allowDuplicates', allowDuplicates.toString());
 
       // Start generation
       const response = await fetch('/api/nft-generator/generate', {
@@ -1125,6 +1211,23 @@ class BitHeadzArtEngine {
 // Initialize the art engine when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
   new BitHeadzArtEngine();
+  document.querySelectorAll('.collapse-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = document.querySelector(btn.dataset.target);
+      if (target) {
+        target.classList.toggle('active');
+        const arrow = btn.querySelector('.arrow');
+        const label = btn.querySelector('span');
+        if (target.classList.contains('active')) {
+          arrow.textContent = '▲';
+          label.textContent = btn.textContent.replace('Show', 'Hide').replace('▼', '▲');
+        } else {
+          arrow.textContent = '▼';
+          label.textContent = btn.textContent.replace('Hide', 'Show').replace('▲', '▼');
+        }
+      }
+    });
+  });
 });
 
 // Global function for copying donation address

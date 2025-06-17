@@ -2,6 +2,7 @@
 import { generateCollectionWithLayers } from './BitHeadzArtEngine/index.js';
 import path from 'path';
 import fs from 'fs';
+import { createCanvas } from 'canvas';
 
 async function testLargeCollection() {
   console.log('Testing large collection generation...');
@@ -27,19 +28,26 @@ async function testLargeCollection() {
     const layerDir = path.join(testLayersDir, layer);
     fs.mkdirSync(layerDir, { recursive: true });
     
-    // Create a simple colored square for each layer
-    const { createCanvas } = require('canvas');
-    const canvas = createCanvas(1000, 1000);
-    const ctx = canvas.getContext('2d');
+    // Create multiple variations for each layer to test uniqueness
+    const variations = 5; // 5 variations per layer
+    const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'];
     
-    // Different colors for each layer
-    const colors = ['#ff0000', '#00ff00', '#0000ff'];
-    ctx.fillStyle = colors[index];
-    ctx.fillRect(0, 0, 1000, 1000);
-    
-    // Save as PNG
-    const buffer = canvas.toBuffer('image/png');
-    fs.writeFileSync(path.join(layerDir, 'test.png'), buffer);
+    for (let v = 0; v < variations; v++) {
+      const canvas = createCanvas(1000, 1000);
+      const ctx = canvas.getContext('2d');
+      
+      // Different colors for each variation
+      ctx.fillStyle = colors[v % colors.length];
+      ctx.fillRect(0, 0, 1000, 1000);
+      
+      // Add some variation based on layer and variation number
+      ctx.fillStyle = `rgba(255, 255, 255, ${0.1 + (v * 0.1)})`;
+      ctx.fillRect(v * 50, v * 50, 200, 200);
+      
+      // Save as PNG
+      const buffer = canvas.toBuffer('image/png');
+      fs.writeFileSync(path.join(layerDir, `variation${v + 1}.png`), buffer);
+    }
   });
   
   console.log('Test layers created. Starting generation...');
@@ -50,11 +58,11 @@ async function testLargeCollection() {
     const result = await generateCollectionWithLayers({
       layersDir: testLayersDir,
       outputDir: testOutputDir,
-      collectionSize: 300, // Test with 300 NFTs
+      collectionSize: 200, // Request more than possible (5^3 = 125 max combinations)
       collectionName: 'TestCollection',
       collectionDescription: 'Test collection for large generation',
       rarityMode: 'random',
-      optionalLayers: {},
+      allowDuplicates: true, // Allow duplicates for testing
       onProgress: (progress, message, details) => {
         console.log(`Progress: ${progress.toFixed(1)}% - ${message} - ${details}`);
       }

@@ -270,10 +270,6 @@ async function generateOneNFTOptimized(edition, layersOrder, settings, onProgres
       // Apply probability
       if (Math.random() > layerProbability) continue;
 
-      // Legacy optional layer handling
-      if (folder === "05_Gear" && Math.random() > settings.gearChance) continue;
-      if (folder === "07_Buttons" && Math.random() > settings.buttonsChance) continue;
-
       const folderPath = path.join(settings.layersDir, folder);
       
       if (!fs.existsSync(folderPath)) continue;
@@ -315,8 +311,11 @@ async function generateOneNFTOptimized(edition, layersOrder, settings, onProgres
 
   if (attempts >= maxAttempts) {
     console.warn(`Max attempts reached for NFT #${edition}. Using current combination.`);
+    // Don't add to used combinations if we're forcing this one
+    // This allows for some duplicates when variety is limited
+  } else {
+    usedCombinations.add(combinationKey);
   }
-  usedCombinations.add(combinationKey);
 
   // Update usage counts
   chosenLayers.forEach(({ layerName, filename }) => {
@@ -497,6 +496,7 @@ async function generateCollectionWithLayersOptimized(config) {
     customCID = "",
     rarityMode = "bell-curve",
     activeLayers = {},
+    allowDuplicates = false,
     onProgress
   } = config;
 
@@ -542,30 +542,20 @@ async function generateCollectionWithLayersOptimized(config) {
     Object.keys(activeLayers).forEach(layerName => {
       const layerConfig = activeLayers[layerName];
       if (layerConfig && typeof layerConfig === 'object') {
-        if (layerConfig.active !== undefined) {
-          const probability = layerConfig.probability ? layerConfig.probability / 100 : 1;
-          
-          if (layerName.toLowerCase().includes('gear')) {
-            settings.gearChance = layerConfig.active ? probability : 0;
-          } else if (layerName.toLowerCase().includes('buttons')) {
-            settings.buttonsChance = layerConfig.active ? probability : 0;
-          }
-        }
-      } else {
-        const layerFolder = layersOrder.find(l => l.folder.includes(layerName));
-        if (layerFolder) {
-          if (layerFolder.folder.includes('Gear')) {
-            settings.gearChance = activeLayers[layerName] ? 0.5 : 0;
-          } else if (layerFolder.folder.includes('Buttons')) {
-            settings.buttonsChance = activeLayers[layerName] ? 0.3 : 0;
-          }
-        }
+        // New probability-based system is handled in generateOneNFTOptimized
+        // No need for legacy gear/buttons handling here
       }
     });
   }
 
   console.log(`Optimized Engine: Starting generation of ${collectionSize} NFTs...`);
   console.log(`Optimized Engine: Layers detected: ${layersOrder.map(l => l.folder).join(', ')}`);
+
+  // Strict uniqueness enforcement
+  const maxCombinations = calculateMaxCombinations(layersOrder, settings);
+  if (!allowDuplicates && collectionSize > maxCombinations) {
+    throw new Error(`Requested collection size (${collectionSize}) exceeds the maximum number of unique combinations possible with the uploaded layers (${maxCombinations}). Please upload more trait variations or reduce the collection size.`);
+  }
 
   // Generate collection with optimized processing
   const totalGenerated = await generateCollectionOptimized(
@@ -606,6 +596,37 @@ function detectLayerStructure(layersDir) {
     .map(folder => ({ folder }));
 
   return layerFolders;
+}
+
+// Utility to calculate the maximum number of unique combinations
+function calculateMaxCombinations(layersOrder, settings) {
+  let total = 1;
+  for (const { folder } of layersOrder) {
+    const layerName = folder.replace(/^[0-9]+_/, "");
+    const layerConfig = settings.activeLayers[layerName];
+    let shouldInclude = true;
+    let layerProbability = 1.0;
+    if (layerConfig && typeof layerConfig === 'object') {
+      if (layerConfig.active !== undefined) {
+        shouldInclude = layerConfig.active;
+        layerProbability = layerConfig.probability ? layerConfig.probability / 100 : 1.0;
+      }
+    } else if (settings.activeLayers[layerName] !== undefined) {
+      shouldInclude = settings.activeLayers[layerName];
+      layerProbability = shouldInclude ? 1.0 : 0.0;
+    }
+    if (!shouldInclude || layerProbability === 0) continue;
+    const folderPath = path.join(settings.layersDir, folder);
+    if (!fs.existsSync(folderPath)) continue;
+    const files = fs
+      .readdirSync(folderPath)
+      .filter((f) => f.toLowerCase().endsWith(".png"));
+    // The expected number of files that will be included, on average, is files.length * layerProbability
+    // But for strict uniqueness, we must assume all files could be chosen
+    if (files.length === 0) continue;
+    total *= files.length;
+  }
+  return total;
 }
 
 export {
