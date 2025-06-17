@@ -284,6 +284,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       header: "components/header.html",
       hero: "components/hero.html",
       about: "components/about.html",
+      "nft-generator-cta": "components/nft-generator-cta.html",
       portfolio: "components/portfolio.html",
       snake: "components/snake.html",
       "nft-mint": "components/nft-mint.html",
