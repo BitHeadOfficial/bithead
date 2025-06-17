@@ -442,13 +442,30 @@ async function saveBatchResultsOptimized(batchResults, settings) {
   const imagesDir = path.join(settings.outputDir, "images");
   const metadataDir = path.join(settings.outputDir, "metadata");
   
-  // Ensure directories exist
-  fs.mkdirSync(imagesDir, { recursive: true });
-  fs.mkdirSync(metadataDir, { recursive: true });
+  // Ensure directories exist with more robust error handling
+  try {
+    if (!fs.existsSync(imagesDir)) {
+      fs.mkdirSync(imagesDir, { recursive: true });
+    }
+    if (!fs.existsSync(metadataDir)) {
+      fs.mkdirSync(metadataDir, { recursive: true });
+    }
+  } catch (error) {
+    console.error('Error creating output directories:', error);
+    throw new Error(`Failed to create output directories: ${error.message}`);
+  }
   
   // Use Promise.allSettled for better error handling and parallel processing
   const savePromises = batchResults.map(async ({ edition, canvas, metadata }) => {
     try {
+      // Double-check directories exist before saving
+      if (!fs.existsSync(imagesDir)) {
+        fs.mkdirSync(imagesDir, { recursive: true });
+      }
+      if (!fs.existsSync(metadataDir)) {
+        fs.mkdirSync(metadataDir, { recursive: true });
+      }
+      
       // Save image with optimized settings
       const imagePath = path.join(imagesDir, `${edition}.png`);
       const imageStream = canvas.createPNGStream({ 
@@ -482,6 +499,7 @@ async function saveBatchResultsOptimized(batchResults, settings) {
   const failures = results.filter(result => result.status === 'rejected');
   if (failures.length > 0) {
     console.error(`NFT Generator: ${failures.length} files failed to save`);
+    console.error('Failure details:', failures.map(f => f.reason));
     throw new Error(`${failures.length} files failed to save`);
   }
 }
@@ -590,11 +608,24 @@ function detectLayerStructure(layersDir) {
   const layerFolders = items
     .filter(item => item.isDirectory())
     .map(item => item.name)
-    .filter(name => /^\d+_/.test(name))
     .sort((a, b) => {
-      const aNum = parseInt(a.match(/^(\d+)/)[1]);
-      const bNum = parseInt(b.match(/^(\d+)/)[1]);
-      return aNum - bNum;
+      // Handle both numeric prefixes and alphabetical ordering
+      const aMatch = a.match(/^(\d+)/);
+      const bMatch = b.match(/^(\d+)/);
+      
+      if (aMatch && bMatch) {
+        // Both have numeric prefixes, sort numerically
+        return parseInt(aMatch[1]) - parseInt(bMatch[1]);
+      } else if (aMatch) {
+        // Only a has numeric prefix, put it first
+        return -1;
+      } else if (bMatch) {
+        // Only b has numeric prefix, put it first
+        return 1;
+      } else {
+        // Neither has numeric prefix, sort alphabetically
+        return a.localeCompare(b);
+      }
     })
     .map(folder => ({ folder }));
 

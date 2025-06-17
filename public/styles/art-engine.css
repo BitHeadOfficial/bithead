@@ -65,16 +65,8 @@
 .interface-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto auto auto auto;
-  gap: 1.5rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  grid-template-areas: 
-    "upload preview"
-    "settings settings"
-    "advanced-config advanced-config"
-    "generate generate"
-    "status download";
+  gap: 3rem;
+  align-items: start;
 }
 
 /* Configuration Panel */
