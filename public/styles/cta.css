@@ -1,4 +1,4 @@
-#cta {
+.cta-section {
   padding: 10rem 2rem; /* Increased from 6rem to 10rem */
   margin-top: 150px; /* Pushes it further down */
   margin-bottom: 150px; /* Adds space after */
@@ -7,14 +7,14 @@
   color: #fff;
 }
 
-.cta-content h2 {
+.cta-container h2 {
   font-size: 2.5rem;
   margin-bottom: 1.5rem;
   font-family: "Montserrat", sans-serif;
   text-transform: uppercase;
 }
 
-.cta-content p {
+.cta-container p {
   font-size: 1.2rem;
   margin-bottom: 2rem;
   color: #ccc;
@@ -84,11 +84,11 @@
     padding: 1.5rem;
   }
   
-  .cta-content h2 {
+  .cta-container h2 {
     font-size: 2rem;
   }
   
-  .cta-content p {
+  .cta-container p {
     font-size: 1rem;
   }
 }
