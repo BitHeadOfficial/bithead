@@ -220,6 +220,9 @@ async function drawLayersOptimized(chosenLayers, settings) {
     // Process layers sequentially to reduce memory pressure
     for (const layerObj of chosenLayers) {
       const img = await loadImageOptimized(layerObj.filepath);
+      
+      // Always draw at the target size (1000x1000) regardless of input image size
+      // This ensures proper compression and consistent output
       ctx.drawImage(img, 0, 0, settings.width, settings.height);
     }
     

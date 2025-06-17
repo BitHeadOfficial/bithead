@@ -795,28 +795,35 @@
               </div>
             </div>
 
-            <!-- Rarity Settings -->
-            <div class="config-section" data-section="rarity">
-              <h2>Rarity Settings</h2>
-              <div class="form-group">
-                <label for="rarityMode">Rarity Mode</label>
-                <select id="rarityMode">
-                  <option value="bell-curve">Bell Curve (Recommended)</option>
-                  <option value="random">Random</option>
-                  <option value="equal">Equal Distribution</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Active Layers -->
-            <div class="config-section" data-section="active">
-              <h2>Active Layers</h2>
-              <div class="form-group">
-                <label>Layer Configuration</label>
-                <div class="active-layers" id="activeLayers">
-                  <!-- Will be populated dynamically -->
+            <!-- Advanced Configuration (Combined Rarity & Active Layers) -->
+            <div class="config-section" data-section="advanced-config">
+              <h2>Advanced Configuration</h2>
+              <div class="advanced-config-content">
+                <!-- Rarity Settings -->
+                <div class="config-subsection">
+                  <h3>Rarity Settings</h3>
+                  <div class="form-group">
+                    <label for="rarityMode">Rarity Mode</label>
+                    <select id="rarityMode">
+                      <option value="bell-curve">Bell Curve (Recommended)</option>
+                      <option value="random">Random</option>
+                      <option value="equal">Equal Distribution</option>
+                    </select>
+                    <small class="form-hint">Bell Curve creates natural rarity distribution, Random gives equal chance to all traits</small>
+                  </div>
                 </div>
-                <small class="form-hint">Toggle layers on/off and set probability percentages</small>
+
+                <!-- Active Layers -->
+                <div class="config-subsection">
+                  <h3>Layer Configuration</h3>
+                  <div class="form-group">
+                    <label>Active Layers & Probabilities</label>
+                    <div class="active-layers" id="activeLayers">
+                      <!-- Will be populated dynamically -->
+                    </div>
+                    <small class="form-hint">Toggle layers on/off and set probability percentages (1-100%)</small>
+                  </div>
+                </div>
               </div>
             </div>
 
