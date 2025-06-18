@@ -13,6 +13,8 @@ const env = {
     SOLANA_NETWORK: process.env.SOLANA_NETWORK
 };
 
+console.log('Build environment variables:', env);
+
 // Create a script to inject environment variables
 const envScript = `
 <script>

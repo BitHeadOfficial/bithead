@@ -234,6 +234,17 @@ function initializeContactForm() {
             });
             
             console.log('[Contact Form] Response status:', response.status);
+            console.log('[Contact Form] Response headers:', Object.fromEntries(response.headers.entries()));
+            
+            // Check if response is JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                // If not JSON, get the text content for debugging
+                const textResponse = await response.text();
+                console.error('[Contact Form] Non-JSON response received:', textResponse.substring(0, 200));
+                throw new Error('Server returned an invalid response. Please try again later.');
+            }
+            
             const responseData = await response.json();
             console.log('[Contact Form] Response data:', responseData);
             

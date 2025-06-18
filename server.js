@@ -155,7 +155,12 @@ app.use(helmet({
     }
 }));
 app.use(cors({
-    origin: ['https://www.bithead.at', 'https://bithead.at'],
+    origin: process.env.NODE_ENV === 'production' ? true : [
+        'https://www.bithead.at', 
+        'https://bithead.at',
+        'http://localhost:3000',
+        'http://localhost:5000'
+    ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
