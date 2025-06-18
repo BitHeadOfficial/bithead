@@ -324,7 +324,7 @@ function initializeContactForm() {
 }
 
 // Main render logic
-document.addEventListener("DOMContentLoaded", async () => {
+(async () => {
   const headerContainer = document.getElementById("header-container");
   const footerContainer = document.getElementById("footer-container");
   const app = document.getElementById("app");
@@ -401,7 +401,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (typeof initSnakeGame === "function") {
     initSnakeGame();
   }
-});
+})();
 
 async function checkWalletAccess(walletAddress) {
     try {
