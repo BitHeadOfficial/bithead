@@ -1,5 +1,12 @@
-console.log('[BitHead] script.js loaded');
+window.addEventListener('error', function(e) {
+  console.error('[BitHead] Global error:', e.error || e.message || e);
+});
+window.addEventListener('unhandledrejection', function(e) {
+  console.error('[BitHead] Unhandled promise rejection:', e.reason);
+});
 
+console.log('[BitHead] script.js loaded');
+console.log('[BitHead] Attempting to import config.js...');
 // Conditional import of config - fallback if not available
 let API_URL, fetchAPI;
 
@@ -7,8 +14,9 @@ try {
     const config = await import('./config.js');
     API_URL = config.API_URL;
     fetchAPI = config.fetchAPI;
+    console.log('[BitHead] config.js loaded:', config);
 } catch (error) {
-    console.warn('Config not available yet, using fallback values');
+    console.warn('Config not available yet, using fallback values', error);
     API_URL = 'https://bithead.onrender.com/api';
     fetchAPI = async (endpoint, options = {}) => {
         try {
