@@ -14,6 +14,9 @@
     <!-- Favicon -->
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
 
+    <!-- Environment Variables Script -->
+    <script src="/config.js"></script>
+
     <title>Resources | BitHead</title>
 
     <!-- CookieConsent by Osano -->
@@ -127,33 +130,11 @@
       </div>
     </main>
 
-    <!-- Footer -->
-    <footer>
-      <div class="section-divider"></div>
-      <div class="footer-content">
-        <ul class="social-links">
-          <li><a href="https://x.com/BitHeadOfficial" target="_blank" rel="noopener noreferrer">𝕏</a></li>
-        </ul>
-        <p>BitHead – All rights reserved.</p>
-        <ul class="footer-links">
-          <li><a href="/terms-of-service.html">Terms of Service</a></li>
-          <li><a href="/privacy-policy.html">Privacy Policy</a></li>
-        </ul>
-      </div>
-    </footer>
-
-    <!-- Scripts -->
-    <script type="module">
-      import { setupSmoothScrolling, setupScrollSpy } from './scripts/config.js';
-      
-      // Initialize utilities after DOM is loaded
-      document.addEventListener('DOMContentLoaded', () => {
-        setupSmoothScrolling();
-        setupScrollSpy();
-      });
-    </script>
+    <!-- FOOTER START -->
+    <div id="footer-container"></div>
+    <!-- FOOTER END -->
 
     <!-- Load main application script -->
-    <script type="module" src="scripts/script.js"></script>
+    <script src="/scripts/script.js"></script>
   </body>
 </html> 
