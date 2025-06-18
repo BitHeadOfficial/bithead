@@ -16,6 +16,12 @@
   force = true
   headers = {Access-Control-Allow-Origin = "*"}
 
+[[redirects]]
+  from = "https://bithead.at/*"
+  to = "https://www.bithead.at/:splat"
+  status = 301
+  force = true
+
 [[headers]]
   for = "/api/*"
   [headers.values]

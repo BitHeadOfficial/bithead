@@ -163,6 +163,9 @@ const htmlFiles = [
     '404.html',
     'terms-of-service.html',
     'privacy-policy.html',
+    'resources.html',
+    'the-american-dream.html',
+    'fuck-the-rest.html',
     'resources/bithead-art-engine.html'
 ];
 

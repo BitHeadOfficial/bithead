@@ -1,4 +1,34 @@
-import { API_URL, fetchAPI } from './config.js';
+// Conditional import of config - fallback if not available
+let API_URL, fetchAPI;
+
+try {
+    const config = await import('./config.js');
+    API_URL = config.API_URL;
+    fetchAPI = config.fetchAPI;
+} catch (error) {
+    console.warn('Config not available yet, using fallback values');
+    API_URL = 'https://bithead.onrender.com/api';
+    fetchAPI = async (endpoint, options = {}) => {
+        try {
+            const response = await fetch(`${API_URL}${endpoint}`, {
+                ...options,
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            return await response.json();
+        } catch (error) {
+            console.error('API request failed:', error);
+            throw error;
+        }
+    };
+}
 
 // Load a file
 const loadComponent = async (path) => {
