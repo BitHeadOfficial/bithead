@@ -1,3 +1,5 @@
+console.log('[BitHead] script.js loaded');
+
 // Conditional import of config - fallback if not available
 let API_URL, fetchAPI;
 
