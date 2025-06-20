@@ -1213,4 +1213,34 @@
   opacity: 0;
   margin: 0;
   padding: 0;
+}
+
+.bitheadzartengine-headline {
+  font-size: 3rem;
+  font-weight: 600;
+  font-style: oblique;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 0 20px rgba(66, 150, 210, 0.5);
+}
+
+@media (max-width: 480px) {
+  .bitheadzartengine-text {
+    display: inline-block;
+    line-height: 1.1;
+  }
+  .bitheadzartengine-text::after {
+    content: "\AARTENGINE";
+    white-space: pre;
+    display: block;
+    font-size: inherit;
+    font-weight: inherit;
+    font-style: inherit;
+    letter-spacing: inherit;
+    text-shadow: inherit;
+  }
+  .bitheadzartengine-text {
+    content: "BITHEADZ-";
+  }
 } 
