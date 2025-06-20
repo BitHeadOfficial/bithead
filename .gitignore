@@ -143,3 +143,6 @@ junit.xml
 *.7z 
 # Local Netlify folder
 .netlify
+
+# Additional exceptions
+!public/assets/images/NFT_Generator.png
