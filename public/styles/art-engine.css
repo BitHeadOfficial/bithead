@@ -940,6 +940,14 @@
   .usage-example {
     padding: 1rem;
   }
+  
+  .bitheadz-mobile-break {
+    display: inline;
+    word-break: break-all;
+  }
+  .bitheadz-mobile-break wbr {
+    display: initial;
+  }
 }
 
 /* Uniqueness Warning Modal */
