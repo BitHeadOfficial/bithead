@@ -21,5 +21,4 @@ Allow: /public/components/
 Allow: /public/scripts/
 Allow: /public/styles/
 
-# Sitemap (uncomment and update if you have one)
-# Sitemap: https://yourdomain.com/sitemap.xml 
+Sitemap: https://www.bithead.at/sitemap.xml 
