@@ -6,7 +6,11 @@ import logger from '../utils/logger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const dbPath = join(__dirname, '..', 'data', 'bithead.db');
+
+const isProduction = process.env.NODE_ENV === 'production';
+const dbPath = process.env.BITHEAD_DB_PATH || (isProduction
+  ? '/opt/render/project/src/data/bithead.db'
+  : join(__dirname, '..', 'data', 'bithead.db'));
 console.log('Using database at:', dbPath);
 const db = new sqlite3.Database(dbPath);
 

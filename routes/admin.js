@@ -19,16 +19,6 @@ const __dirname = dirname(__filename);
 
 const router = express.Router();
 
-// Initialize database
-const dbPath = join(__dirname, '..', 'data', 'bithead.db');
-console.log('Database path:', dbPath);
-
-// Ensure database file exists
-if (!fs.existsSync(dbPath)) {
-    console.error('Database file not found:', dbPath);
-    fs.writeFileSync(dbPath, ''); // Create empty file
-}
-
 // Promisify database methods
 const dbAll = (query, params = []) => {
     return new Promise((resolve, reject) => {

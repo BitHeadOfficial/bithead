@@ -9,6 +9,8 @@ import { authenticate, authenticateUser, validateRequest } from '../middleware/i
 import { paymentSchema, createPaymentSchema, updatePaymentSchema } from '../validation/schemas.js';
 import logger from '../utils/logger.js';
 import solanaWeb3 from '@solana/web3.js';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
 const router = express.Router();
 
@@ -19,7 +21,13 @@ const connection = new Connection(process.env.SOLANA_RPC_URL);
 const RECIPIENT_WALLET = new PublicKey('5Zd2EiC7S2DaT5mQyC1etYmusNPyEQtHDgojdf5oLHLE');
 
 // Database connection
-const db = new sqlite3.Database('./data/bithead.db');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const isProduction = process.env.NODE_ENV === 'production';
+const dbPath = process.env.BITHEAD_DB_PATH || (isProduction
+  ? '/opt/render/project/src/data/bithead.db'
+  : join(__dirname, '..', 'data', 'bithead.db'));
+const db = new sqlite3.Database(dbPath);
 
 router.post('/payment', async (req, res) => {
     try {
