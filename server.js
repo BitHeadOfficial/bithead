@@ -742,7 +742,7 @@ app.post('/api/leaderboard', async (req, res) => {
                     db.run('UPDATE leaderboard SET score = ?, profile_pic = ? WHERE id = ?', [score, profilePic, row.id], function(err2) {
                         if (err2) {
                             console.error('[Leaderboard] DB Error:', err2.message);
-                            return res.status(500).json({ success: false, error: 'Failed to update leaderboard.' });
+                            return res.status(500).json({ success: false, error: 'Failed to update leaderboard: ' + err2.message });
                         }
                         // Return updated leaderboard
                         db.all('SELECT display_name, twitter_handle, profile_pic, score, created_at FROM leaderboard ORDER BY score DESC, created_at ASC LIMIT 10', [], (err3, rows) => {
@@ -767,7 +767,7 @@ app.post('/api/leaderboard', async (req, res) => {
                 db.run('INSERT INTO leaderboard (display_name, twitter_handle, profile_pic, score) VALUES (?, ?, ?, ?)', [displayName, twitterHandle, profilePic, score], function(err2) {
                     if (err2) {
                         console.error('[Leaderboard] DB Error:', err2.message);
-                        return res.status(500).json({ success: false, error: 'Failed to add leaderboard entry.' });
+                        return res.status(500).json({ success: false, error: 'Failed to add leaderboard entry: ' + err2.message });
                     }
                     db.all('SELECT display_name, twitter_handle, profile_pic, score, created_at FROM leaderboard ORDER BY score DESC, created_at ASC LIMIT 10', [], (err3, rows) => {
                         if (err3) {
