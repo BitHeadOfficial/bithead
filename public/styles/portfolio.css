@@ -88,11 +88,6 @@
   transition: transform 0.3s ease;
 }
 
-/* Slight zoom on hover for the front image (desktop only) */
-.portfolio-card:hover .card-front img {
-  /* transform: scale(1.05); */
-}
-
 /* =======================
    CARD BACK
 ======================= */
