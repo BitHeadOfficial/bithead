@@ -342,6 +342,7 @@ function initializeContactForm() {
       shop: "components/shop.html",
       exclusive: "components/exclusive.html",
       cta: "components/cta.html",
+      faq: "components/faq.html",
       footer: "components/footer.html"
     };
 
