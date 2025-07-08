@@ -16,24 +16,8 @@ header {
 
 /* Nav logo styling */
 .nav-logo {
-  height: 48px;
-  min-height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  width: auto;
-}
-
-.nav-logo a {
-  height: 48px !important;
-  min-height: 48px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-  padding: 0 !important;
-  width: auto;
-  gap: 1.2em;
-  text-decoration: none;
+  font-size: 1.5rem;
+  color: #fff;
 }
 
 /* Nav container: push navigation to the right */
@@ -173,11 +157,21 @@ header {
 }
 
 .nav-logo a {
-  font-size: unset !important;
-  line-height: unset !important;
-  padding: 0 !important;
-  height: auto !important;
+  font-size: 1.8rem !important;
+  font-weight: bold !important;
+  color: #fff !important;
+  font-family: "Montserrat", "Inter", Arial, sans-serif !important;
+  font-style: oblique !important;
+  letter-spacing: 2px !important;
+  text-transform: uppercase !important;
+  transition: color 0.3s !important;
+  text-shadow: 0 0 10px rgba(66, 150, 210, 0.5) !important;
   display: inline-block !important;
+  line-height: 1.1 !important;
+}
+.nav-logo a:hover {
+  color: #4296d2 !important;
+  text-shadow: 0 0 20px rgba(66, 150, 210, 0.8) !important;
 }
 
 /* Update navigation links to use oblique style */
@@ -226,42 +220,8 @@ body > .container:first-of-type {
 }
 
 .bithead-logo {
-  height: 48px !important;
-  width: auto !important;
-  display: inline-block;
+  height: 2rem;
   vertical-align: middle;
-}
-
-.bithead-logo-fill {
-  fill: #fff;
-  transition: fill 0.2s linear;
-}
-
-.nav-logo a:hover .bithead-logo-fill {
-  fill: #4296d2;
-}
-
-.bithead-text {
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: #fff;
-  font-family: "Montserrat", "Inter", Arial, sans-serif;
-  font-style: oblique;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  transition: color 0.3s, text-shadow 0.3s;
-  text-shadow: 0 0 10px rgba(66, 150, 210, 0.5);
-  line-height: 1;
-  display: flex;
-  align-items: center;
-}
-
-/* Directly transition to blue on hover, no green */
-.nav-logo a:hover .bithead-logo {
-  filter: invert(47%) sepia(97%) saturate(749%) hue-rotate(176deg) brightness(97%) contrast(92%);
-}
-
-.nav-logo a:hover .bithead-text {
-  color: #4296d2;
-  text-shadow: 0 0 20px rgba(66, 150, 210, 0.8);
+  margin-right: 0.5rem;
+  display: inline-block;
 }
