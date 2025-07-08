@@ -16,8 +16,8 @@ header {
 
 /* Nav logo styling */
 .nav-logo {
-  height: 64px;
-  min-height: 64px;
+  height: 48px;
+  min-height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -25,13 +25,15 @@ header {
 }
 
 .nav-logo a {
-  height: 64px !important;
-  min-height: 64px !important;
+  height: 48px !important;
+  min-height: 48px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   padding: 0 !important;
-  width: 100%;
+  width: auto;
+  gap: 0.75em;
+  text-decoration: none;
 }
 
 /* Nav container: push navigation to the right */
@@ -224,14 +226,33 @@ body > .container:first-of-type {
 }
 
 .bithead-logo {
-  height: 64px !important;
-  max-height: 10vh;
+  height: 48px !important;
+  max-height: 8vh;
   width: auto !important;
   vertical-align: middle;
   display: inline-block;
   transition: filter 0.3s, fill 0.3s;
 }
 
+.bithead-text {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #fff;
+  font-family: "Montserrat", "Inter", Arial, sans-serif;
+  font-style: oblique;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: color 0.3s, text-shadow 0.3s;
+  text-shadow: 0 0 10px rgba(66, 150, 210, 0.5);
+  line-height: 1.1;
+  display: inline-block;
+}
+
 .nav-logo a:hover .bithead-logo {
   filter: brightness(0) saturate(100%) invert(48%) sepia(77%) saturate(747%) hue-rotate(176deg) brightness(97%) contrast(92%);
+}
+
+.nav-logo a:hover .bithead-text {
+  color: #4296d2;
+  text-shadow: 0 0 20px rgba(66, 150, 210, 0.8);
 }
