@@ -364,7 +364,12 @@ function initializeContactForm() {
   } else {
     // We're on a subpage
     if (headerContainer) {
-      const headerHtml = await loadComponent("components/header.html");
+      // Determine correct path for header component
+      let headerPath = "components/header.html";
+      if (window.location.pathname.includes("resources/bithead-art-engine")) {
+        headerPath = "../components/header.html";
+      }
+      const headerHtml = await loadComponent(headerPath);
       headerContainer.innerHTML = headerHtml;
       // Set nav link hrefs to index.html#section for cross-page nav
       document.querySelectorAll('.nav-links a, .nav-logo a').forEach(link => {

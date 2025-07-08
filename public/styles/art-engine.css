@@ -948,6 +948,11 @@
   .bitheadz-mobile-break wbr {
     display: initial;
   }
+  
+  .bitheadzartengine-text {
+    display: inline-block;
+    line-height: 1.1;
+  }
 }
 
 /* Uniqueness Warning Modal */
@@ -1237,18 +1242,5 @@
   .bitheadzartengine-text {
     display: inline-block;
     line-height: 1.1;
-  }
-  .bitheadzartengine-text::after {
-    content: "\AARTENGINE";
-    white-space: pre;
-    display: block;
-    font-size: inherit;
-    font-weight: inherit;
-    font-style: inherit;
-    letter-spacing: inherit;
-    text-shadow: inherit;
-  }
-  .bitheadzartengine-text {
-    content: "BITHEADZ-";
   }
 } 
