@@ -159,7 +159,7 @@ header {
 .nav-logo a {
   display: flex !important;
   align-items: center !important;
-  gap: 1.1rem !important;
+  gap: 0.6rem !important;
   font-size: 1.8rem !important;
   font-weight: bold !important;
   color: #fff !important;
@@ -182,8 +182,14 @@ header {
   filter: none;
 }
 
+.nav-logo a:hover {
+  color: #4296d2 !important;
+}
+
 .nav-logo a:hover .bithead-logo {
-  filter: drop-shadow(0 0 8px #4296d2);
+  filter: none !important;
+  /* Optionally, use a CSS filter to tint the SVG blue if needed */
+  /* filter: brightness(0) saturate(100%) invert(41%) sepia(80%) saturate(747%) hue-rotate(176deg) brightness(97%) contrast(92%); */
 }
 
 /* Update navigation links to use oblique style */
