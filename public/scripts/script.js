@@ -391,7 +391,12 @@ function initializeContactForm() {
   if (footerContainer && !document.querySelector('footer')) {
     console.log('[Footer] Loading footer component');
     try {
-      const footerHtml = await loadComponent("components/footer.html");
+      // Determine correct path for footer component
+      let footerPath = "components/footer.html";
+      if (window.location.pathname !== "/" && window.location.pathname !== "/index.html" && window.location.pathname.split("/").length > 2) {
+        footerPath = "/components/footer.html";
+      }
+      const footerHtml = await loadComponent(footerPath);
       console.log('[Footer] Footer component loaded successfully');
       footerContainer.innerHTML = footerHtml;
       console.log('[Footer] Footer HTML injected into container');
