@@ -230,7 +230,15 @@ body > .container:first-of-type {
   width: auto !important;
   display: inline-block;
   vertical-align: middle;
-  transition: filter 0.2s linear;
+}
+
+.bithead-logo-fill {
+  fill: #fff;
+  transition: fill 0.2s linear;
+}
+
+.nav-logo a:hover .bithead-logo-fill {
+  fill: #4296d2;
 }
 
 .bithead-text {
