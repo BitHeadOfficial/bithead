@@ -220,9 +220,14 @@ body > .container:first-of-type {
 }
 
 .bithead-logo {
-  height: 100px !important;
-  max-height: 20vh;
+  height: 64px !important;
+  max-height: 10vh;
   width: auto !important;
   vertical-align: middle;
   display: inline-block;
+  transition: filter 0.3s, fill 0.3s;
+}
+
+.nav-logo a:hover .bithead-logo {
+  filter: brightness(0) saturate(100%) invert(48%) sepia(77%) saturate(747%) hue-rotate(176deg) brightness(97%) contrast(92%);
 }
