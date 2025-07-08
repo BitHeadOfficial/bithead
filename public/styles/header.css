@@ -16,8 +16,18 @@ header {
 
 /* Nav logo styling */
 .nav-logo {
-  font-size: 1.5rem;
-  color: #fff;
+  height: 100px;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+}
+
+.nav-logo a {
+  height: 100px !important;
+  min-height: 100px !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 !important;
 }
 
 /* Nav container: push navigation to the right */
@@ -210,7 +220,9 @@ body > .container:first-of-type {
 }
 
 .bithead-logo {
-  height: 64px;
+  height: 100px !important;
+  max-height: 20vh;
+  width: auto !important;
   vertical-align: middle;
   display: inline-block;
 }
