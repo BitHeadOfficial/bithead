@@ -146,3 +146,4 @@ junit.xml
 
 # Additional exceptions
 !public/assets/images/NFT_Generator.png
+!public/assets/svg/*.svg
