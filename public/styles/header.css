@@ -157,6 +157,9 @@ header {
 }
 
 .nav-logo a {
+  display: flex !important;
+  align-items: center !important;
+  gap: 1.1rem !important;
   font-size: 1.8rem !important;
   font-weight: bold !important;
   color: #fff !important;
@@ -166,12 +169,21 @@ header {
   text-transform: uppercase !important;
   transition: color 0.3s !important;
   text-shadow: 0 0 10px rgba(66, 150, 210, 0.5) !important;
-  display: inline-block !important;
   line-height: 1.1 !important;
 }
-.nav-logo a:hover {
-  color: #4296d2 !important;
-  text-shadow: 0 0 20px rgba(66, 150, 210, 0.8) !important;
+
+.bithead-logo {
+  height: 2.2rem;
+  width: auto;
+  vertical-align: middle;
+  display: inline-block;
+  margin: 0;
+  transition: filter 0.3s;
+  filter: none;
+}
+
+.nav-logo a:hover .bithead-logo {
+  filter: drop-shadow(0 0 8px #4296d2);
 }
 
 /* Update navigation links to use oblique style */
@@ -217,11 +229,4 @@ body > header {
 }
 body > .container:first-of-type {
   margin-top: 80px !important; /* header height + spacing */
-}
-
-.bithead-logo {
-  height: 2rem;
-  vertical-align: middle;
-  margin-right: 0.5rem;
-  display: inline-block;
 }
