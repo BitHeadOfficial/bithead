@@ -372,9 +372,13 @@ function initializeContactForm() {
         if (section) link.setAttribute('href', `index.html#${section}`);
       });
       setupBurgerMenu(); // Attach after AJAX load
+      setupSmoothScrolling();
+      setupScrollSpy();
     } else {
       // If header is static in HTML, attach after DOMContentLoaded
       setupBurgerMenu();
+      setupSmoothScrolling();
+      setupScrollSpy();
     }
   }
 

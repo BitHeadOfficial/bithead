@@ -10,6 +10,8 @@
     <!-- CookieConsent by Osano -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js"></script>
+    <link rel="stylesheet" href="/styles/base.css">
+    <link rel="stylesheet" href="/styles/header.css">
     <script>
     window.addEventListener('load', function(){
       window.cookieconsent.initialise({
@@ -56,29 +58,7 @@
 <body>
     <div class="container">
         <!-- HEADER START -->
-        <header>
-          <div class="nav-logo">
-            <a data-section="hero" href="/">
-              <img src="assets/svg/BitHeadLogo.svg" alt="BitHead Logo" class="bithead-logo" />
-              BITHEAD
-            </a>
-          </div>
-          <div class="nav-container">
-            <nav>
-              <ul class="nav-links">
-                <li><a data-section="about" href="/#about">About</a></li>
-                <li><a data-section="portfolio" href="/#portfolio">Portfolio</a></li>
-                <li><a data-section="snake-section" href="/#snake-section">Snake</a></li>
-                <li><a data-section="nft-mint" href="/#nft-mint">NFT</a></li>
-                <li><a data-section="shop" href="/#shop">Shops</a></li>
-                <li><a data-section="exclusive" href="/#exclusive">Drops</a></li>
-                <li><a href="/resources">Resources</a></li>
-                <li><a data-section="cta" href="/#cta">Contact</a></li>
-              </ul>
-            </nav>
-          </div>
-          <div class="hamburger">☰</div>
-        </header>
+        <div id="header-container"></div>
         <!-- HEADER END -->
         <!-- Login Form -->
         <div id="adminLoginForm" class="login-form">
