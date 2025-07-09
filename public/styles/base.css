@@ -202,7 +202,7 @@ footer {
   vertical-align: middle;
   margin: 0;
   position: relative;
-  top: 0.7rem;
+  top: 0.3rem;
   animation: glitchIn 2s ease forwards, glitch 2s infinite linear 1.5s;
 }
 @media (max-width: 700px) {
