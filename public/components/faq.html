@@ -1,80 +1,74 @@
 <section class="faq-section">
-  <h2 class="faq-title">Frequently Asked Questions</h2>
   <div class="faq-list">
     <div class="faq-item">
-      <button class="faq-question">What is NFT art?</button>
+      <button class="faq-question" type="button">What is NFT art?</button>
       <div class="faq-answer">NFT art is digital artwork that is tokenized on a blockchain, making each piece unique, verifiable, and tradable as a non-fungible token (NFT).</div>
     </div>
     <div class="faq-item">
-      <button class="faq-question">How does blockchain technology work?</button>
+      <button class="faq-question" type="button">How does blockchain technology work?</button>
       <div class="faq-answer">Blockchain is a decentralized digital ledger that records transactions across many computers, ensuring transparency and security without a central authority.</div>
     </div>
     <div class="faq-item">
-      <button class="faq-question">What is Web3?</button>
+      <button class="faq-question" type="button">What is Web3?</button>
       <div class="faq-answer">Web3 refers to the next generation of the internet, built on decentralized technologies like blockchain, enabling peer-to-peer interactions and user ownership of data.</div>
     </div>
     <div class="faq-item">
-      <button class="faq-question">How do I create an NFT?</button>
+      <button class="faq-question" type="button">How do I create an NFT?</button>
       <div class="faq-answer">To create an NFT, you need a digital wallet, a blockchain platform (like Ethereum or Solana), and a marketplace to mint and list your digital asset as an NFT.</div>
     </div>
     <div class="faq-item">
-      <button class="faq-question">What makes NFT art valuable?</button>
+      <button class="faq-question" type="button">What makes NFT art valuable?</button>
       <div class="faq-answer">NFT art is valuable due to its uniqueness, provenance, creator reputation, and demand within the digital art and crypto communities.</div>
     </div>
     <div class="faq-item">
-      <button class="faq-question">Can I sell my NFT art?</button>
+      <button class="faq-question" type="button">Can I sell my NFT art?</button>
       <div class="faq-answer">Yes, you can sell NFT art on various marketplaces. Ownership and transaction history are tracked on the blockchain for authenticity.</div>
     </div>
     <div class="faq-item">
-      <button class="faq-question">What is a smart contract?</button>
+      <button class="faq-question" type="button">What is a smart contract?</button>
       <div class="faq-answer">A smart contract is a self-executing program on the blockchain that automatically enforces the terms of an agreement without intermediaries.</div>
     </div>
     <div class="faq-item">
-      <button class="faq-question">How do royalties work with NFTs?</button>
+      <button class="faq-question" type="button">How do royalties work with NFTs?</button>
       <div class="faq-answer">NFT smart contracts can include royalties, ensuring creators receive a percentage of sales each time their NFT is resold on secondary markets.</div>
     </div>
     <div class="faq-item">
-      <button class="faq-question">Is NFT art environmentally friendly?</button>
+      <button class="faq-question" type="button">Is NFT art environmentally friendly?</button>
       <div class="faq-answer">Some blockchains use energy-intensive proof-of-work, but many NFT platforms now use eco-friendly proof-of-stake or carbon-neutral solutions.</div>
     </div>
     <div class="faq-item">
-      <button class="faq-question">What is the difference between fungible and non-fungible tokens?</button>
+      <button class="faq-question" type="button">What is the difference between fungible and non-fungible tokens?</button>
       <div class="faq-answer">Fungible tokens (like Bitcoin) are interchangeable, while non-fungible tokens (NFTs) are unique and cannot be exchanged on a one-to-one basis.</div>
     </div>
     <div class="faq-item">
-      <button class="faq-question">How do I store my NFTs securely?</button>
+      <button class="faq-question" type="button">How do I store my NFTs securely?</button>
       <div class="faq-answer">Store NFTs in a secure digital wallet, preferably one with hardware or multi-factor authentication, and never share your private keys.</div>
     </div>
     <div class="faq-item">
-      <button class="faq-question">What is generative art?</button>
+      <button class="faq-question" type="button">What is generative art?</button>
       <div class="faq-answer">Generative art is created using algorithms and code, often resulting in unique, computer-generated visuals. Many NFT projects use generative techniques.</div>
     </div>
     <div class="faq-item">
-      <button class="faq-question">Can I use NFTs for more than art?</button>
+      <button class="faq-question" type="button">Can I use NFTs for more than art?</button>
       <div class="faq-answer">Yes, NFTs can represent music, videos, virtual real estate, gaming assets, memberships, and more—expanding far beyond digital art.</div>
     </div>
     <div class="faq-item">
-      <button class="faq-question">What is a crypto wallet?</button>
+      <button class="faq-question" type="button">What is a crypto wallet?</button>
       <div class="faq-answer">A crypto wallet is a digital tool that allows you to store, send, and receive cryptocurrencies and NFTs securely on the blockchain.</div>
     </div>
     <div class="faq-item">
-      <button class="faq-question">How do I get started with Web3?</button>
+      <button class="faq-question" type="button">How do I get started with Web3?</button>
       <div class="faq-answer">Start by setting up a crypto wallet, exploring decentralized apps (dApps), and learning about blockchain, NFTs, and smart contracts through trusted resources.</div>
     </div>
   </div>
 </section>
 <script>
-// Simple accordion logic
-const faqQuestions = document.querySelectorAll('.faq-question');
-faqQuestions.forEach(btn => {
+document.querySelectorAll('.faq-question').forEach(btn => {
   btn.addEventListener('click', () => {
     const answer = btn.nextElementSibling;
-    const isOpen = answer.style.maxHeight;
-    // Close all answers
-    document.querySelectorAll('.faq-answer').forEach(a => a.style.maxHeight = null);
-    if (!isOpen) {
-      answer.style.maxHeight = answer.scrollHeight + 'px';
-    }
+    const isOpen = answer.classList.contains('open');
+    document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('open'));
+    if (!isOpen) answer.classList.add('open');
   });
 });
 </script> 
