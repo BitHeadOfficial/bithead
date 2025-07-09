@@ -192,20 +192,21 @@ footer {
 
 .hero-logo-group {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 1.2rem;
   justify-content: center;
 }
 .hero-logo.bithead-logo {
   height: 4.5rem !important;
   width: auto;
-  vertical-align: middle;
+  vertical-align: -0.4rem;
   margin: 0;
   animation: glitchIn 2s ease forwards, glitch 2s infinite linear 1.5s;
 }
 @media (max-width: 700px) {
   .hero-logo.bithead-logo {
     height: 2.7rem !important;
+    vertical-align: -0.2rem;
   }
 }
 .hero-title {
