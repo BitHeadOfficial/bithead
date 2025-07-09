@@ -202,13 +202,13 @@ footer {
   vertical-align: middle;
   margin: 0;
   position: relative;
-  top: 1.5rem;
+  top: 0.7rem;
   animation: glitchIn 2s ease forwards, glitch 2s infinite linear 1.5s;
 }
 @media (max-width: 700px) {
   .hero-logo.bithead-logo {
     height: 2.7rem !important;
-    top: 0.8rem;
+    top: 0.3rem;
   }
 }
 .hero-title {
