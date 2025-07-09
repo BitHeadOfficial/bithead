@@ -376,6 +376,9 @@ function initializeContactForm() {
         const section = link.getAttribute('data-section');
         if (section) link.setAttribute('href', `index.html#${section}`);
       });
+      // Ensure header is visible immediately after injection
+      const injectedHeader = headerContainer.querySelector('header');
+      if (injectedHeader) injectedHeader.style.display = 'flex';
       setupBurgerMenu(); // Attach after AJAX load
       setupSmoothScrolling();
       setupScrollSpy();
