@@ -371,10 +371,10 @@ function initializeContactForm() {
       }
       const headerHtml = await loadComponent(headerPath);
       headerContainer.innerHTML = headerHtml;
-      // Set nav link hrefs to index.html#section for cross-page nav
+      // Set nav link hrefs to correct root-relative links for cross-page nav
       document.querySelectorAll('.nav-links a, .nav-logo a').forEach(link => {
         const section = link.getAttribute('data-section');
-        if (section) link.setAttribute('href', `index.html#${section}`);
+        if (section) link.setAttribute('href', `/#${section}`);
       });
       // Ensure header is visible immediately after injection
       const injectedHeader = headerContainer.querySelector('header');
