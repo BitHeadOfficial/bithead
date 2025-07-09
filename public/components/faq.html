@@ -1,4 +1,5 @@
 <section class="faq-section">
+  <h2 class="faq-title">Frequently Asked Questions</h2>
   <div class="faq-list">
     <div class="faq-item">
       <button class="faq-question" type="button">What is NFT art?</button>
@@ -63,15 +64,24 @@
   </div>
 </section>
 <script>
-// Ensure listeners attach after DOM is ready, even if loaded via JS
-setTimeout(() => {
+function attachFAQListeners() {
   document.querySelectorAll('.faq-question').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.onclick = () => {
       const answer = btn.nextElementSibling;
       const isOpen = answer.classList.contains('open');
       document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('open'));
       if (!isOpen) answer.classList.add('open');
-    });
+    };
   });
-}, 0);
+}
+// Attach on load
+attachFAQListeners();
+// Also attach if FAQ is injected later
+if (window.MutationObserver) {
+  const faqSection = document.querySelector('.faq-section');
+  if (faqSection) {
+    const observer = new MutationObserver(() => attachFAQListeners());
+    observer.observe(faqSection, { childList: true, subtree: true });
+  }
+}
 </script> 
