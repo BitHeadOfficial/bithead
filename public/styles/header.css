@@ -168,7 +168,6 @@ header {
   letter-spacing: 2px !important;
   text-transform: uppercase !important;
   transition: color 0.3s !important;
-  text-shadow: 0 0 10px rgba(66, 150, 210, 0.5) !important;
   line-height: 1.1 !important;
 }
 
