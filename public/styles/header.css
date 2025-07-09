@@ -26,11 +26,11 @@ header {
 }
 
 /* -------------------------------
-   MOBILE STYLES (max-width: 768px)
+   MOBILE STYLES (max-width: 1024px)
 --------------------------------- */
 
 /* Hamburger: visible on mobile */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .hamburger {
     display: block !important;
     font-size: 2rem !important;
@@ -104,9 +104,9 @@ header {
 }
 
 /* -------------------------------
-   DESKTOP STYLES (min-width: 769px)
+   DESKTOP STYLES (min-width: 1025px)
 --------------------------------- */
-@media (min-width: 769px) {
+@media (min-width: 1025px) {
   /* Hide hamburger on desktop */
   .hamburger {
     display: none !important;
