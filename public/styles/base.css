@@ -196,16 +196,16 @@ footer {
   gap: 1.2rem;
   justify-content: center;
 }
-.hero-logo {
-  height: 3.5rem;
+.hero-logo.bithead-logo {
+  height: 4.5rem !important;
   width: auto;
   vertical-align: middle;
   margin: 0;
   animation: glitchIn 2s ease forwards, glitch 2s infinite linear 1.5s;
 }
 @media (max-width: 700px) {
-  .hero-logo {
-    height: 2.2rem;
+  .hero-logo.bithead-logo {
+    height: 2.7rem !important;
   }
 }
 .hero-title {
@@ -218,15 +218,8 @@ footer {
   color: #fff;
   text-shadow: none;
 }
-.hero-logo {
-  height: 2rem;
-  margin-right: 0.5rem;
-}
 @media (max-width: 700px) {
   .hero-title {
     font-size: 2.5rem;
-  }
-  .hero-logo {
-    height: 1.3rem;
   }
 }
