@@ -323,6 +323,18 @@ function initializeContactForm() {
     console.log('[Contact Form] Initialization complete');
 }
 
+// FAQ accordion logic
+function initializeFAQAccordion() {
+  document.querySelectorAll('.faq-question').forEach(btn => {
+    btn.onclick = () => {
+      const answer = btn.nextElementSibling;
+      const isOpen = answer.classList.contains('open');
+      document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('open'));
+      if (!isOpen) answer.classList.add('open');
+    };
+  });
+}
+
 // Main render logic
 (async () => {
   const headerContainer = document.getElementById("header-container");
@@ -361,6 +373,7 @@ function initializeContactForm() {
     setupSmoothScrolling();
     setupScrollSpy();
     initializeContactForm(); // Initialize the contact form
+    initializeFAQAccordion(); // Initialize FAQ accordion after injection
   } else {
     // We're on a subpage
     if (headerContainer) {
