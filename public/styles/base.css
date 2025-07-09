@@ -110,12 +110,20 @@ footer {
   box-shadow: none;
 }
 .faq-title {
+  font-family: "Montserrat", sans-serif;
+  font-size: 3rem;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  letter-spacing: 0.1rem;
   color: #fff;
-  font-size: 2rem;
-  margin-bottom: 2.2rem;
   text-align: center;
-  letter-spacing: 1px;
   font-weight: 600;
+}
+@media (max-width: 700px) {
+  .faq-title {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+  }
 }
 .faq-list {
   max-width: 700px;
