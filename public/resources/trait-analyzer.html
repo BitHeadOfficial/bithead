@@ -52,9 +52,15 @@
               <canvas id="traitChart" height="220"></canvas>
             </div>
             <div id="multiHeatmapSection" style="margin-top:2rem; display:none;">
-              <label style="color:#4296d2;font-weight:600;">Multi-Trait Heatmap:</label>
-              <div id="multiTraitSelectors" style="margin:1rem 0; display:flex; flex-wrap:wrap; gap:1rem;"></div>
-              <canvas id="multiTraitHeatmap" height="400"></canvas>
+              <div class="multi-heatmap-container">
+                <label style="color:#4296d2;font-weight:600; font-size:1.1rem;">Multi-Trait Heatmap</label>
+                <div id="multiTraitSelectors" style="margin:1rem 0; display:flex; flex-wrap:wrap; gap:1rem;"></div>
+                <div style="background:#181c22; border-radius:12px; padding:1.5rem; box-shadow:0 2px 8px rgba(66,150,210,0.08);">
+                  <canvas id="multiTraitHeatmap" height="400"></canvas>
+                  <div id="multiHeatmapLegend" style="margin-top:1rem; display:flex; align-items:center; gap:0.5rem;"></div>
+                  <div id="multiHeatmapNoData" style="margin-top:1rem; color:#dc3545; font-weight:600; display:none;">No data for selected combination.</div>
+                </div>
+              </div>
             </div>
           </div>
         </section>

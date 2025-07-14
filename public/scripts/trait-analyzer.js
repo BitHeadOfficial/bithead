@@ -243,6 +243,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Multi-trait heatmap logic
+  // Utility: get most common traits
+  function getMostCommonTraits(traitCounts) {
+    if (!traitCounts) return [];
+    return Array.from(traitCounts.entries())
+      .sort((a, b) => Array.from(b[1].values()).reduce((x, y) => x + y, 0) - Array.from(a[1].values()).reduce((x, y) => x + y, 0))
+      .map(([trait]) => trait);
+  }
+
   function renderMultiTraitHeatmapUI(traitCounts, allAttributes) {
     multiTraitSelectors.innerHTML = '';
     if (!traitCounts || traitCounts.size < 2) {
@@ -251,6 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // Build selectors for all traits
     const traitNames = Array.from(traitCounts.keys());
+    const mostCommon = getMostCommonTraits(traitCounts);
     // Axis selectors
     const rowTraitSel = document.createElement('select');
     rowTraitSel.id = 'rowTraitSel';
@@ -268,8 +277,13 @@ document.addEventListener('DOMContentLoaded', () => {
       opt.textContent = trait;
       colTraitSel.appendChild(opt);
     });
-    // Default: first and second trait
-    colTraitSel.selectedIndex = 1;
+    // Default: most common and second most common trait
+    if (mostCommon.length > 1) {
+      rowTraitSel.value = mostCommon[0];
+      colTraitSel.value = mostCommon[1];
+    } else {
+      colTraitSel.selectedIndex = 1;
+    }
     // Filter selectors for all other traits
     const filterSelectors = {};
     traitNames.forEach(trait => {
@@ -341,6 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const colVals = Array.from(new Set(allAttributes.flatMap(attrs => attrs.filter(a => a.trait_type === colTrait).map(a => a.value))));
     // Count occurrences for each (row, col) pair, filtered
     const matrix = [];
+    let maxCount = 1;
     rowVals.forEach((rowVal, i) => {
       colVals.forEach((colVal, j) => {
         // Count NFTs with rowTrait=rowVal, colTrait=colVal, and all filters
@@ -359,11 +374,34 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           if (pass) count++;
         });
+        if (count > maxCount) maxCount = count;
         matrix.push({x: j, y: i, v: count});
       });
     });
     // Draw heatmap
     if (multiHeatmapInstance) multiHeatmapInstance.destroy();
+    // Show/hide no data message
+    const noDataDiv = document.getElementById('multiHeatmapNoData');
+    if (matrix.every(cell => cell.v === 0)) {
+      noDataDiv.style.display = '';
+    } else {
+      noDataDiv.style.display = 'none';
+    }
+    // Color legend
+    const legendDiv = document.getElementById('multiHeatmapLegend');
+    legendDiv.innerHTML = '';
+    const legendBar = document.createElement('div');
+    legendBar.className = 'heatmap-legend-bar';
+    legendBar.style.background = 'linear-gradient(90deg, #23272f 0%, #4296d2 100%)';
+    legendDiv.appendChild(legendBar);
+    const minLabel = document.createElement('span');
+    minLabel.className = 'heatmap-legend-label';
+    minLabel.textContent = '0';
+    legendDiv.appendChild(minLabel);
+    const maxLabel = document.createElement('span');
+    maxLabel.className = 'heatmap-legend-label';
+    maxLabel.textContent = maxCount;
+    legendDiv.appendChild(maxLabel);
     multiHeatmapInstance = new Chart(multiTraitHeatmap, {
       type: 'matrix',
       data: {
@@ -374,13 +412,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const v = ctx.raw.v;
             if (v === 0) return '#23272f';
             // Blue scale
-            const alpha = Math.min(0.9, 0.2 + v / Math.max(...matrix.map(m => m.v || 1)));
+            const alpha = Math.min(0.9, 0.2 + (maxCount ? v / maxCount : 0));
             return `rgba(66,150,210,${alpha})`;
           },
           borderWidth: 1,
           borderColor: '#181c22',
-          width: ({chart}) => (chart.chartArea || {}).width / colVals.length - 2,
-          height: ({chart}) => (chart.chartArea || {}).height / rowVals.length - 2,
+          width: ({chart}) => (chart.chartArea || {}).width / (colVals.length || 1) - 2,
+          height: ({chart}) => (chart.chartArea || {}).height / (rowVals.length || 1) - 2,
+          // Show count in each cell
+          datalabels: {
+            display: true,
+            color: '#fff',
+            font: { weight: 'bold', size: 13 },
+            align: 'center',
+            anchor: 'center',
+            formatter: v => v.v > 0 ? v.v : ''
+          }
         }]
       },
       options: {
@@ -395,21 +442,29 @@ document.addEventListener('DOMContentLoaded', () => {
               },
               label: ctx => `Count: ${ctx.raw.v}`
             }
+          },
+          datalabels: {
+            display: true,
+            color: '#fff',
+            font: { weight: 'bold', size: 13 },
+            align: 'center',
+            anchor: 'center',
+            formatter: v => v.v > 0 ? v.v : ''
           }
         },
         scales: {
           x: {
             type: 'category',
             labels: colVals,
-            title: { display: true, text: colTrait, color: '#4296d2', font: { weight: 700 } },
-            ticks: { color: '#fff', font: { weight: 600 }, autoSkip: false },
+            title: { display: true, text: colTrait, color: '#4296d2', font: { weight: 700, size: 16 } },
+            ticks: { color: '#fff', font: { weight: 600, size: 13 }, autoSkip: false, maxRotation: 45, minRotation: 20 },
             grid: { color: '#2a2a2a' }
           },
           y: {
             type: 'category',
             labels: rowVals,
-            title: { display: true, text: rowTrait, color: '#4296d2', font: { weight: 700 } },
-            ticks: { color: '#fff', font: { weight: 600 }, autoSkip: false },
+            title: { display: true, text: rowTrait, color: '#4296d2', font: { weight: 700, size: 16 } },
+            ticks: { color: '#fff', font: { weight: 600, size: 13 }, autoSkip: false, maxRotation: 0 },
             grid: { color: '#2a2a2a' }
           }
         }
