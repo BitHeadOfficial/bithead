@@ -6,6 +6,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const metadataInput = document.getElementById('metadataInput');
   const uploadedFilesContainer = document.getElementById('uploadedFiles');
   const resultsTableContainer = document.getElementById('resultsTableContainer');
+  const chartSection = document.getElementById('chartSection');
+  const traitChartSelect = document.getElementById('traitChartSelect');
+  const traitChartCanvas = document.getElementById('traitChart');
+  let chartInstance = null;
 
   // Add search/filter and CSV export UI
   const controlsDiv = document.createElement('div');
@@ -126,9 +130,10 @@ document.addEventListener('DOMContentLoaded', () => {
         rows.push({ trait, value, count, percent: percent + '%' });
       });
     });
-    lastTableData = { rows, errorCount };
+    lastTableData = { rows, errorCount, traitCounts };
     lastTotalFiles = totalFiles;
     renderResultsTable(lastTableData, totalFiles, errorCount, traitSearchInput.value);
+    renderTraitChartDropdown(traitCounts);
   }
 
   function renderResultsTable(tableData, totalFiles, errorCount, filter = '') {
@@ -156,6 +161,77 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function showError(msg) {
     resultsTableContainer.innerHTML = `<p class="no-results" style="color:#dc3545">${msg}</p>`;
+  }
+
+  function renderTraitChartDropdown(traitCounts) {
+    // Clear previous
+    traitChartSelect.innerHTML = '';
+    if (!traitCounts || traitCounts.size === 0) {
+      chartSection.style.display = 'none';
+      return;
+    }
+    // Populate dropdown
+    Array.from(traitCounts.keys()).forEach(trait => {
+      const opt = document.createElement('option');
+      opt.value = trait;
+      opt.textContent = trait;
+      traitChartSelect.appendChild(opt);
+    });
+    chartSection.style.display = '';
+    // Draw chart for first trait by default
+    renderTraitChart(traitChartSelect.value);
+  }
+
+  traitChartSelect.addEventListener('change', () => {
+    renderTraitChart(traitChartSelect.value);
+  });
+
+  function renderTraitChart(traitType) {
+    if (!lastTableData || !lastTableData.traitCounts || !traitType) {
+      chartSection.style.display = 'none';
+      return;
+    }
+    const valueMap = lastTableData.traitCounts.get(traitType);
+    if (!valueMap) {
+      chartSection.style.display = 'none';
+      return;
+    }
+    const labels = Array.from(valueMap.keys());
+    const data = Array.from(valueMap.values());
+    // Destroy previous chart if exists
+    if (chartInstance) {
+      chartInstance.destroy();
+    }
+    chartInstance = new Chart(traitChartCanvas, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: `Count of "${traitType}" values`,
+          data,
+          backgroundColor: '#4296d2',
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          title: { display: false }
+        },
+        scales: {
+          x: {
+            ticks: { color: '#fff', font: { weight: 600 } },
+            grid: { color: '#2a2a2a' }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { color: '#fff' },
+            grid: { color: '#2a2a2a' }
+          }
+        }
+      }
+    });
   }
 
   // Simple HTML escape

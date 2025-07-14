@@ -11,6 +11,8 @@
     <script src="/config.js"></script>
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
     <title>Trait Analyzer | BitHead</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
     <div id="header-container"></div>
@@ -42,6 +44,11 @@
             <h2>Trait Rarity Table</h2>
             <div id="resultsTableContainer">
               <p class="no-results">Upload metadata files to see trait statistics.</p>
+            </div>
+            <div id="chartSection" style="margin-top:2rem; display:none;">
+              <label for="traitChartSelect" style="color:#4296d2;font-weight:600;">Trait Value Distribution Chart:</label>
+              <select id="traitChartSelect" style="margin:0 0.5rem 1rem 0.5rem;"></select>
+              <canvas id="traitChart" height="220"></canvas>
             </div>
           </div>
         </section>
