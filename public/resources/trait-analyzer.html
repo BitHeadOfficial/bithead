@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="NFT Trait Analyzer - Upload metadata JSON files and analyze trait rarity" />
+    <link rel="stylesheet" href="../styles/base.css" />
+    <link rel="stylesheet" href="../styles/header.css" />
+    <link rel="stylesheet" href="../styles/footer.css" />
+    <link rel="stylesheet" href="../styles/art-engine.css" />
+    <script src="/config.js"></script>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <title>Trait Analyzer | BitHead</title>
+  </head>
+  <body>
+    <div id="header-container"></div>
+    <main class="art-engine-main">
+      <div class="container">
+        <section class="tool-hero">
+          <div class="breadcrumb">
+            <a href="/resources">Resources</a>
+            <span class="separator">→</span>
+            <span class="bitheadzartengine-breadcrumb">TRAIT ANALYZER</span>
+          </div>
+          <h1 class="bitheadzartengine-headline"><span class="bitheadzartengine-text bitheadz-mobile-break">NFT TRAIT ANALYZER</span></h1>
+          <p>Upload your NFT metadata JSON files and get a full breakdown of trait rarity and usage.</p>
+        </section>
+        <section class="tool-interface">
+          <div class="config-section" data-section="upload">
+            <h2>Metadata Upload</h2>
+            <div class="upload-area" id="uploadArea">
+              <div class="upload-content">
+                <span class="upload-icon">📁</span>
+                <p>Drag & drop your metadata JSON files here or click to browse</p>
+                <p class="upload-hint">You can upload up to 10,000 files. All processing is done in your browser.</p>
+              </div>
+              <input type="file" id="metadataInput" multiple accept="application/json" style="display: none;" />
+            </div>
+            <div class="uploaded-files" id="uploadedFiles"></div>
+          </div>
+          <div class="config-section" data-section="results">
+            <h2>Trait Rarity Table</h2>
+            <div id="resultsTableContainer">
+              <p class="no-results">Upload metadata files to see trait statistics.</p>
+            </div>
+          </div>
+        </section>
+        <section class="instructions-section">
+          <h2>📚 How To Use</h2>
+          <ol>
+            <li>Export or download your NFT metadata JSON files (one file per NFT).</li>
+            <li>Click the upload area or drag & drop your files in.</li>
+            <li>The tool will analyze all files and show a table of all traits and their usage counts.</li>
+            <li>All processing is done locally in your browser for privacy and speed.</li>
+          </ol>
+        </section>
+      </div>
+    </main>
+    <footer>
+      <div class="section-divider"></div>
+      <div class="footer-content">
+        <ul class="social-links">
+          <li><a href="https://x.com/BitHeadOfficial" target="_blank" rel="noopener noreferrer">𝕏</a></li>
+        </ul>
+        <p>BitHead – All rights reserved.</p>
+        <ul class="footer-links">
+          <li><a href="/terms-of-service.html">Terms of Service</a></li>
+          <li><a href="/privacy-policy.html">Privacy Policy</a></li>
+        </ul>
+      </div>
+    </footer>
+    <script type="module" src="/scripts/script.js"></script>
+    <script type="module" src="../scripts/trait-analyzer.js"></script>
+  </body>
+</html> 
