@@ -379,7 +379,10 @@ function initializeFAQAccordion() {
     if (headerContainer) {
       // Determine correct path for header component
       let headerPath = "components/header.html";
-      if (window.location.pathname.includes("resources/bithead-art-engine")) {
+      if (
+        window.location.pathname.startsWith("/resources/") ||
+        window.location.pathname.includes("resources/")
+      ) {
         headerPath = "../components/header.html";
       }
       const headerHtml = await loadComponent(headerPath);
