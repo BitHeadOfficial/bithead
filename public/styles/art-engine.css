@@ -1244,3 +1244,104 @@
     line-height: 1.1;
   }
 } 
+
+/* Trait Analyzer Controls */
+.trait-analyzer-controls {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.trait-search-input {
+  padding: 0.5rem 1rem;
+  border: 1px solid #4296d2;
+  border-radius: 6px;
+  background: #1a1a1a;
+  color: #fff;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+.trait-search-input:focus {
+  outline: none;
+  border-color: #5bb3ff;
+  box-shadow: 0 0 0 2px rgba(66, 150, 210, 0.2);
+}
+.export-csv-btn {
+  background: linear-gradient(135deg, #4296d2, #5bb3ff);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+.export-csv-btn:hover {
+  background: linear-gradient(135deg, #3a85c0, #4fa0e6);
+  transform: translateY(-2px);
+}
+
+/* Rarity Table Styling */
+.rarity-table-scroll {
+  overflow-x: auto;
+  margin-top: 1rem;
+  border-radius: 10px;
+  background: #181c22;
+  box-shadow: 0 2px 8px rgba(66, 150, 210, 0.08);
+}
+.rarity-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: transparent;
+  font-size: 1rem;
+  color: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.rarity-table thead th {
+  background: #222b36;
+  color: #4296d2;
+  font-weight: 700;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid #4296d2;
+  text-align: left;
+}
+.rarity-table tbody tr {
+  transition: background 0.2s;
+}
+.rarity-table tbody tr:nth-child(even) {
+  background: #23272f;
+}
+.rarity-table tbody tr:nth-child(odd) {
+  background: #181c22;
+}
+.rarity-table tbody tr:hover {
+  background: #2a3a4a;
+}
+.rarity-table td {
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid #2a2a2a;
+  vertical-align: middle;
+}
+.rarity-table th:first-child, .rarity-table td:first-child {
+  border-top-left-radius: 10px;
+}
+.rarity-table th:last-child, .rarity-table td:last-child {
+  border-top-right-radius: 10px;
+}
+.rarity-summary {
+  margin-bottom: 0.5rem;
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+.no-results {
+  color: #dc3545;
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 1.1rem;
+}
+/* End Trait Analyzer Styling */ 
