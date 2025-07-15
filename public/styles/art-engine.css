@@ -1346,6 +1346,16 @@
 }
 /* End Trait Analyzer Styling */ 
 
+/* Trait Value Distribution Chart Styling */
+#chartSection canvas#traitChart {
+  width: 100% !important;
+  height: 28vw !important;
+  max-height: 320px !important;
+  min-height: 180px !important;
+  display: block;
+  margin: 0 auto;
+}
+
 /* Multi-Trait Heatmap Styling */
 .multi-heatmap-container {
   background: #161a20;
@@ -1355,11 +1365,21 @@
   margin-bottom: 2rem;
   overflow-x: auto;
 }
-#multiTraitSelectors label {
-  color: #4296d2;
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-  font-size: 1rem;
+#multiTraitSelectors {
+  gap: 1.5rem;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  display: flex;
+  overflow-x: auto;
+  align-items: flex-end;
+}
+#multiTraitSelectors > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 140px;
+  max-width: 220px;
+  flex: 0 0 auto;
 }
 #multiTraitSelectors select {
   min-width: 140px;
@@ -1378,61 +1398,20 @@
   box-shadow: 0 1px 4px rgba(66,150,210,0.04);
   transition: border-color 0.2s;
 }
-#multiTraitSelectors select:focus {
-  outline: none;
-  border-color: #5bb3ff;
-  box-shadow: 0 0 0 2px rgba(66, 150, 210, 0.15);
-}
-#multiTraitSelectors > div {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  min-width: 140px;
-  max-width: 220px;
-}
-#multiTraitSelectors {
-  gap: 1.5rem;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-}
-#multiHeatmapLegend {
-  margin-top: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.heatmap-legend-bar {
-  height: 16px;
-  width: 120px;
-  background: linear-gradient(90deg, #23272f 0%, #4296d2 100%);
-  border-radius: 8px;
-  margin-right: 0.5rem;
-}
-.heatmap-legend-label {
+.clear-filter-btn {
+  background: #dc3545;
   color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 0.2rem 0.7rem;
   font-size: 0.95rem;
-  font-weight: 500;
-}
-#multiHeatmapNoData {
-  color: #dc3545;
   font-weight: 600;
-  margin-top: 1rem;
-  text-align: center;
-  font-size: 1.1rem;
+  margin-left: 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s;
 }
-/* Chart area responsiveness */
-.multi-heatmap-container > div {
-  width: 100%;
-  max-width: 100vw;
-  overflow-x: auto;
-}
-canvas#multiTraitHeatmap {
-  width: 100% !important;
-  height: 40vw !important;
-  max-height: 400px !important;
-  min-height: 220px !important;
-  display: block;
-  margin: 0 auto;
+.clear-filter-btn:hover {
+  background: #b02a37;
 }
 @media (max-width: 1200px) {
   .multi-heatmap-container {
@@ -1440,7 +1419,7 @@ canvas#multiTraitHeatmap {
     min-width: 0;
   }
   #multiTraitSelectors {
-    flex-direction: column;
+    flex-wrap: wrap;
     gap: 1rem;
   }
   #multiTraitSelectors select, #multiTraitSelectors > div {

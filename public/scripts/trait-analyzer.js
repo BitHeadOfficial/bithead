@@ -284,7 +284,29 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       colTraitSel.selectedIndex = 1;
     }
-    // Filter selectors for all other traits
+    // Axis selectors UI (in one line)
+    const rowLabel = document.createElement('label');
+    rowLabel.textContent = 'Row Trait:';
+    rowLabel.style.color = '#4296d2';
+    rowLabel.style.fontWeight = '600';
+    rowLabel.style.marginRight = '0.5rem';
+    rowLabel.style.marginBottom = '0.2rem';
+    const colLabel = document.createElement('label');
+    colLabel.textContent = 'Column Trait:';
+    colLabel.style.color = '#4296d2';
+    colLabel.style.fontWeight = '600';
+    colLabel.style.marginRight = '0.5rem';
+    colLabel.style.marginBottom = '0.2rem';
+    const axisWrapper = document.createElement('div');
+    axisWrapper.style.display = 'flex';
+    axisWrapper.style.alignItems = 'flex-end';
+    axisWrapper.style.gap = '1rem';
+    axisWrapper.appendChild(rowLabel);
+    axisWrapper.appendChild(rowTraitSel);
+    axisWrapper.appendChild(colLabel);
+    axisWrapper.appendChild(colTraitSel);
+    multiTraitSelectors.appendChild(axisWrapper);
+    // Filter selectors for all other traits (in one line, with clear button)
     const filterSelectors = {};
     traitNames.forEach(trait => {
       if (trait === rowTraitSel.value || trait === colTraitSel.value) return;
@@ -292,8 +314,8 @@ document.addEventListener('DOMContentLoaded', () => {
       sel.id = 'filter_' + trait;
       sel.multiple = true;
       sel.size = 3;
-      sel.style.minWidth = '120px';
-      sel.style.maxWidth = '180px';
+      sel.style.minWidth = '140px';
+      sel.style.maxWidth = '220px';
       sel.style.background = '#1a1a1a';
       sel.style.color = '#fff';
       sel.style.border = '1px solid #4296d2';
@@ -312,24 +334,21 @@ document.addEventListener('DOMContentLoaded', () => {
         sel.appendChild(opt);
       });
       filterSelectors[trait] = sel;
+      // Clear/deselect button
+      const clearBtn = document.createElement('button');
+      clearBtn.type = 'button';
+      clearBtn.className = 'clear-filter-btn';
+      clearBtn.textContent = 'Clear';
+      clearBtn.onclick = () => {
+        Array.from(sel.options).forEach(opt => (opt.selected = false));
+        sel.dispatchEvent(new Event('change'));
+      };
       const wrapper = document.createElement('div');
       wrapper.appendChild(label);
       wrapper.appendChild(sel);
+      wrapper.appendChild(clearBtn);
       multiTraitSelectors.appendChild(wrapper);
     });
-    // Axis selectors UI
-    const rowLabel = document.createElement('label');
-    rowLabel.textContent = 'Row Trait:';
-    rowLabel.style.color = '#4296d2';
-    rowLabel.style.fontWeight = '600';
-    rowLabel.style.marginRight = '0.5rem';
-    const colLabel = document.createElement('label');
-    colLabel.textContent = 'Column Trait:';
-    colLabel.style.color = '#4296d2';
-    colLabel.style.fontWeight = '600';
-    colLabel.style.marginRight = '0.5rem';
-    multiTraitSelectors.prepend(colLabel, colTraitSel);
-    multiTraitSelectors.prepend(rowLabel, rowTraitSel);
     // Show section
     multiHeatmapSection.style.display = '';
     // Redraw on change
@@ -478,4 +497,14 @@ document.addEventListener('DOMContentLoaded', () => {
       return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'})[m];
     });
   }
+
+  // Set adaptive height for trait value distribution chart
+  function setTraitChartHeight() {
+    if (!traitChartCanvas) return;
+    let vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+    let h = Math.round(Math.max(180, Math.min(320, vw * 0.28)));
+    traitChartCanvas.style.height = h + 'px';
+  }
+  setTraitChartHeight();
+  window.addEventListener('resize', setTraitChartHeight);
 }); 
