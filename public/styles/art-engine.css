@@ -1364,6 +1364,13 @@
   padding: 2rem 1.5rem 1.5rem 1.5rem;
   margin-bottom: 2rem;
   overflow-x: auto;
+  max-width: 100vw;
+}
+.multi-heatmap-container > div {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  overflow-x: auto;
 }
 #multiTraitSelectors {
   gap: 1.5rem;
@@ -1372,11 +1379,9 @@
   display: flex;
   overflow-x: auto;
   align-items: flex-end;
+  max-width: 100vw;
 }
 #multiTraitSelectors > div {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
   min-width: 140px;
   max-width: 220px;
   flex: 0 0 auto;
@@ -1443,9 +1448,9 @@
 
 canvas#multiTraitHeatmap {
   width: 100% !important;
-  height: 38vw !important;
-  max-height: 480px !important;
-  min-height: 200px !important;
+  max-width: 480px !important;
+  height: auto !important;
+  aspect-ratio: 1/1;
   display: block;
   margin: 0 auto;
 } 
