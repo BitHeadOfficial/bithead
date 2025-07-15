@@ -1349,9 +1349,9 @@
 /* Trait Value Distribution Chart Styling */
 #chartSection canvas#traitChart {
   width: 100% !important;
-  height: 28vw !important;
-  max-height: 320px !important;
-  min-height: 180px !important;
+  height: 38vw !important;
+  max-height: 480px !important;
+  min-height: 200px !important;
   display: block;
   margin: 0 auto;
 }
@@ -1443,9 +1443,33 @@
 
 canvas#multiTraitHeatmap {
   width: 100% !important;
-  height: 30vw !important;
-  max-height: 380px !important;
-  min-height: 180px !important;
+  height: 38vw !important;
+  max-height: 480px !important;
+  min-height: 200px !important;
   display: block;
   margin: 0 auto;
+} 
+
+.multi-heatmap-scroll-hint {
+  color: #6b7280;
+  font-size: 0.98rem;
+  text-align: center;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-style: italic;
+}
+@media (max-width: 700px) {
+  #chartSection canvas#traitChart,
+  canvas#multiTraitHeatmap {
+    font-size: 1.1rem !important;
+  }
+  .multi-heatmap-scroll-hint {
+    font-size: 1.08rem;
+  }
+  .multi-heatmap-container {
+    padding: 0.5rem 0.1rem 0.5rem 0.1rem;
+  }
+  #multiTraitSelectors {
+    gap: 0.5rem;
+  }
 } 
