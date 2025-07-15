@@ -307,12 +307,16 @@ document.addEventListener('DOMContentLoaded', () => {
     axisWrapper.appendChild(colTraitSel);
     multiTraitSelectors.appendChild(axisWrapper);
 
-    // Filter selectors for all other traits (in one line, with clear button)
-    let filterSelectors = {};
-    function updateFilterSelectors() {
+    // Store filter selections to preserve them when axes change
+    let filterSelections = {};
+
+    // Helper to build filter selectors
+    function buildFilterSelectors() {
       // Remove old filter selectors
-      Array.from(multiTraitSelectors.querySelectorAll('.filter-wrapper')).forEach(el => el.remove());
-      filterSelectors = {};
+      Array.from(multiTraitSelectors.children).forEach((child, idx) => {
+        if (idx > 0) multiTraitSelectors.removeChild(child);
+      });
+      const filterSelectors = {};
       traitNames.forEach(trait => {
         if (trait === rowTraitSel.value || trait === colTraitSel.value) return;
         const sel = document.createElement('select');
@@ -338,6 +342,12 @@ document.addEventListener('DOMContentLoaded', () => {
           opt.textContent = val;
           sel.appendChild(opt);
         });
+        // Restore previous selection if possible
+        if (filterSelections[trait]) {
+          Array.from(sel.options).forEach(opt => {
+            if (filterSelections[trait].includes(opt.value)) opt.selected = true;
+          });
+        }
         filterSelectors[trait] = sel;
         // Clear/deselect button
         const clearBtn = document.createElement('button');
@@ -349,40 +359,57 @@ document.addEventListener('DOMContentLoaded', () => {
           sel.dispatchEvent(new Event('change'));
         };
         const wrapper = document.createElement('div');
-        wrapper.className = 'filter-wrapper';
         wrapper.appendChild(label);
         wrapper.appendChild(sel);
         wrapper.appendChild(clearBtn);
         multiTraitSelectors.appendChild(wrapper);
       });
-      // Redraw heatmap after filter selector update
-      renderMultiTraitHeatmap(rowTraitSel.value, colTraitSel.value, filterSelectors, allAttributes, true);
+      return filterSelectors;
     }
-    updateFilterSelectors();
+
+    // Initial build
+    let filterSelectors = buildFilterSelectors();
+
     // Show section
     multiHeatmapSection.style.display = '';
-    // Redraw on change
-    function updateHeatmapAndFilters() {
-      updateFilterSelectors();
-    }
-    rowTraitSel.addEventListener('change', updateHeatmapAndFilters);
-    colTraitSel.addEventListener('change', updateHeatmapAndFilters);
-    // Also update heatmap on filter change
-    function updateHeatmapOnly() {
-      renderMultiTraitHeatmap(rowTraitSel.value, colTraitSel.value, filterSelectors, allAttributes, false);
-    }
-    // Attach change listeners to all filter selectors (after they are created)
-    // This is handled in updateFilterSelectors
 
-    // Initial resize fix for stretched chart
-    setTimeout(() => {
-      if (window.multiHeatmapInstance && window.multiHeatmapInstance.resize) {
-        window.multiHeatmapInstance.resize();
-      }
-    }, 200);
+    // Redraw on change
+    function updateHeatmap() {
+      // Save current filter selections
+      filterSelections = {};
+      Object.entries(filterSelectors).forEach(([trait, sel]) => {
+        filterSelections[trait] = Array.from(sel.selectedOptions).map(opt => opt.value);
+      });
+      renderMultiTraitHeatmap(rowTraitSel.value, colTraitSel.value, filterSelectors, allAttributes);
+      // After rendering, force chart resize to fix stretching/overlap
+      setTimeout(() => {
+        if (window.multiHeatmapInstance && window.multiHeatmapInstance.resize) {
+          window.multiHeatmapInstance.resize();
+        }
+        window.dispatchEvent(new Event('resize'));
+      }, 100);
+    }
+    rowTraitSel.addEventListener('change', () => {
+      filterSelectors = buildFilterSelectors();
+      updateHeatmap();
+      // After axes change, scroll selectors into view (for mobile)
+      setTimeout(() => {
+        multiTraitSelectors.scrollLeft = 0;
+      }, 50);
+    });
+    colTraitSel.addEventListener('change', () => {
+      filterSelectors = buildFilterSelectors();
+      updateHeatmap();
+      setTimeout(() => {
+        multiTraitSelectors.scrollLeft = 0;
+      }, 50);
+    });
+    Object.values(filterSelectors).forEach(sel => sel.addEventListener('change', updateHeatmap));
+    // Initial render with a slight delay to ensure container is ready
+    setTimeout(updateHeatmap, 80);
   }
 
-  function renderMultiTraitHeatmap(rowTrait, colTrait, filterSelectors, allAttributes, forceResize) {
+  function renderMultiTraitHeatmap(rowTrait, colTrait, filterSelectors, allAttributes) {
     if (!rowTrait || !colTrait || rowTrait === colTrait) return;
     // Get selected filter values
     const filters = {};
@@ -472,7 +499,6 @@ document.addEventListener('DOMContentLoaded', () => {
       },
       options: {
         responsive: true,
-        layout: { padding: { left: 32, top: 24, right: 16, bottom: 24 } },
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -496,7 +522,7 @@ document.addEventListener('DOMContentLoaded', () => {
             pan: {
               enabled: true,
               mode: 'xy',
-              modifierKey: 'ctrl',
+              modifierKey: 'ctrl', // for desktop, but touch is always enabled
             },
             zoom: {
               wheel: { enabled: true },
@@ -515,28 +541,18 @@ document.addEventListener('DOMContentLoaded', () => {
             labels: colVals,
             title: { display: true, text: colTrait, color: '#4296d2', font: { weight: 700, size: 16 } },
             ticks: { color: '#fff', font: { weight: 600, size: 13 }, autoSkip: false, maxRotation: 45, minRotation: 20 },
-            grid: { color: '#2a2a2a' },
-            offset: true
+            grid: { color: '#2a2a2a' }
           },
           y: {
             type: 'category',
             labels: rowVals,
             title: { display: true, text: rowTrait, color: '#4296d2', font: { weight: 700, size: 16 } },
             ticks: { color: '#fff', font: { weight: 600, size: 13 }, autoSkip: false, maxRotation: 0 },
-            grid: { color: '#2a2a2a' },
-            offset: true
+            grid: { color: '#2a2a2a' }
           }
         }
       }
     });
-    // Force resize after initial render to fix stretching
-    if (forceResize) {
-      setTimeout(() => {
-        if (multiHeatmapInstance && multiHeatmapInstance.resize) {
-          multiHeatmapInstance.resize();
-        }
-      }, 100);
-    }
     // Reset Zoom button logic
     const resetBtn = document.getElementById('resetHeatmapZoomBtn');
     if (resetBtn) {
