@@ -421,6 +421,8 @@ document.addEventListener('DOMContentLoaded', () => {
     maxLabel.className = 'heatmap-legend-label';
     maxLabel.textContent = maxCount;
     legendDiv.appendChild(maxLabel);
+    // Detect mobile
+    const isMobile = window.matchMedia('(max-width: 700px)').matches;
     multiHeatmapInstance = new Chart(multiTraitHeatmap, {
       type: 'matrix',
       data: {
@@ -491,15 +493,15 @@ document.addEventListener('DOMContentLoaded', () => {
           x: {
             type: 'category',
             labels: colVals,
-            title: { display: true, text: colTrait, color: '#4296d2', font: { weight: 700, size: 16 } },
-            ticks: { color: '#fff', font: { weight: 600, size: 13 }, autoSkip: false, maxRotation: 45, minRotation: 20 },
+            title: { display: !isMobile, text: colTrait, color: '#4296d2', font: { weight: 700, size: 16 } },
+            ticks: { display: !isMobile, color: '#fff', font: { weight: 600, size: 13 }, autoSkip: false, maxRotation: 45, minRotation: 20 },
             grid: { color: '#2a2a2a' }
           },
           y: {
             type: 'category',
             labels: rowVals,
-            title: { display: true, text: rowTrait, color: '#4296d2', font: { weight: 700, size: 16 } },
-            ticks: { color: '#fff', font: { weight: 600, size: 13 }, autoSkip: false, maxRotation: 0 },
+            title: { display: !isMobile, text: rowTrait, color: '#4296d2', font: { weight: 700, size: 16 } },
+            ticks: { display: !isMobile, color: '#fff', font: { weight: 600, size: 13 }, autoSkip: false, maxRotation: 0 },
             grid: { color: '#2a2a2a' }
           }
         }
