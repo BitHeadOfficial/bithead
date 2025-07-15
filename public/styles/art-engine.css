@@ -1473,3 +1473,50 @@ canvas#multiTraitHeatmap {
     gap: 0.5rem;
   }
 } 
+
+/* Spinner for Trait Analyzer */
+.trait-analyzer-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+}
+.lds-dual-ring {
+  display: inline-block;
+  width: 48px;
+  height: 48px;
+}
+.lds-dual-ring:after {
+  content: " ";
+  display: block;
+  width: 40px;
+  height: 40px;
+  margin: 4px;
+  border-radius: 50%;
+  border: 6px solid #4296d2;
+  border-color: #4296d2 transparent #4296d2 transparent;
+  animation: lds-dual-ring 1.2s linear infinite;
+}
+@keyframes lds-dual-ring {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+/* Sortable table headers */
+.rarity-table th.sortable-col {
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s;
+}
+.rarity-table th.sortable-col:hover {
+  background: #2a3a4a;
+}
+/* Table row hover */
+.rarity-table tbody tr.rarity-row:hover {
+  background: #2a3a4a;
+  transition: background 0.2s;
+}
+/* Copy Table button */
+.export-csv-btn {
+  margin-right: 0.5rem;
+} 
