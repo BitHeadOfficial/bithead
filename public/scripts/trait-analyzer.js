@@ -469,6 +469,22 @@ document.addEventListener('DOMContentLoaded', () => {
             align: 'center',
             anchor: 'center',
             formatter: v => v.v > 0 ? v.v : ''
+          },
+          zoom: {
+            pan: {
+              enabled: true,
+              mode: 'xy',
+              modifierKey: 'ctrl', // for desktop, but touch is always enabled
+            },
+            zoom: {
+              wheel: { enabled: true },
+              pinch: { enabled: true },
+              mode: 'xy',
+            },
+            limits: {
+              x: { min: 0, max: colVals.length - 1 },
+              y: { min: 0, max: rowVals.length - 1 }
+            }
           }
         },
         scales: {
@@ -489,6 +505,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     });
+    // Reset Zoom button logic
+    const resetBtn = document.getElementById('resetHeatmapZoomBtn');
+    if (resetBtn) {
+      resetBtn.onclick = () => {
+        if (multiHeatmapInstance && multiHeatmapInstance.resetZoom) {
+          multiHeatmapInstance.resetZoom();
+        }
+      };
+    }
   }
 
   // Simple HTML escape
