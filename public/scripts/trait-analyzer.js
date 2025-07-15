@@ -306,107 +306,59 @@ document.addEventListener('DOMContentLoaded', () => {
     axisWrapper.appendChild(colLabel);
     axisWrapper.appendChild(colTraitSel);
     multiTraitSelectors.appendChild(axisWrapper);
-
-    // Store filter selections to preserve them when axes change
-    let filterSelections = {};
-
-    // Helper to build filter selectors
-    function buildFilterSelectors() {
-      // Remove old filter selectors
-      Array.from(multiTraitSelectors.children).forEach((child, idx) => {
-        if (idx > 0) multiTraitSelectors.removeChild(child);
+    // Filter selectors for all other traits (in one line, with clear button)
+    const filterSelectors = {};
+    traitNames.forEach(trait => {
+      if (trait === rowTraitSel.value || trait === colTraitSel.value) return;
+      const sel = document.createElement('select');
+      sel.id = 'filter_' + trait;
+      sel.multiple = true;
+      sel.size = 3;
+      sel.style.minWidth = '140px';
+      sel.style.maxWidth = '220px';
+      sel.style.background = '#1a1a1a';
+      sel.style.color = '#fff';
+      sel.style.border = '1px solid #4296d2';
+      sel.style.borderRadius = '6px';
+      sel.style.padding = '0.2rem 0.5rem';
+      const label = document.createElement('label');
+      label.textContent = trait;
+      label.style.color = '#4296d2';
+      label.style.fontWeight = '600';
+      label.style.display = 'block';
+      // Populate options
+      Array.from(traitCounts.get(trait).keys()).forEach(val => {
+        const opt = document.createElement('option');
+        opt.value = val;
+        opt.textContent = val;
+        sel.appendChild(opt);
       });
-      const filterSelectors = {};
-      traitNames.forEach(trait => {
-        if (trait === rowTraitSel.value || trait === colTraitSel.value) return;
-        const sel = document.createElement('select');
-        sel.id = 'filter_' + trait;
-        sel.multiple = true;
-        sel.size = 3;
-        sel.style.minWidth = '140px';
-        sel.style.maxWidth = '220px';
-        sel.style.background = '#1a1a1a';
-        sel.style.color = '#fff';
-        sel.style.border = '1px solid #4296d2';
-        sel.style.borderRadius = '6px';
-        sel.style.padding = '0.2rem 0.5rem';
-        const label = document.createElement('label');
-        label.textContent = trait;
-        label.style.color = '#4296d2';
-        label.style.fontWeight = '600';
-        label.style.display = 'block';
-        // Populate options
-        Array.from(traitCounts.get(trait).keys()).forEach(val => {
-          const opt = document.createElement('option');
-          opt.value = val;
-          opt.textContent = val;
-          sel.appendChild(opt);
-        });
-        // Restore previous selection if possible
-        if (filterSelections[trait]) {
-          Array.from(sel.options).forEach(opt => {
-            if (filterSelections[trait].includes(opt.value)) opt.selected = true;
-          });
-        }
-        filterSelectors[trait] = sel;
-        // Clear/deselect button
-        const clearBtn = document.createElement('button');
-        clearBtn.type = 'button';
-        clearBtn.className = 'clear-filter-btn';
-        clearBtn.textContent = 'Clear';
-        clearBtn.onclick = () => {
-          Array.from(sel.options).forEach(opt => (opt.selected = false));
-          sel.dispatchEvent(new Event('change'));
-        };
-        const wrapper = document.createElement('div');
-        wrapper.appendChild(label);
-        wrapper.appendChild(sel);
-        wrapper.appendChild(clearBtn);
-        multiTraitSelectors.appendChild(wrapper);
-      });
-      return filterSelectors;
-    }
-
-    // Initial build
-    let filterSelectors = buildFilterSelectors();
-
+      filterSelectors[trait] = sel;
+      // Clear/deselect button
+      const clearBtn = document.createElement('button');
+      clearBtn.type = 'button';
+      clearBtn.className = 'clear-filter-btn';
+      clearBtn.textContent = 'Clear';
+      clearBtn.onclick = () => {
+        Array.from(sel.options).forEach(opt => (opt.selected = false));
+        sel.dispatchEvent(new Event('change'));
+      };
+      const wrapper = document.createElement('div');
+      wrapper.appendChild(label);
+      wrapper.appendChild(sel);
+      wrapper.appendChild(clearBtn);
+      multiTraitSelectors.appendChild(wrapper);
+    });
     // Show section
     multiHeatmapSection.style.display = '';
-
     // Redraw on change
     function updateHeatmap() {
-      // Save current filter selections
-      filterSelections = {};
-      Object.entries(filterSelectors).forEach(([trait, sel]) => {
-        filterSelections[trait] = Array.from(sel.selectedOptions).map(opt => opt.value);
-      });
       renderMultiTraitHeatmap(rowTraitSel.value, colTraitSel.value, filterSelectors, allAttributes);
-      // After rendering, force chart resize to fix stretching/overlap
-      setTimeout(() => {
-        if (window.multiHeatmapInstance && window.multiHeatmapInstance.resize) {
-          window.multiHeatmapInstance.resize();
-        }
-        window.dispatchEvent(new Event('resize'));
-      }, 100);
     }
-    rowTraitSel.addEventListener('change', () => {
-      filterSelectors = buildFilterSelectors();
-      updateHeatmap();
-      // After axes change, scroll selectors into view (for mobile)
-      setTimeout(() => {
-        multiTraitSelectors.scrollLeft = 0;
-      }, 50);
-    });
-    colTraitSel.addEventListener('change', () => {
-      filterSelectors = buildFilterSelectors();
-      updateHeatmap();
-      setTimeout(() => {
-        multiTraitSelectors.scrollLeft = 0;
-      }, 50);
-    });
+    rowTraitSel.addEventListener('change', updateHeatmap);
+    colTraitSel.addEventListener('change', updateHeatmap);
     Object.values(filterSelectors).forEach(sel => sel.addEventListener('change', updateHeatmap));
-    // Initial render with a slight delay to ensure container is ready
-    setTimeout(updateHeatmap, 80);
+    updateHeatmap();
   }
 
   function renderMultiTraitHeatmap(rowTrait, colTrait, filterSelectors, allAttributes) {
