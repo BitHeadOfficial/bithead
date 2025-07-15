@@ -1353,7 +1353,6 @@
   box-shadow: 0 2px 12px rgba(66,150,210,0.10);
   padding: 2rem 1.5rem 1.5rem 1.5rem;
   margin-bottom: 2rem;
-  min-width: 340px;
   overflow-x: auto;
 }
 #multiTraitSelectors label {
@@ -1423,13 +1422,15 @@
 }
 /* Chart area responsiveness */
 .multi-heatmap-container > div {
-  min-width: 340px;
+  width: 100%;
   max-width: 100vw;
   overflow-x: auto;
 }
 canvas#multiTraitHeatmap {
-  min-width: 340px;
-  max-width: 100vw;
+  width: 100% !important;
+  height: 40vw !important;
+  max-height: 400px !important;
+  min-height: 220px !important;
   display: block;
   margin: 0 auto;
 }
