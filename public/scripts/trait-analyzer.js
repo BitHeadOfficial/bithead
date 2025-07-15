@@ -442,7 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
           datalabels: {
             display: true,
             color: '#fff',
-            font: { weight: 'bold', size: 14 },
+            font: { weight: 'bold', size: 13 },
             align: 'center',
             anchor: 'center',
             formatter: v => v.v > 0 ? v.v : ''
@@ -465,7 +465,7 @@ document.addEventListener('DOMContentLoaded', () => {
           datalabels: {
             display: true,
             color: '#fff',
-            font: { weight: 'bold', size: 14 },
+            font: { weight: 'bold', size: 13 },
             align: 'center',
             anchor: 'center',
             formatter: v => v.v > 0 ? v.v : ''
@@ -492,14 +492,14 @@ document.addEventListener('DOMContentLoaded', () => {
             type: 'category',
             labels: colVals,
             title: { display: true, text: colTrait, color: '#4296d2', font: { weight: 700, size: 16 } },
-            ticks: { display: true, color: '#fff', font: { weight: 600, size: 13 }, autoSkip: false, maxRotation: 45, minRotation: 20 },
+            ticks: { color: '#fff', font: { weight: 600, size: 13 }, autoSkip: false, maxRotation: 45, minRotation: 20 },
             grid: { color: '#2a2a2a' }
           },
           y: {
             type: 'category',
             labels: rowVals,
             title: { display: true, text: rowTrait, color: '#4296d2', font: { weight: 700, size: 16 } },
-            ticks: { display: true, color: '#fff', font: { weight: 600, size: 13 }, autoSkip: false, maxRotation: 0 },
+            ticks: { color: '#fff', font: { weight: 600, size: 13 }, autoSkip: false, maxRotation: 0 },
             grid: { color: '#2a2a2a' }
           }
         }
