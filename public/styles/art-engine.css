@@ -1440,3 +1440,12 @@
   }
 }
 /* End Multi-Trait Heatmap Styling */ 
+
+canvas#multiTraitHeatmap {
+  width: 100% !important;
+  height: 24vw !important;
+  max-height: 300px !important;
+  min-height: 160px !important;
+  display: block;
+  margin: 0 auto;
+} 
