@@ -306,62 +306,83 @@ document.addEventListener('DOMContentLoaded', () => {
     axisWrapper.appendChild(colLabel);
     axisWrapper.appendChild(colTraitSel);
     multiTraitSelectors.appendChild(axisWrapper);
+
     // Filter selectors for all other traits (in one line, with clear button)
-    const filterSelectors = {};
-    traitNames.forEach(trait => {
-      if (trait === rowTraitSel.value || trait === colTraitSel.value) return;
-      const sel = document.createElement('select');
-      sel.id = 'filter_' + trait;
-      sel.multiple = true;
-      sel.size = 3;
-      sel.style.minWidth = '140px';
-      sel.style.maxWidth = '220px';
-      sel.style.background = '#1a1a1a';
-      sel.style.color = '#fff';
-      sel.style.border = '1px solid #4296d2';
-      sel.style.borderRadius = '6px';
-      sel.style.padding = '0.2rem 0.5rem';
-      const label = document.createElement('label');
-      label.textContent = trait;
-      label.style.color = '#4296d2';
-      label.style.fontWeight = '600';
-      label.style.display = 'block';
-      // Populate options
-      Array.from(traitCounts.get(trait).keys()).forEach(val => {
-        const opt = document.createElement('option');
-        opt.value = val;
-        opt.textContent = val;
-        sel.appendChild(opt);
+    let filterSelectors = {};
+    function updateFilterSelectors() {
+      // Remove old filter selectors
+      Array.from(multiTraitSelectors.querySelectorAll('.filter-wrapper')).forEach(el => el.remove());
+      filterSelectors = {};
+      traitNames.forEach(trait => {
+        if (trait === rowTraitSel.value || trait === colTraitSel.value) return;
+        const sel = document.createElement('select');
+        sel.id = 'filter_' + trait;
+        sel.multiple = true;
+        sel.size = 3;
+        sel.style.minWidth = '140px';
+        sel.style.maxWidth = '220px';
+        sel.style.background = '#1a1a1a';
+        sel.style.color = '#fff';
+        sel.style.border = '1px solid #4296d2';
+        sel.style.borderRadius = '6px';
+        sel.style.padding = '0.2rem 0.5rem';
+        const label = document.createElement('label');
+        label.textContent = trait;
+        label.style.color = '#4296d2';
+        label.style.fontWeight = '600';
+        label.style.display = 'block';
+        // Populate options
+        Array.from(traitCounts.get(trait).keys()).forEach(val => {
+          const opt = document.createElement('option');
+          opt.value = val;
+          opt.textContent = val;
+          sel.appendChild(opt);
+        });
+        filterSelectors[trait] = sel;
+        // Clear/deselect button
+        const clearBtn = document.createElement('button');
+        clearBtn.type = 'button';
+        clearBtn.className = 'clear-filter-btn';
+        clearBtn.textContent = 'Clear';
+        clearBtn.onclick = () => {
+          Array.from(sel.options).forEach(opt => (opt.selected = false));
+          sel.dispatchEvent(new Event('change'));
+        };
+        const wrapper = document.createElement('div');
+        wrapper.className = 'filter-wrapper';
+        wrapper.appendChild(label);
+        wrapper.appendChild(sel);
+        wrapper.appendChild(clearBtn);
+        multiTraitSelectors.appendChild(wrapper);
       });
-      filterSelectors[trait] = sel;
-      // Clear/deselect button
-      const clearBtn = document.createElement('button');
-      clearBtn.type = 'button';
-      clearBtn.className = 'clear-filter-btn';
-      clearBtn.textContent = 'Clear';
-      clearBtn.onclick = () => {
-        Array.from(sel.options).forEach(opt => (opt.selected = false));
-        sel.dispatchEvent(new Event('change'));
-      };
-      const wrapper = document.createElement('div');
-      wrapper.appendChild(label);
-      wrapper.appendChild(sel);
-      wrapper.appendChild(clearBtn);
-      multiTraitSelectors.appendChild(wrapper);
-    });
+      // Redraw heatmap after filter selector update
+      renderMultiTraitHeatmap(rowTraitSel.value, colTraitSel.value, filterSelectors, allAttributes, true);
+    }
+    updateFilterSelectors();
     // Show section
     multiHeatmapSection.style.display = '';
     // Redraw on change
-    function updateHeatmap() {
-      renderMultiTraitHeatmap(rowTraitSel.value, colTraitSel.value, filterSelectors, allAttributes);
+    function updateHeatmapAndFilters() {
+      updateFilterSelectors();
     }
-    rowTraitSel.addEventListener('change', updateHeatmap);
-    colTraitSel.addEventListener('change', updateHeatmap);
-    Object.values(filterSelectors).forEach(sel => sel.addEventListener('change', updateHeatmap));
-    updateHeatmap();
+    rowTraitSel.addEventListener('change', updateHeatmapAndFilters);
+    colTraitSel.addEventListener('change', updateHeatmapAndFilters);
+    // Also update heatmap on filter change
+    function updateHeatmapOnly() {
+      renderMultiTraitHeatmap(rowTraitSel.value, colTraitSel.value, filterSelectors, allAttributes, false);
+    }
+    // Attach change listeners to all filter selectors (after they are created)
+    // This is handled in updateFilterSelectors
+
+    // Initial resize fix for stretched chart
+    setTimeout(() => {
+      if (window.multiHeatmapInstance && window.multiHeatmapInstance.resize) {
+        window.multiHeatmapInstance.resize();
+      }
+    }, 200);
   }
 
-  function renderMultiTraitHeatmap(rowTrait, colTrait, filterSelectors, allAttributes) {
+  function renderMultiTraitHeatmap(rowTrait, colTrait, filterSelectors, allAttributes, forceResize) {
     if (!rowTrait || !colTrait || rowTrait === colTrait) return;
     // Get selected filter values
     const filters = {};
@@ -451,6 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
       },
       options: {
         responsive: true,
+        layout: { padding: { left: 32, top: 24, right: 16, bottom: 24 } },
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -474,7 +496,7 @@ document.addEventListener('DOMContentLoaded', () => {
             pan: {
               enabled: true,
               mode: 'xy',
-              modifierKey: 'ctrl', // for desktop, but touch is always enabled
+              modifierKey: 'ctrl',
             },
             zoom: {
               wheel: { enabled: true },
@@ -493,18 +515,28 @@ document.addEventListener('DOMContentLoaded', () => {
             labels: colVals,
             title: { display: true, text: colTrait, color: '#4296d2', font: { weight: 700, size: 16 } },
             ticks: { color: '#fff', font: { weight: 600, size: 13 }, autoSkip: false, maxRotation: 45, minRotation: 20 },
-            grid: { color: '#2a2a2a' }
+            grid: { color: '#2a2a2a' },
+            offset: true
           },
           y: {
             type: 'category',
             labels: rowVals,
             title: { display: true, text: rowTrait, color: '#4296d2', font: { weight: 700, size: 16 } },
             ticks: { color: '#fff', font: { weight: 600, size: 13 }, autoSkip: false, maxRotation: 0 },
-            grid: { color: '#2a2a2a' }
+            grid: { color: '#2a2a2a' },
+            offset: true
           }
         }
       }
     });
+    // Force resize after initial render to fix stretching
+    if (forceResize) {
+      setTimeout(() => {
+        if (multiHeatmapInstance && multiHeatmapInstance.resize) {
+          multiHeatmapInstance.resize();
+        }
+      }, 100);
+    }
     // Reset Zoom button logic
     const resetBtn = document.getElementById('resetHeatmapZoomBtn');
     if (resetBtn) {
